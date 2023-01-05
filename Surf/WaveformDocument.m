@@ -8,7 +8,7 @@
 #import "WaveformDocument.h"
 
 @interface WaveformDocument ()
-
+@property 
 @end
 
 @implementation WaveformDocument
@@ -53,5 +53,11 @@
     return YES;
 }
 
+
+- (BOOL)readFromURL:(NSURL *)url
+              error:(NSError * _Nullable *)outError {
+    
+    return nil;
+}
 
 @end
