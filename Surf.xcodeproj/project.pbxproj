@@ -10,9 +10,9 @@
 		091879DA2967400F0024642A /* AppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 091879D92967400F0024642A /* AppDelegate.m */; };
 		091879DD2967400F0024642A /* ViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 091879DC2967400F0024642A /* ViewController.m */; };
 		091879E02967400F0024642A /* WaveformDocument.m in Sources */ = {isa = PBXBuildFile; fileRef = 091879DF2967400F0024642A /* WaveformDocument.m */; };
-		091879E2296740100024642A /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 091879E1296740100024642A /* Assets.xcassets */; };
 		091879E5296740100024642A /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 091879E3296740100024642A /* Main.storyboard */; };
 		091879E8296740100024642A /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 091879E7296740100024642A /* main.m */; };
+		09DB114B29677E1F00407DE8 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 09DB114A29677E1F00407DE8 /* Assets.xcassets */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -23,11 +23,11 @@
 		091879DC2967400F0024642A /* ViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = ViewController.m; sourceTree = "<group>"; };
 		091879DE2967400F0024642A /* WaveformDocument.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = WaveformDocument.h; sourceTree = "<group>"; };
 		091879DF2967400F0024642A /* WaveformDocument.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = WaveformDocument.m; sourceTree = "<group>"; };
-		091879E1296740100024642A /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		091879E4296740100024642A /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/Main.storyboard; sourceTree = "<group>"; };
 		091879E6296740100024642A /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		091879E7296740100024642A /* main.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = main.m; sourceTree = "<group>"; };
 		091879E9296740100024642A /* Surf.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = Surf.entitlements; sourceTree = "<group>"; };
+		09DB114A29677E1F00407DE8 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -66,11 +66,11 @@
 				091879DC2967400F0024642A /* ViewController.m */,
 				091879DE2967400F0024642A /* WaveformDocument.h */,
 				091879DF2967400F0024642A /* WaveformDocument.m */,
-				091879E1296740100024642A /* Assets.xcassets */,
 				091879E3296740100024642A /* Main.storyboard */,
 				091879E6296740100024642A /* Info.plist */,
 				091879E7296740100024642A /* main.m */,
 				091879E9296740100024642A /* Surf.entitlements */,
+				09DB114A29677E1F00407DE8 /* Assets.xcassets */,
 			);
 			path = Surf;
 			sourceTree = "<group>";
@@ -132,7 +132,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				091879E2296740100024642A /* Assets.xcassets in Resources */,
+				09DB114B29677E1F00407DE8 /* Assets.xcassets in Resources */,
 				091879E5296740100024642A /* Main.storyboard in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -279,6 +279,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS = NO;
 				CODE_SIGN_ENTITLEMENTS = Surf/Surf.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
@@ -306,6 +307,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS = NO;
 				CODE_SIGN_ENTITLEMENTS = Surf/Surf.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;

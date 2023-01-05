@@ -8,7 +8,7 @@
 #import "WaveformDocument.h"
 
 @interface WaveformDocument ()
-@property 
+// @property 
 @end
 
 @implementation WaveformDocument
