@@ -1,0 +1,24 @@
+# vscode
+**/.vscode/
+
+# build folder
+build/
+
+# mac
+**/.DS_Store
+
+# xcode
+**/DerivedData/
+**/xcuserdata/
+**/*.xcuserstate
+
+# python
+**/__pycache__
+**/*.egg-info
+
+# jupyter-notebook
+**/*.ipynb_checkpoints
+
+# nbdev
+.last_checked
+.irecovery
