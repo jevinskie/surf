@@ -9,7 +9,7 @@
 /* Begin PBXBuildFile section */
 		091879DA2967400F0024642A /* AppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 091879D92967400F0024642A /* AppDelegate.m */; };
 		091879DD2967400F0024642A /* ViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 091879DC2967400F0024642A /* ViewController.m */; };
-		091879E02967400F0024642A /* Document.m in Sources */ = {isa = PBXBuildFile; fileRef = 091879DF2967400F0024642A /* Document.m */; };
+		091879E02967400F0024642A /* WaveformDocument.m in Sources */ = {isa = PBXBuildFile; fileRef = 091879DF2967400F0024642A /* WaveformDocument.m */; };
 		091879E2296740100024642A /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 091879E1296740100024642A /* Assets.xcassets */; };
 		091879E5296740100024642A /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 091879E3296740100024642A /* Main.storyboard */; };
 		091879E8296740100024642A /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 091879E7296740100024642A /* main.m */; };
@@ -21,8 +21,8 @@
 		091879D92967400F0024642A /* AppDelegate.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = AppDelegate.m; sourceTree = "<group>"; };
 		091879DB2967400F0024642A /* ViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ViewController.h; sourceTree = "<group>"; };
 		091879DC2967400F0024642A /* ViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = ViewController.m; sourceTree = "<group>"; };
-		091879DE2967400F0024642A /* Document.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = Document.h; sourceTree = "<group>"; };
-		091879DF2967400F0024642A /* Document.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = Document.m; sourceTree = "<group>"; };
+		091879DE2967400F0024642A /* WaveformDocument.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = WaveformDocument.h; sourceTree = "<group>"; };
+		091879DF2967400F0024642A /* WaveformDocument.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = WaveformDocument.m; sourceTree = "<group>"; };
 		091879E1296740100024642A /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		091879E4296740100024642A /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/Main.storyboard; sourceTree = "<group>"; };
 		091879E6296740100024642A /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
@@ -64,8 +64,8 @@
 				091879D92967400F0024642A /* AppDelegate.m */,
 				091879DB2967400F0024642A /* ViewController.h */,
 				091879DC2967400F0024642A /* ViewController.m */,
-				091879DE2967400F0024642A /* Document.h */,
-				091879DF2967400F0024642A /* Document.m */,
+				091879DE2967400F0024642A /* WaveformDocument.h */,
+				091879DF2967400F0024642A /* WaveformDocument.m */,
 				091879E1296740100024642A /* Assets.xcassets */,
 				091879E3296740100024642A /* Main.storyboard */,
 				091879E6296740100024642A /* Info.plist */,
@@ -144,7 +144,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				091879E02967400F0024642A /* Document.m in Sources */,
+				091879E02967400F0024642A /* WaveformDocument.m in Sources */,
 				091879DD2967400F0024642A /* ViewController.m in Sources */,
 				091879E8296740100024642A /* main.m in Sources */,
 				091879DA2967400F0024642A /* AppDelegate.m in Sources */,

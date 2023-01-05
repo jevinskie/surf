@@ -1,17 +1,17 @@
 //
-//  Document.m
+//  WaveformDocument.m
 //  Surf
 //
 //  Created by Jevin Sweval on 1/5/23.
 //
 
-#import "Document.h"
+#import "WaveformDocument.h"
 
-@interface Document ()
+@interface WaveformDocument ()
 
 @end
 
-@implementation Document
+@implementation WaveformDocument
 
 - (instancetype)init {
     self = [super init];
@@ -37,6 +37,11 @@
     // Alternatively, you could remove this method and override -fileWrapperOfType:error:, -writeToURL:ofType:error:, or -writeToURL:ofType:forSaveOperation:originalContentsURL:error: instead.
     [NSException raise:@"UnimplementedMethod" format:@"%@ is unimplemented", NSStringFromSelector(_cmd)];
     return nil;
+}
+
+
+- (BOOL)isEntireFileLoaded {
+    return NO;
 }
 
 
