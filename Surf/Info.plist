@@ -5,10 +5,6 @@
 	<key>CFBundleDocumentTypes</key>
 	<array>
 		<dict>
-			<key>CFBundleTypeIconFile</key>
-			<string>waveform</string>
-			<key>CFBundleTypeIconSystemGenerated</key>
-			<integer>0</integer>
 			<key>CFBundleTypeName</key>
 			<string>Value Change Dump</string>
 			<key>CFBundleTypeRole</key>
@@ -50,6 +46,37 @@
 				<key>public.filename-extension</key>
 				<array>
 					<string>vcd</string>
+					<string>VCD</string>
+				</array>
+			</dict>
+		</dict>
+	</array>
+	<key>UTImportedTypeDeclarations</key>
+	<array>
+		<dict>
+			<key>UTTypeConformsTo</key>
+			<array>
+				<string>public.data</string>
+			</array>
+			<key>UTTypeDescription</key>
+			<string>Value Change Dump</string>
+			<key>UTTypeIcons</key>
+			<dict>
+				<key>UTTypeIconBadgeName</key>
+				<string>waveform-plain</string>
+				<key>UTTypeIconText</key>
+				<string>VCD</string>
+			</dict>
+			<key>UTTypeIdentifier</key>
+			<string>public.value-change-dump</string>
+			<key>UTTypeReferenceURL</key>
+			<string>https://en.wikipedia.org/wiki/Value_change_dump</string>
+			<key>UTTypeTagSpecification</key>
+			<dict>
+				<key>public.filename-extension</key>
+				<array>
+					<string>vcd</string>
+					<string>VCD</string>
 				</array>
 			</dict>
 		</dict>
