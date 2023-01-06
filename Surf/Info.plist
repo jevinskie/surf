@@ -5,28 +5,24 @@
 	<key>CFBundleDocumentTypes</key>
 	<array>
 		<dict>
+			<key>CFBundleTypeIconSystemGenerated</key>
+			<integer>0</integer>
+			<key>CFBundleTypeName</key>
+			<string>Value-Change Dump</string>
 			<key>CFBundleTypeRole</key>
 			<string>Viewer</string>
+			<key>LSHandlerRank</key>
+			<string>Owner</string>
 			<key>LSItemContentTypes</key>
 			<array>
 				<string>je.vin.value-change-dump</string>
 			</array>
 			<key>NSDocumentClass</key>
-			<string>Document</string>
+			<string>WaveformDocument</string>
 		</dict>
 	</array>
-	<key>UTImportedTypeDeclarations</key>
+	<key>UTExportedTypeDeclarations</key>
 	<array>
-		<dict>
-			<key>UTTypeConformsTo</key>
-			<array>
-				<string></string>
-			</array>
-			<key>UTTypeIdentifier</key>
-			<string></string>
-			<key>UTTypeTagSpecification</key>
-			<dict/>
-		</dict>
 		<dict>
 			<key>UTTypeConformsTo</key>
 			<array>
@@ -34,6 +30,40 @@
 			</array>
 			<key>UTTypeDescription</key>
 			<string>Value-Change Dump</string>
+			<key>UTTypeIcons</key>
+			<dict>
+				<key>UTTypeIconBadgeName</key>
+				<string>waveform-plain</string>
+				<key>UTTypeIconText</key>
+				<string>VCD</string>
+			</dict>
+			<key>UTTypeIdentifier</key>
+			<string>je.vin.value-change-dump</string>
+			<key>UTTypeTagSpecification</key>
+			<dict>
+				<key>public.filename-extension</key>
+				<array>
+					<string>vcd</string>
+				</array>
+			</dict>
+		</dict>
+	</array>
+	<key>UTImportedTypeDeclarations</key>
+	<array>
+		<dict>
+			<key>UTTypeConformsTo</key>
+			<array>
+				<string>public.plain-text</string>
+			</array>
+			<key>UTTypeDescription</key>
+			<string>Value-Change Dump</string>
+			<key>UTTypeIcons</key>
+			<dict>
+				<key>UTTypeIconBadgeName</key>
+				<string>waveform-plain</string>
+				<key>UTTypeIconText</key>
+				<string>VCD</string>
+			</dict>
 			<key>UTTypeIdentifier</key>
 			<string>je.vin.value-change-dump</string>
 			<key>UTTypeTagSpecification</key>
