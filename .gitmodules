@@ -1,0 +1,3 @@
+[submodule "test/waveforms"]
+	path = test/waveforms
+	url = https://github.com/jevinskie/digital-waveform-samples
