@@ -9,6 +9,4 @@
 
 @interface WaveformDocument : NSDocument
 
-
 @end
-
