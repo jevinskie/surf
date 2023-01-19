@@ -4,6 +4,6 @@
 
 namespace surf {
 
-class Renderer {};
+class SURF_EXPORT Renderer {};
 
 } // namespace surf

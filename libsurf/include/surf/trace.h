@@ -4,6 +4,6 @@
 
 namespace surf {
 
-class Trace {};
+class SURF_EXPORT Trace {};
 
 } // namespace surf

@@ -1,3 +1,4 @@
-#include "surf/surf.h"
+#include "surf/vcd.h"
+#include "surf/common-internal.h"
 
-using namespace surf;
+VCD::VCD(const fs::path &path) : m_path(path) {}
