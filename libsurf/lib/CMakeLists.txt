@@ -24,8 +24,8 @@ set(SURF_PUBLIC_LIBS
 )
 
 set(SURF_PRIVATE_LIBS
-    # fmt
-    # thread-pool
+    fmt
+    thread-pool
 )
 
 # SURF_HDR added for Xcode project generation

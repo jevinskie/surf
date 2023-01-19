@@ -1,3 +1,12 @@
 [submodule "test/waveforms"]
 	path = test/waveforms
 	url = https://github.com/jevinskie/digital-waveform-samples
+[submodule "libsurf/3rdparty/fmt"]
+	path = libsurf/3rdparty/fmt
+	url = https://github.com/fmtlib/fmt
+[submodule "libsurf/3rdparty/argparse"]
+	path = libsurf/3rdparty/argparse
+	url = https://github.com/p-ranav/argparse
+[submodule "libsurf/3rdparty/thread-pool"]
+	path = libsurf/3rdparty/thread-pool
+	url = https://github.com/bshoshany/thread-pool
