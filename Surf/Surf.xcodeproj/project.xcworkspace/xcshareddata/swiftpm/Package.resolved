@@ -1,0 +1,23 @@
+{
+  "pins" : [
+    {
+      "identity" : "reactivecocoa",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/ReactiveCocoa/ReactiveCocoa",
+      "state" : {
+        "branch" : "master",
+        "revision" : "1e7e5191445d65ee26aeacf583dcdb70bf49f70e"
+      }
+    },
+    {
+      "identity" : "reactiveswift",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/ReactiveCocoa/ReactiveSwift",
+      "state" : {
+        "branch" : "master",
+        "revision" : "6b38733fd59caac8b4cbe035bbcc3cdbe0fc5037"
+      }
+    }
+  ],
+  "version" : 2
+}
