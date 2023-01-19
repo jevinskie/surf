@@ -2,7 +2,7 @@
 **/.vscode/
 
 # build folder
-build/
+**/build/
 
 # mac
 **/.DS_Store
