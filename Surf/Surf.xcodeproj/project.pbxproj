@@ -12,6 +12,8 @@
 		093C7EB729771FF100190187 /* Document.swift in Sources */ = {isa = PBXBuildFile; fileRef = 093C7EB629771FF100190187 /* Document.swift */; };
 		093C7EB929771FF200190187 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 093C7EB829771FF200190187 /* Assets.xcassets */; };
 		093C7EBC29771FF200190187 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 093C7EBA29771FF200190187 /* Main.storyboard */; };
+		093C7ECC297724A200190187 /* ReactiveCocoa in Frameworks */ = {isa = PBXBuildFile; productRef = 093C7ECB297724A200190187 /* ReactiveCocoa */; };
+		093C7ECF297724BB00190187 /* ReactiveSwift in Frameworks */ = {isa = PBXBuildFile; productRef = 093C7ECE297724BB00190187 /* ReactiveSwift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -30,6 +32,8 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				093C7ECC297724A200190187 /* ReactiveCocoa in Frameworks */,
+				093C7ECF297724BB00190187 /* ReactiveSwift in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -82,6 +86,10 @@
 			dependencies = (
 			);
 			name = Surf;
+			packageProductDependencies = (
+				093C7ECB297724A200190187 /* ReactiveCocoa */,
+				093C7ECE297724BB00190187 /* ReactiveSwift */,
+			);
 			productName = Surf;
 			productReference = 093C7EAF29771FF100190187 /* Surf.app */;
 			productType = "com.apple.product-type.application";
@@ -110,6 +118,10 @@
 				Base,
 			);
 			mainGroup = 093C7EA629771FF100190187;
+			packageReferences = (
+				093C7ECA297724A200190187 /* XCRemoteSwiftPackageReference "ReactiveCocoa" */,
+				093C7ECD297724BB00190187 /* XCRemoteSwiftPackageReference "ReactiveSwift" */,
+			);
 			productRefGroup = 093C7EB029771FF100190187 /* Products */;
 			projectDirPath = "";
 			projectRoot = "";
@@ -347,6 +359,38 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		093C7ECA297724A200190187 /* XCRemoteSwiftPackageReference "ReactiveCocoa" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/ReactiveCocoa/ReactiveCocoa";
+			requirement = {
+				branch = master;
+				kind = branch;
+			};
+		};
+		093C7ECD297724BB00190187 /* XCRemoteSwiftPackageReference "ReactiveSwift" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/ReactiveCocoa/ReactiveSwift";
+			requirement = {
+				branch = master;
+				kind = branch;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		093C7ECB297724A200190187 /* ReactiveCocoa */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 093C7ECA297724A200190187 /* XCRemoteSwiftPackageReference "ReactiveCocoa" */;
+			productName = ReactiveCocoa;
+		};
+		093C7ECE297724BB00190187 /* ReactiveSwift */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 093C7ECD297724BB00190187 /* XCRemoteSwiftPackageReference "ReactiveSwift" */;
+			productName = ReactiveSwift;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = 093C7EA729771FF100190187 /* Project object */;
 }
