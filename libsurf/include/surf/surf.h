@@ -1,3 +1,3 @@
 #pragma once
 
-void foo();
+#include "vcd.h"
