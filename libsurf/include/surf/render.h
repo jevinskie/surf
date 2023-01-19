@@ -4,6 +4,6 @@
 
 namespace surf {
 
-class VCD {};
+class Renderer {};
 
 } // namespace surf

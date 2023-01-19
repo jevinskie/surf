@@ -1,4 +1,5 @@
 #pragma once
 
-#include "surf-file.h"
+#include "render.h"
+#include "trace.h"
 #include "vcd.h"

@@ -10,3 +10,6 @@
 [submodule "libsurf/3rdparty/thread-pool"]
 	path = libsurf/3rdparty/thread-pool
 	url = https://github.com/bshoshany/thread-pool
+[submodule "libsurf/3rdparty/fpng"]
+	path = libsurf/3rdparty/fpng
+	url = https://github.com/richgel999/fpng

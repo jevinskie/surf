@@ -1,7 +1,9 @@
 #pragma once
 
+#include "common.h"
+
 namespace surf {
 
-class SurfFile {};
+class Trace {};
 
 } // namespace surf

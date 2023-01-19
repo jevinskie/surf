@@ -25,6 +25,7 @@ set(SURF_PUBLIC_LIBS
 
 set(SURF_PRIVATE_LIBS
     fmt
+    fpng
     thread-pool
 )
 
