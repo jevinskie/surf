@@ -1,4 +1,5 @@
 set(SURF_SRC
+    mmap.cpp
     render.cpp
     time.cpp
     trace.cpp

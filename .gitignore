@@ -4,6 +4,10 @@
 # build folder
 **/build/
 
+# clion
+**/cmake-build-*/
+**/.idea/
+
 # mac
 **/.DS_Store
 

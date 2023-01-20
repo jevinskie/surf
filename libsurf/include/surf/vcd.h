@@ -1,6 +1,7 @@
 #pragma once
 
 #include "common.h"
+#include "mmap.h"
 #include "time.h"
 #include "trace.h"
 
@@ -13,12 +14,13 @@ public:
     int timebase_power() const;
     Time start() const;
     Time end() const;
+    const char *data() const;
+    size_t size() const;
 
 private:
     void parse();
 
-    const std::filesystem::path m_path;
-    int m_fd;
+    MappedReadOnlyFile m_mapped_file;
     Time m_start;
     Time m_end;
     std::shared_ptr<Trace> m_trace;

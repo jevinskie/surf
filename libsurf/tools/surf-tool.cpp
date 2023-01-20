@@ -29,6 +29,8 @@ int main(int argc, const char **argv) {
         return -2;
     }
 
+    fmt::print("cwd is: {:s}\n", std::filesystem::current_path().string());
+
     std::shared_ptr<Trace> trace;
 
     if (const auto vcd_path = parser.present("--vcd-trace")) {

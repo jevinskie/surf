@@ -47,19 +47,6 @@ SURF_EXPORT void posix_check(int retval, const std::string &msg);
 
 SURF_EXPORT unsigned int get_num_cores();
 
-class SURF_EXPORT MappedReadOnlyFile {
-public:
-    MappedReadOnlyFile(const fs::path &path, const void *preferred_addr = nullptr);
-    ~MappedReadOnlyFile();
-    const uint8_t *data() const;
-    size_t size() const;
-
-private:
-    const uint8_t *m_mapping;
-    size_t m_size;
-};
-
-SURF_EXPORT uint8_t *mmap_file(const fs::path &path, int *fd, size_t *len, bool rw,
-                               const void *preferred_addr);
+SURF_EXPORT std::filesystem::path get_cwd();
 
 }; // namespace surf
