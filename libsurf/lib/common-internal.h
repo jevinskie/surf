@@ -14,6 +14,7 @@ using namespace surf;
 #include <memory>
 #include <string>
 #include <system_error>
+#include <unistd.h>
 
 #include <fmt/format.h>
 

@@ -19,6 +19,8 @@ private:
 
     const std::filesystem::path m_path;
     int m_fd;
+    Time m_start;
+    Time m_end;
     std::shared_ptr<Trace> m_trace;
 };
 

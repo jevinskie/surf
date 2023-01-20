@@ -2,6 +2,8 @@
 
 #include "common-internal.h"
 
+#include <fpng.h>
+
 Renderer::Renderer(const Trace &trace) : m_trace(trace) {}
 
 void Renderer::render(const Time &start, const Time &end, uint32_t width, uint32_t height,

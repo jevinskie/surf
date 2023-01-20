@@ -13,6 +13,8 @@
         __asm volatile("# LLVM-MCA-END" ::: "memory");                                             \
     } while (0)
 
+namespace surf {
+
 template <typename T> size_t bytesizeof(const typename std::vector<T> &vec) {
     return sizeof(T) * vec.size();
 }
@@ -44,3 +46,20 @@ constexpr U rounddown_pow2_mul(U num, size_t pow2_mul) {
 SURF_EXPORT void posix_check(int retval, const std::string &msg);
 
 SURF_EXPORT unsigned int get_num_cores();
+
+class SURF_EXPORT MappedReadOnlyFile {
+public:
+    MappedReadOnlyFile(const fs::path &path, const void *preferred_addr = nullptr);
+    ~MappedReadOnlyFile();
+    const uint8_t *data() const;
+    size_t size() const;
+
+private:
+    const uint8_t *m_mapping;
+    size_t m_size;
+};
+
+SURF_EXPORT uint8_t *mmap_file(const fs::path &path, int *fd, size_t *len, bool rw,
+                               const void *preferred_addr);
+
+}; // namespace surf

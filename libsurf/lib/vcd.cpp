@@ -20,11 +20,11 @@ int VCD::timebase_power() const {
 }
 
 Time VCD::start() const {
-    return m_trace->start();
+    return m_start;
 }
 
 Time VCD::end() const {
-    return m_trace->end();
+    return m_end;
 }
 
 // TODO: huge pages on linux
