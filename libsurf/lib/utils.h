@@ -47,6 +47,4 @@ SURF_EXPORT void posix_check(int retval, const std::string &msg);
 
 SURF_EXPORT unsigned int get_num_cores();
 
-SURF_EXPORT std::filesystem::path get_cwd();
-
 }; // namespace surf

@@ -19,8 +19,14 @@ int main(int argc, const char **argv) {
         .default_value(false)
         .implicit_value(true)
         .help("use ticks for times");
-    parser.add_argument("-W", "--width").default_value(4096).help("render width (pixels)");
-    parser.add_argument("-H", "--height").default_value(4096).help("render height (pixels)");
+    parser.add_argument("-W", "--width")
+        .default_value((uint32_t)4096)
+        .scan<'i', uint32_t>()
+        .help("render width (pixels)");
+    parser.add_argument("-H", "--height")
+        .default_value((uint32_t)4096)
+        .scan<'i', uint32_t>()
+        .help("render height (pixels)");
 
     try {
         parser.parse_args(argc, argv);
@@ -50,6 +56,9 @@ int main(int argc, const char **argv) {
     const auto use_ticks = parser["--ticks"] == true;
     const auto width     = parser.get<uint32_t>("--width");
     const auto height    = parser.get<uint32_t>("--height");
+
+    fmt::print("use_ticks: {:b}\n", use_ticks);
+    fmt::print("width: {:d} height: {:d}\n", width, height);
 
     if (parser.present("--start")) {
         if (use_ticks) {
