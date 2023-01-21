@@ -3,11 +3,13 @@
 #include "common-internal.h"
 #include "utils.h"
 
-VCD::VCD(const fs::path &path) : m_mapped_file(path) {
+VCD::VCD(const fs::path &path) : m_mapped_file(path, (const void *)0x80'0000'0000) {
     parse();
 }
 
-void VCD::parse() {}
+void VCD::parse() {
+    fmt::print("vcd sz: {:d} data: {:p}\n", size(), fmt::ptr(data()));
+}
 
 const char *VCD::data() const {
     return (const char *)m_mapped_file.data();

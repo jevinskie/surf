@@ -2,6 +2,7 @@
 using namespace surf;
 
 #include <string>
+#include <unistd.h>
 
 #include <argparse/argparse.hpp>
 #include <fmt/format.h>
@@ -27,6 +28,10 @@ int main(int argc, const char **argv) {
         .default_value((uint32_t)4096)
         .scan<'i', uint32_t>()
         .help("render height (pixels)");
+    parser.add_argument("-l", "--loop")
+        .default_value(false)
+        .implicit_value(true)
+        .help("loop for testing");
 
     try {
         parser.parse_args(argc, argv);
@@ -59,6 +64,12 @@ int main(int argc, const char **argv) {
 
     fmt::print("use_ticks: {:b}\n", use_ticks);
     fmt::print("width: {:d} height: {:d}\n", width, height);
+
+    if (parser.get<bool>("--loop")) {
+        while (true) {
+            usleep(1'000'000);
+        }
+    }
 
     if (parser.present("--start")) {
         if (use_ticks) {
