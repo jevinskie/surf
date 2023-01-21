@@ -2,6 +2,7 @@
 
 #include "common-internal.h"
 #include "utils.h"
+#include "vcd-lexer.h"
 
 VCD::VCD(const fs::path &path) : m_mapped_file(path, (const void *)0x80'0000'0000) {
     parse();
@@ -9,6 +10,9 @@ VCD::VCD(const fs::path &path) : m_mapped_file(path, (const void *)0x80'0000'000
 
 void VCD::parse() {
     fmt::print("vcd sz: {:d} data: {:p}\n", size(), fmt::ptr(data()));
+    VCDLexer lexer;
+    const auto res = lexer.parse(data());
+    fmt::print("lexing res: {:d}\n", res);
 }
 
 const char *VCD::data() const {

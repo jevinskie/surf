@@ -1,9 +1,16 @@
+add_custom_command(OUTPUT
+    ${CMAKE_CURRENT_BINARY_DIR}/vcd-lexer.cpp
+    COMMAND /opt/homebrew/opt/re2c/bin/re2c ${CMAKE_CURRENT_SOURCE_DIR}/vcd-lexer.re -o ${CMAKE_CURRENT_BINARY_DIR}/vcd-lexer.cpp --case-ranges  --debug-output -i -Werror
+    DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/vcd-lexer.re
+)
+
 set(SURF_SRC
     mmap.cpp
     render.cpp
     time.cpp
     trace.cpp
     vcd.cpp
+    ${CMAKE_CURRENT_BINARY_DIR}/vcd-lexer.cpp
     utils.cpp
 )
 
@@ -53,9 +60,11 @@ PRIVATE
     ${SURF_PRIVATE_LIBS}
 )
 target_compile_options(surf PRIVATE -Wall -Wextra -Wpedantic)
+set_source_files_properties(${CMAKE_CURRENT_BINARY_DIR}/vcd-lexer.cpp PROPERTIES COMPILE_FLAGS -Wno-gnu-case-range)
 
 target_include_directories(surf
     PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/../include
+    PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}
 )
 
 install(TARGETS surf
