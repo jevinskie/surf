@@ -1,4 +1,5 @@
 #include "vcd-parser.h"
+#include "common-internal.h"
 
 #include <lexy/action/parse.hpp> // lexy::parse
 #include <lexy/callback.hpp>     // value callbacks
@@ -19,17 +20,15 @@ namespace dsl = lexy::dsl;
 
 }; // namespace
 
-VCDParser::VCDParser() {}
-
-VCDTypes::Document VCDParser::parse_document(const char *vcd_cstr) {
+VCDParserDeclRet parse_vcd_declarations(const char *decls_cstr) {
     return {};
 }
 
-VCDTypes::Declarations VCDParser::parse_declarations(const char *decls_cstr) {
+std::vector<SimCmd> parse_vcd_sim_cmds(const char *sim_cmds_cstr) {
     return {};
 }
 
-std::vector<VCDTypes::Change> VCDParser::parse_changes(const char *changes_cstr) {
+VCDTypes::Document parse_vcd_document(const char *vcd_cstr) {
     return {};
 }
 

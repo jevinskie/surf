@@ -2,16 +2,14 @@
 
 #include <surf/vcd.h>
 
-#include "common-internal.h"
-
 namespace surf {
 
-class VCDParser {
-public:
-    VCDParser();
-    VCDTypes::Document parse_document(const char *vcd_cstr);
-    VCDTypes::Declarations parse_declarations(const char *decls_cstr);
-    std::vector<VCDTypes::Change> parse_changes(const char *changes_cstr);
+struct VCDParserDeclRet {
+    VCDTypes::Declarations decls;
+    const char *remaining;
 };
+VCDParserDeclRet parse_vcd_declarations(const char *decls_cstr);
+std::vector<VCDTypes::SimCmd> parse_vcd_sim_cmds(const char *sim_cmds_cstr);
+VCDTypes::Document parse_vcd_document(const char *vcd_cstr);
 
 }; // namespace surf

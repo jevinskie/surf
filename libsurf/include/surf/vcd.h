@@ -54,11 +54,16 @@ public:
     Time end() const;
     const char *data() const;
     size_t size() const;
+    const VCDTypes::Document &document();
+    const VCDTypes::Declarations &declarations() const;
+    const std::vector<VCDTypes::SimCmd> &sim_cmds();
 
 private:
-    VCDTypes::Document parse();
+    void parse_declarations();
+    void parse_changes();
 
     VCDTypes::Document m_document;
+    const char *m_sim_cmds;
     bool m_parsed_changes;
     MappedReadOnlyFile m_mapped_file;
     Time m_start;
