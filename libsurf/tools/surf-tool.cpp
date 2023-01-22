@@ -45,7 +45,7 @@ int main(int argc, const char **argv) {
     std::shared_ptr<Trace> trace;
 
     if (const auto vcd_path = parser.present("--vcd-trace")) {
-        VCD vcd_trace(*vcd_path);
+        VCDFile vcd_trace(*vcd_path);
         trace = vcd_trace.surf_trace();
     } else {
         if (const auto surf_path = parser.present("--surf-trace")) {
@@ -70,6 +70,8 @@ int main(int argc, const char **argv) {
             usleep(1'000'000);
         }
     }
+
+    assert(trace);
 
     if (parser.present("--start")) {
         if (use_ticks) {

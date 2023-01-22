@@ -13,3 +13,6 @@
 [submodule "libsurf/3rdparty/fpng"]
 	path = libsurf/3rdparty/fpng
 	url = https://github.com/richgel999/fpng
+[submodule "libsurf/3rdparty/lexy"]
+	path = libsurf/3rdparty/lexy
+	url = https://github.com/foonathan/lexy

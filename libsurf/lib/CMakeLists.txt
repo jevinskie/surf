@@ -11,6 +11,7 @@ set(SURF_SRC
     trace.cpp
     vcd.cpp
     ${CMAKE_CURRENT_BINARY_DIR}/vcd-lexer.cpp
+    vcd-parser.cpp
     utils.cpp
 )
 
@@ -46,6 +47,7 @@ set(SURF_PUBLIC_LIBS
 set(SURF_PRIVATE_LIBS
     fmt
     fpng
+    lexy
     thread-pool
 )
 

@@ -10,11 +10,10 @@ using namespace surf;
 #include <cstring>
 #include <exception>
 #include <fcntl.h>
-#include <filesystem>
-#include <memory>
-#include <string>
+#include <optional>
 #include <system_error>
 #include <unistd.h>
+#include <variant>
 
 #include <fmt/format.h>
 

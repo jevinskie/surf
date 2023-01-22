@@ -3,39 +3,43 @@
 #include "common-internal.h"
 #include "utils.h"
 #include "vcd-lexer.h"
+#include "vcd-parser.h"
 
-VCD::VCD(const fs::path &path) : m_mapped_file(path, (const void *)0x80'0000'0000) {
+VCDFile::VCDFile(const fs::path &path)
+    : m_parsed_changes(false), m_mapped_file(path, (const void *)0x80'0000'0000) {
     parse();
 }
 
-void VCD::parse() {
+VCDTypes::Document VCDFile::parse() {
     fmt::print("vcd sz: {:d} data: {:p}\n", size(), fmt::ptr(data()));
-    VCDLexer lexer;
-    const auto res = lexer.parse(data());
-    fmt::print("lexing res: {:d}\n", res);
+    // VCDLexer lexer;
+    // const auto res = lexer.parse(data());
+    // fmt::print("lexing res: {:d}\n", res);
+    VCDParser parser;
+    return parser.parse_document(data());
 }
 
-const char *VCD::data() const {
+const char *VCDFile::data() const {
     return (const char *)m_mapped_file.data();
 }
 
-size_t VCD::size() const {
+size_t VCDFile::size() const {
     return m_mapped_file.size();
 }
 
-std::shared_ptr<Trace> VCD::surf_trace() const {
+std::shared_ptr<Trace> VCDFile::surf_trace() const {
     return m_trace;
 }
 
-int VCD::timebase_power() const {
+int VCDFile::timebase_power() const {
     return m_trace->timebase_power();
 }
 
-Time VCD::start() const {
+Time VCDFile::start() const {
     return m_start;
 }
 
-Time VCD::end() const {
+Time VCDFile::end() const {
     return m_end;
 }
 
