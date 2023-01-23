@@ -1,0 +1,57 @@
+value-changedump-definitions = *declaration-command *(ws declaration-command) ws *simulation-command *(ws simulation-command)
+declaration-command =
+    "$comment" ws comment-text ws "$end"
+  / "$date" ws date-text ws "$end"
+  / "$enddefinitions" ws "$end"
+  / "$scope" ws scope-type ws scope-identifier ws "$end"
+  / "$timescale" ws time-number ws time-unit ws "$end"
+  / "$upscope" ws "$end"
+  / "$var" ws var-type ws size ws identifier-code ws reference ws "$end"
+  / "$version" ws version-text system-task ws "$end"
+simulation-command =
+    "$dumpall" ws 1*value-change ws "$end"
+  / "$dumpoff" ws 1*value-change ws "$end"
+  / "$dumpon" ws 1*value-change ws "$end"
+  / "$dumpvars" ws 1*value-change ws "$end"
+  / "$comment" ws comment-text ws "$end"
+  / simulation-time
+  / value-change
+scope-type =
+    "begin"
+  / "fork"
+  / "function"
+  / "module"
+  / "task"
+time-number = "1" / "10" / "100"
+time-unit = "s" / "ms" / "us" / "ns" / "ps" / "fs"
+var-type = "event" / "integer" / "parameter" / "real" / "realtime" / "reg" / "supply0" / "supply1" / "time" / "tri" / "triand" / "trior" / "trireg" / "tri0" / "tri1" / "wand" / "wire" / "wor"
+simulation-time = "#" decimal-number
+value-change = scalar-value-change / vector-value-change
+scalar-value-change = value identifier-code
+value = "0" / "1" / "x" / "X" / "z" / "Z"
+vector-value-change =
+    "b" binary-number identifier-code
+  / "B" binary-number identifier-code
+  / "r" real-number identifier-code
+  / "R" real-number identifier-code
+identifier-code = 1*ascii-char
+size = decimal-number
+reference =
+    identifier
+  / identifier "[" bit-select-index"]"
+  / identifier "[" msb-index ":" lsb-index "]"
+index = decimal-number
+ascii-char = %x20-7f
+scope-identifier = 1*ascii-char
+comment-text = 1*ascii-char
+date-text = 1*ascii-char
+version-text = 1*ascii-char
+system-task = "$" 1*ascii-char
+decimal-number = [ "+" / "-" ] 1*("0" / "1" / "2" / "3" / "4" / "5"/ "6" / "7" / "8" / "9")
+binary-number = 1*("0" / "1")
+real-number = [ "+" / "-" ] 1*decimal-number [ "." 1*decimal-number ]
+identifier = 1*ascii-char
+bit-select-index = decimal-number
+msb-index = decimal-number
+lsb-index = decimal-number
+ws = 1*wsp
