@@ -1,6 +1,8 @@
 #include "vcd-parser.h"
 #include "common-internal.h"
 
+#include <boost/spirit/home/x3.hpp>
+
 #include <lexy/action/parse.hpp> // lexy::parse
 #include <lexy/callback.hpp>     // value callbacks
 #include <lexy/dsl.hpp>          // lexy::dsl::*
@@ -27,7 +29,8 @@ VCDParserDeclRet parse_vcd_declarations(const char *decls_cstr) {
 }
 
 std::vector<SimCmd> parse_vcd_sim_cmds(const char *sim_cmds_cstr) {
-    return {};
+    std::vector<SimCmd> cmds;
+    return cmds;
 }
 
 VCDTypes::Document parse_vcd_document(const char *vcd_cstr) {
