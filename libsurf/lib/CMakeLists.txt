@@ -45,6 +45,7 @@ set(SURF_PUBLIC_LIBS
 )
 
 set(SURF_PRIVATE_LIBS
+    concurrencpp
     fmt
     fpng
     lexy

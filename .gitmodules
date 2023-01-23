@@ -16,3 +16,6 @@
 [submodule "libsurf/3rdparty/lexy"]
 	path = libsurf/3rdparty/lexy
 	url = https://github.com/foonathan/lexy
+[submodule "libsurf/3rdparty/concurrencpp"]
+	path = libsurf/3rdparty/concurrencpp
+	url = https://github.com/David-Haim/concurrencpp

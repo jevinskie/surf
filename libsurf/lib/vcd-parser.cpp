@@ -7,6 +7,8 @@
 
 #include <lexy_ext/report_error.hpp> // lexy_ext::report_error
 
+#include <concurrencpp/concurrencpp.h>
+
 using namespace VCDTypes;
 
 namespace surf {
@@ -29,7 +31,9 @@ std::vector<SimCmd> parse_vcd_sim_cmds(const char *sim_cmds_cstr) {
 }
 
 VCDTypes::Document parse_vcd_document(const char *vcd_cstr) {
-    return {};
+    auto declsret = parse_vcd_declarations(vcd_cstr);
+    return {.declarations = std::move(declsret.decls),
+            .sim_cmds     = parse_vcd_sim_cmds(declsret.remaining)};
 }
 
 }; // namespace surf
