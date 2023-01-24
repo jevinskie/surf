@@ -33,17 +33,31 @@ struct decimal_number {
     static constexpr auto value = lexy::as_integer<std::int64_t>;
 };
 
-struct document {
-    static constexpr auto rule = dsl::p<decimal_number> + dsl::eof;
+struct decl_list {
+    static constexpr auto rule = [] {
+        auto num = dsl::integer<int>;
+        return dsl::list(num);
+    }();
 
-    static constexpr auto value = lexy::callback<Document>([](int64_t num) {
+    static constexpr auto value = lexy::as_list<std::vector<int>>;
+};
+
+struct document {
+    // static constexpr auto rule = dsl::p<decimal_number> + dsl::eof;
+
+    static constexpr auto rule = [] {
+        // auto num = dsl::p<decimal_number>;
+        auto decls = dsl::p<decl_list>;
+        return decls + dsl::eof;
+    }();
+
+    static constexpr auto value = lexy::callback<Document>([](std::vector<int> decls) {
         Document doc;
-        doc.num = num;
+        doc.num = decls[0];
         return doc;
     });
 
     static constexpr auto whitespace = dsl::ascii::blank / dsl::ascii::newline;
-    ;
 };
 
 }; // namespace grammar
