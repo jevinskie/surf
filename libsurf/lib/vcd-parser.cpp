@@ -34,14 +34,16 @@ struct decimal_number {
 };
 
 struct document {
-    static constexpr auto rule = dsl::p<decimal_number>;
+    static constexpr auto rule = dsl::p<decimal_number> + dsl::eof;
 
     static constexpr auto value = lexy::callback<Document>([](int64_t num) {
         Document doc;
         doc.num = num;
         return doc;
     });
-    // static constexpr auto value = lexy::forward<document>;
+
+    static constexpr auto whitespace = dsl::ascii::blank / dsl::ascii::newline;
+    ;
 };
 
 }; // namespace grammar
