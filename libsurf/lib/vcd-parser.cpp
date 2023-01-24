@@ -34,13 +34,14 @@ struct decimal_number {
 };
 
 struct document {
-    static constexpr auto rule = decimal_number();
+    static constexpr auto rule = dsl::p<decimal_number>;
 
     static constexpr auto value = lexy::callback<Document>([](int64_t num) {
         Document doc;
         doc.num = num;
         return doc;
     });
+    // static constexpr auto value = lexy::forward<document>;
 };
 
 }; // namespace grammar
@@ -64,12 +65,13 @@ Document parse_vcd_document(std::string_view vcd_str, const fs::path &path) {
 }
 
 void parse_vcd_document_test(std::string_view vcd_str, const fs::path &path) {
-    auto input        = lexy::string_input<lexy::ascii_encoding>(vcd_str);
-    auto validate_res = lexy::validate<grammar::decimal_number>(input, lexy_ext::report_error);
+    auto input = lexy::string_input<lexy::ascii_encoding>(vcd_str);
+    auto validate_res =
+        lexy::validate<grammar::document>(input, lexy_ext::report_error.path(path.c_str()));
     fmt::print("is_error: {}\n", validate_res.is_error());
 
     lexy::parse_tree_for<decltype(input)> parse_tree;
-    auto tree_res = lexy::parse_as_tree<grammar::decimal_number>(parse_tree, input, lexy::noop);
+    auto tree_res = lexy::parse_as_tree<grammar::document>(parse_tree, input, lexy::noop);
     if (tree_res.is_success()) {
         lexy::visualize(stdout, parse_tree, {lexy::visualize_fancy});
     } else {
@@ -77,14 +79,14 @@ void parse_vcd_document_test(std::string_view vcd_str, const fs::path &path) {
     }
 
     std::string trace;
-    lexy::trace_to<grammar::decimal_number>(std::back_insert_iterator(trace), input,
-                                            {lexy::visualize_fancy});
+    lexy::trace_to<grammar::document>(std::back_insert_iterator(trace), input,
+                                      {lexy::visualize_fancy});
     fmt::print("{:s}\n", trace);
 
-    auto doc =
-        lexy::parse<grammar::decimal_number>(input, lexy_ext::report_error.path(path.c_str()));
+    auto doc = lexy::parse<grammar::document>(input, lexy_ext::report_error.path(path.c_str()));
     if (doc.has_value()) {
-        fmt::print("doc: {}\n", doc.value());
+        auto value = doc.value();
+        fmt::print("doc: {}\n", value.num);
     } else {
         fmt::print("doc: no value!\n");
     }
