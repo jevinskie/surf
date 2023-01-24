@@ -6,7 +6,8 @@
 #include <sys/mman.h>
 #include <sys/stat.h>
 
-MappedReadOnlyFile::MappedReadOnlyFile(const fs::path &path, const void *preferred_addr) {
+MappedReadOnlyFile::MappedReadOnlyFile(const fs::path &path, const void *preferred_addr)
+    : m_path(path) {
     const auto fd_res = open(path.c_str(), O_RDONLY);
     posix_check(fd_res, "MappedReadOnlyFile open");
 
@@ -40,4 +41,12 @@ const uint8_t *MappedReadOnlyFile::data() const {
 
 size_t MappedReadOnlyFile::size() const {
     return m_size;
+}
+
+const fs::path &MappedReadOnlyFile::path() const {
+    return m_path;
+}
+
+std::string_view MappedReadOnlyFile::string_view() const {
+    return {(const char *)data(), size()};
 }

@@ -3,9 +3,10 @@
 
 #include <boost/spirit/home/x3.hpp>
 
-#include <lexy/action/parse.hpp> // lexy::parse
-#include <lexy/callback.hpp>     // value callbacks
-#include <lexy/dsl.hpp>          // lexy::dsl::*
+#include <lexy/action/parse.hpp>       // lexy::parse
+#include <lexy/callback.hpp>           // value callbacks
+#include <lexy/dsl.hpp>                // lexy::dsl::*
+#include <lexy/input/string_input.hpp> // lexy::string_input
 
 #include <lexy_ext/report_error.hpp> // lexy_ext::report_error
 
@@ -20,23 +21,47 @@ namespace {
 namespace grammar {
 namespace dsl = lexy::dsl;
 
+struct decimal_number {
+    static constexpr auto rule = [] {
+        auto digits = dsl::digits<>;
+        return dsl::integer<std::int64_t>(digits);
+    }();
+
+    static constexpr auto value = lexy::as_integer<std::int64_t>;
 };
+
+}; // namespace grammar
 
 }; // namespace
 
-VCDParserDeclRet parse_vcd_declarations(const char *decls_cstr) {
-    return {};
+VCDParserDeclRet parse_vcd_declarations(std::string_view decls_str) {
+    auto cursor = decls_str.data();
+    return {.decls = {}, .remaining = {cursor, decls_str.size() - (cursor - decls_str.data())}};
 }
 
-std::vector<SimCmd> parse_vcd_sim_cmds(const char *sim_cmds_cstr) {
+std::vector<SimCmd> parse_vcd_sim_cmds(std::string_view sim_cmds_str) {
     std::vector<SimCmd> cmds;
     return cmds;
 }
 
-VCDTypes::Document parse_vcd_document(const char *vcd_cstr) {
-    auto declsret = parse_vcd_declarations(vcd_cstr);
+Document parse_vcd_document(std::string_view vcd_str, const fs::path &path) {
+    auto declsret = parse_vcd_declarations(vcd_str);
     return {.declarations = std::move(declsret.decls),
             .sim_cmds     = parse_vcd_sim_cmds(declsret.remaining)};
+}
+
+void parse_vcd_document_test(std::string_view vcd_str, const fs::path &path) {
+    auto input        = lexy::string_input<lexy::ascii_encoding>(vcd_str);
+    auto validate_res = lexy::validate<grammar::decimal_number>(input, lexy_ext::report_error);
+    fmt::print("is_error: {}\n", validate_res.is_error());
+
+    auto doc =
+        lexy::parse<grammar::decimal_number>(input, lexy_ext::report_error.path(path.c_str()));
+    if (doc.has_value()) {
+        fmt::print("doc: {}\n", doc.value());
+    } else {
+        fmt::print("doc: no value!\n");
+    }
 }
 
 }; // namespace surf

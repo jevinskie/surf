@@ -46,6 +46,8 @@ int main(int argc, const char **argv) {
 
     if (const auto vcd_path = parser.present("--vcd-trace")) {
         VCDFile vcd_trace(*vcd_path);
+        vcd_trace.parse_test();
+        return 0;
         trace = vcd_trace.surf_trace();
     } else {
         if (const auto surf_path = parser.present("--surf-trace")) {

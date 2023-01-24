@@ -1,4 +1,4 @@
-value-changedump-definitions = *declaration-command *(ws declaration-command) ws *simulation-command *(ws simulation-command)
+value-change-dump = *declaration-command *(ws declaration-command) ws *simulation-command *(ws simulation-command)
 declaration-command =
     "$comment" ws comment-text ws "$end"
   / "$date" ws date-text ws "$end"

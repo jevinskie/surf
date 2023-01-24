@@ -14,12 +14,12 @@ VCDFile::VCDFile(const fs::path &path)
 void VCDFile::parse_declarations() {
     const auto res          = parse_vcd_declarations(data());
     m_document.declarations = std::move(res.decls);
-    m_sim_cmds              = res.remaining;
+    m_sim_cmds_str          = res.remaining;
 }
 
 const VCDTypes::Document &VCDFile::document() {
     if (!m_parsed_changes) {
-        m_document.sim_cmds = parse_vcd_sim_cmds(m_sim_cmds);
+        m_document.sim_cmds = parse_vcd_sim_cmds(m_sim_cmds_str);
         m_parsed_changes    = true;
     }
     return m_document;
@@ -29,12 +29,20 @@ const VCDTypes::Declarations &VCDFile::declarations() const {
     return m_document.declarations;
 }
 
+void VCDFile::parse_test() const {
+    parse_vcd_document_test(string_view(), path());
+}
+
 const std::vector<VCDTypes::SimCmd> &VCDFile::sim_cmds() {
     if (!m_parsed_changes) {
-        m_document.sim_cmds = parse_vcd_sim_cmds(m_sim_cmds);
+        m_document.sim_cmds = parse_vcd_sim_cmds(m_sim_cmds_str);
         m_parsed_changes    = true;
     }
     return m_document.sim_cmds;
+}
+
+const fs::path &VCDFile::path() const {
+    return m_mapped_file.path();
 }
 
 const char *VCDFile::data() const {
@@ -43,6 +51,10 @@ const char *VCDFile::data() const {
 
 size_t VCDFile::size() const {
     return m_mapped_file.size();
+}
+
+std::string_view VCDFile::string_view() const {
+    return m_mapped_file.string_view();
 }
 
 std::shared_ptr<Trace> VCDFile::surf_trace() const {

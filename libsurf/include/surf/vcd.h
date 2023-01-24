@@ -48,22 +48,25 @@ struct Document {
 class SURF_EXPORT VCDFile {
 public:
     VCDFile(const std::filesystem::path &path);
+    const std::filesystem::path &path() const;
     std::shared_ptr<Trace> surf_trace() const;
     int timebase_power() const;
     Time start() const;
     Time end() const;
     const char *data() const;
     size_t size() const;
+    std::string_view string_view() const;
     const VCDTypes::Document &document();
     const VCDTypes::Declarations &declarations() const;
     const std::vector<VCDTypes::SimCmd> &sim_cmds();
+    void parse_test() const;
 
 private:
     void parse_declarations();
     void parse_changes();
 
     VCDTypes::Document m_document;
-    const char *m_sim_cmds;
+    std::string_view m_sim_cmds_str;
     bool m_parsed_changes;
     MappedReadOnlyFile m_mapped_file;
     Time m_start;
