@@ -38,7 +38,7 @@ struct decl_list {
         // return dsl::list(num, dsl::sep(ws));
         // auto num = dsl::sign + dsl::integer<int64_t>;
         // return dsl::list(num, dsl::sep(ws));
-        auto list = dsl::list(num, dsl::sep(ws));
+        auto list = dsl::list(num);
         return dsl::opt<decltype(list)>(list);
     }();
 
