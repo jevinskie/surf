@@ -51,11 +51,15 @@ struct document {
         return decls + dsl::eof;
     }();
 
-    static constexpr auto value = lexy::callback<Document>([](std::vector<int> decls) {
-        Document doc;
-        doc.num = decls[0];
-        return doc;
-    });
+    // static constexpr auto value = lexy::callback<Document>([](std::vector<int> decls) {
+    //     Document doc;
+    //     doc.num = decls[0];
+    //     return doc;
+    // });
+    static constexpr auto value = lexy::as_list<std::vector<int>> >>
+                                  lexy::callback<Document>([](std::vector<int> &&vec) {
+                                      return Document{.nums = std::move(vec)};
+                                  });
 
     static constexpr auto whitespace = dsl::ascii::blank / dsl::ascii::newline;
 };
@@ -99,10 +103,10 @@ void parse_vcd_document_test(std::string_view vcd_str, const fs::path &path) {
                                       {lexy::visualize_fancy});
     fmt::print("{:s}\n", trace);
 
-    auto doc = lexy::parse<grammar::document>(input, lexy_ext::report_error.path(path.c_str()));
-    if (doc.has_value()) {
-        auto value = doc.value();
-        fmt::print("doc: {}\n", value.num);
+    auto doc_res = lexy::parse<grammar::document>(input, lexy_ext::report_error.path(path.c_str()));
+    if (doc_res.has_value()) {
+        auto doc = doc_res.value();
+        fmt::print("doc: num: {:d} nums: {}\n", doc.num, fmt::join(doc.nums, ","));
     } else {
         fmt::print("doc: no value!\n");
     }
