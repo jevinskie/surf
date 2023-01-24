@@ -3,10 +3,13 @@
 
 #include <boost/spirit/home/x3.hpp>
 
-#include <lexy/action/parse.hpp>       // lexy::parse
-#include <lexy/callback.hpp>           // value callbacks
-#include <lexy/dsl.hpp>                // lexy::dsl::*
-#include <lexy/input/string_input.hpp> // lexy::string_input
+#include <lexy/action/parse.hpp>         // lexy::parse
+#include <lexy/action/parse_as_tree.hpp> // lexy::parse_as_tree
+#include <lexy/action/trace.hpp>         // lexy::trace_to
+#include <lexy/callback.hpp>             // value callbacks
+#include <lexy/dsl.hpp>                  // lexy::dsl::*
+#include <lexy/input/string_input.hpp>   // lexy::string_input
+#include <lexy/parse_tree.hpp>           // lexy::parse_tree_for
 
 #include <lexy_ext/report_error.hpp> // lexy_ext::report_error
 
@@ -51,9 +54,22 @@ Document parse_vcd_document(std::string_view vcd_str, const fs::path &path) {
 }
 
 void parse_vcd_document_test(std::string_view vcd_str, const fs::path &path) {
-    auto input        = lexy::string_input<lexy::ascii_encoding>(vcd_str);
-    auto validate_res = lexy::validate<grammar::decimal_number>(input, lexy_ext::report_error);
-    fmt::print("is_error: {}\n", validate_res.is_error());
+    auto input = lexy::string_input<lexy::ascii_encoding>(vcd_str);
+    // auto validate_res = lexy::validate<grammar::decimal_number>(input, lexy_ext::report_error);
+    // fmt::print("is_error: {}\n", validate_res.is_error());
+
+    lexy::parse_tree_for<decltype(input)> parse_tree;
+    auto tree_res = lexy::parse_as_tree<grammar::decimal_number>(parse_tree, input, lexy::noop);
+    if (tree_res.is_success()) {
+        lexy::visualize(stdout, parse_tree, {lexy::visualize_fancy});
+    } else {
+        fmt::print("parse_as_tree error: {}\n", tree_res.errors());
+    }
+
+    std::string trace;
+    lexy::trace_to<grammar::decimal_number>(std::back_insert_iterator(trace), input,
+                                            {lexy::visualize_fancy});
+    fmt::print("{:s}\n", trace);
 
     auto doc =
         lexy::parse<grammar::decimal_number>(input, lexy_ext::report_error.path(path.c_str()));
