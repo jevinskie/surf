@@ -41,6 +41,7 @@ using SimCmd = std::variant<Comment, SimTime, Change>;
 struct Document {
     Declarations declarations;
     std::vector<SimCmd> sim_cmds;
+    int64_t num;
 };
 
 }; // namespace VCDTypes

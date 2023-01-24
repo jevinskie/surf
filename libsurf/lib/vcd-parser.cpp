@@ -33,6 +33,16 @@ struct decimal_number {
     static constexpr auto value = lexy::as_integer<std::int64_t>;
 };
 
+struct document {
+    static constexpr auto rule = decimal_number();
+
+    static constexpr auto value = lexy::callback<Document>([](int64_t num) {
+        Document doc;
+        doc.num = num;
+        return doc;
+    });
+};
+
 }; // namespace grammar
 
 }; // namespace
@@ -54,9 +64,9 @@ Document parse_vcd_document(std::string_view vcd_str, const fs::path &path) {
 }
 
 void parse_vcd_document_test(std::string_view vcd_str, const fs::path &path) {
-    auto input = lexy::string_input<lexy::ascii_encoding>(vcd_str);
-    // auto validate_res = lexy::validate<grammar::decimal_number>(input, lexy_ext::report_error);
-    // fmt::print("is_error: {}\n", validate_res.is_error());
+    auto input        = lexy::string_input<lexy::ascii_encoding>(vcd_str);
+    auto validate_res = lexy::validate<grammar::decimal_number>(input, lexy_ext::report_error);
+    fmt::print("is_error: {}\n", validate_res.is_error());
 
     lexy::parse_tree_for<decltype(input)> parse_tree;
     auto tree_res = lexy::parse_as_tree<grammar::decimal_number>(parse_tree, input, lexy::noop);
