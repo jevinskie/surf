@@ -25,21 +25,17 @@ namespace grammar {
 namespace dsl = lexy::dsl;
 
 struct decimal_number {
-    static constexpr auto rule = [] {
-        auto digits = dsl::digits<>;
-        return dsl::integer<std::int64_t>(digits);
-    }();
-
-    static constexpr auto value = lexy::as_integer<std::int64_t>;
+    static constexpr auto rule  = dsl::sign + dsl::integer<int64_t>;
+    static constexpr auto value = lexy::as_integer<int64_t>;
 };
 
 struct decl_list {
     static constexpr auto rule = [] {
-        auto num = dsl::integer<int>;
+        auto num = dsl::p<decimal_number>;
         return dsl::list(num);
     }();
 
-    static constexpr auto value = lexy::as_list<std::vector<int>>;
+    static constexpr auto value = lexy::as_list<std::vector<int64_t>>;
 };
 
 struct document {
@@ -56,8 +52,8 @@ struct document {
     //     doc.num = decls[0];
     //     return doc;
     // });
-    static constexpr auto value = lexy::as_list<std::vector<int>> >>
-                                  lexy::callback<Document>([](std::vector<int> &&vec) {
+    static constexpr auto value = lexy::as_list<std::vector<int64_t>> >>
+                                  lexy::callback<Document>([](std::vector<int64_t> &&vec) {
                                       return Document{.nums = std::move(vec)};
                                   });
 
@@ -106,7 +102,7 @@ void parse_vcd_document_test(std::string_view vcd_str, const fs::path &path) {
     auto doc_res = lexy::parse<grammar::document>(input, lexy_ext::report_error.path(path.c_str()));
     if (doc_res.has_value()) {
         auto doc = doc_res.value();
-        fmt::print("doc: num: {:d} nums: {}\n", doc.num, fmt::join(doc.nums, ","));
+        fmt::print("doc: num: {:d} nums: {}\n", doc.num, fmt::join(doc.nums, ", "));
     } else {
         fmt::print("doc: no value!\n");
     }
