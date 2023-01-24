@@ -24,6 +24,8 @@ namespace {
 namespace grammar {
 namespace dsl = lexy::dsl;
 
+static constexpr auto ws = dsl::ascii::blank / dsl::ascii::newline;
+
 struct decimal_number {
     static constexpr auto rule  = dsl::sign + dsl::integer<int64_t>;
     static constexpr auto value = lexy::as_integer<int64_t>;
@@ -31,7 +33,9 @@ struct decimal_number {
 
 struct decl_list {
     static constexpr auto rule = [] {
-        auto num = dsl::p<decimal_number>;
+        // auto num = dsl::p<decimal_number>;
+        // return dsl::list(num, dsl::sep(ws));
+        auto num = dsl::integer<int64_t>;
         return dsl::list(num);
     }();
 
@@ -57,7 +61,7 @@ struct document {
                                       return Document{.nums = std::move(vec)};
                                   });
 
-    static constexpr auto whitespace = dsl::ascii::blank / dsl::ascii::newline;
+    static constexpr auto whitespace = ws;
 };
 
 }; // namespace grammar
