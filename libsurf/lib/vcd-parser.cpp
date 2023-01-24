@@ -33,13 +33,14 @@ struct decimal_number {
 
 struct decl_list {
     static constexpr auto rule = [] {
-        auto num = dsl::integer<int64_t>;
-        // auto num = dsl::p<decimal_number>;
+        // auto num = dsl::integer<int64_t>;
+        auto num = dsl::p<decimal_number>;
         // return dsl::list(num, dsl::sep(ws));
         // auto num = dsl::sign + dsl::integer<int64_t>;
         // return dsl::list(num, dsl::sep(ws));
-        auto list = dsl::list(num);
-        return dsl::opt<decltype(list)>(list);
+        // auto list = dsl::list(num);
+        auto list = dsl::list(num, dsl::sep(ws));
+        return list;
     }();
 
     static constexpr auto value = lexy::as_list<std::vector<int64_t>>;
@@ -51,7 +52,7 @@ struct document {
     static constexpr auto rule = [] {
         // auto num = dsl::p<decimal_number>;
         auto decls = dsl::p<decl_list>;
-        return decls + dsl::eof;
+        return decls;
     }();
 
     // static constexpr auto value = lexy::callback<Document>([](std::vector<int> decls) {
