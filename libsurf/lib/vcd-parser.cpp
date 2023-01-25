@@ -45,7 +45,7 @@ struct decl_list {
     static constexpr auto rule = [] {
         auto num = dsl::p<decimal_number>;
         // return dsl::list(dsl::peek_not(dsl::p<end_decls>) >> num);
-        return dsl::terminator(dsl::peek(dsl::p<end_decls>)).opt_list(num);
+        return dsl::terminator(LEXY_LIT("$enddefinitions")).list(num);
     }();
 
     static constexpr auto value = lexy::as_list<std::vector<int>>;
