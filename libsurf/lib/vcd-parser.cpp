@@ -64,7 +64,7 @@ struct document {
         [](std::optional<std::vector<int>> &&decls) {
             return Document{.nums = std::move(decls), .words = {}};
         },
-        [](std::optional<std::vector<int>> &&decls, std::vector<std::string> &&sim_cmds) {
+        [](std::vector<int> &&decls, std::vector<std::string> &&sim_cmds) {
             return Document{.nums = std::move(decls), .words = std::move(sim_cmds)};
         },
         [](std::vector<std::string> &&sim_cmds) {
@@ -118,10 +118,18 @@ void parse_vcd_document_test(std::string_view vcd_str, const fs::path &path) {
 
     auto doc_res = lexy::parse<grammar::document>(input, lexy_ext::report_error.path(path.c_str()));
     if (doc_res.has_value()) {
-        auto doc = doc_res.value();
-        fmt::print("doc: num: {:d} nums: {} words: {}\n", doc.num,
-                   doc.nums ? fmt::join(*doc.nums, ", ") : fmt::join(std::vector<int>(), ", "),
-                   fmt::join(doc.words, ", "));
+        auto doc = std::move(doc_res.value());
+        fmt::print("doc:\n");
+        if (doc.nums) {
+            fmt::print("nums: {}\n", fmt::join(*doc.nums, ", "));
+        } else {
+            fmt::print("nums: EMPTY\n");
+        }
+        if (doc.words) {
+            fmt::print("words: {}\n", fmt::join(*doc.words, ", "));
+        } else {
+            fmt::print("words: EMPTY\n");
+        }
     } else {
         fmt::print("doc: no value!\n");
     }

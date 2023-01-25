@@ -43,7 +43,7 @@ struct Document {
     std::vector<SimCmd> sim_cmds;
     int64_t num;
     std::optional<std::vector<int>> nums;
-    std::vector<std::string> words;
+    std::optional<std::vector<std::string>> words;
 };
 
 }; // namespace VCDTypes
