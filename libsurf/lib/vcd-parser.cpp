@@ -60,8 +60,8 @@ struct sim_cmd_list {
 };
 
 struct document {
-    static constexpr auto rule = dsl::p<decl_list> + LEXY_LIT("$enddefinitions") +
-                                 LEXY_LIT("$end") + dsl::p<sim_cmd_list> + dsl::eof;
+    static constexpr auto rule =
+        dsl::p<decl_list> + LEXY_LIT("$end") + dsl::p<sim_cmd_list> + dsl::eof;
 
     static constexpr auto value =
         lexy::callback<Document>([](std::vector<int> &&decls, std::vector<std::string> &&sim_cmds) {
