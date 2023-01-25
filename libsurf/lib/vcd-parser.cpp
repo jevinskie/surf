@@ -57,14 +57,21 @@ struct sim_cmd_list {
 };
 
 struct document {
-    static constexpr auto rule = dsl::try_(dsl::p<decl_list>) + dsl::p<sim_cmd_list> + dsl::eof;
+    static constexpr auto rule =
+        dsl::try_(dsl::p<decl_list>) + dsl::try_(dsl::p<sim_cmd_list>) + dsl::eof;
 
     static constexpr auto value = lexy::callback<Document>(
+        [](std::optional<std::vector<int>> &&decls) {
+            return Document{.nums = std::move(decls), .words = {}};
+        },
         [](std::optional<std::vector<int>> &&decls, std::vector<std::string> &&sim_cmds) {
             return Document{.nums = std::move(decls), .words = std::move(sim_cmds)};
         },
         [](std::vector<std::string> &&sim_cmds) {
             return Document{.nums = {}, .words = std::move(sim_cmds)};
+        },
+        []() {
+            return Document{.nums = {}, .words = {}};
         });
 
     static constexpr auto whitespace = ws;
