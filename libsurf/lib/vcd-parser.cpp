@@ -37,6 +37,11 @@ struct word {
     static constexpr auto value = lexy::as_string<std::string>;
 };
 
+struct sim_cmd {
+    static constexpr auto rule  = dsl::p<word>;
+    static constexpr auto value = lexy::forward<std::string>;
+};
+
 struct decl_list {
     static constexpr auto rule = [] {
         auto num = dsl::p<decimal_number>;
