@@ -33,7 +33,7 @@ struct decimal_number {
 
 struct decl_list {
     static constexpr auto rule = [] {
-        auto num = dsl::integer<int>;
+        auto num = dsl::sign + dsl::integer<int>;
         return dsl::if_(dsl::list(num));
     }();
 
