@@ -1,5 +1,6 @@
 #include "vcd-parser.h"
 #include "common-internal.h"
+#include <utils.h>
 
 #include <boost/spirit/home/x3.hpp>
 
@@ -33,9 +34,9 @@ struct decimal_number {
 
 struct decl_list {
     static constexpr auto rule = [] {
-        // auto num = dsl::p<decimal_number>;
-        auto num = dsl::integer<int>;
-        return dsl::list(num);
+        auto num = dsl::p<decimal_number>;
+        // auto num = dsl::integer<int>;
+        return dsl::list(num, dsl::sep(dsl::comma));
     }();
 
     static constexpr auto value = lexy::as_list<std::vector<int>>;
