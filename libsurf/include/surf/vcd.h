@@ -42,7 +42,7 @@ struct Document {
     Declarations declarations;
     std::vector<SimCmd> sim_cmds;
     int64_t num;
-    std::vector<int64_t> nums;
+    std::vector<int> nums;
 };
 
 }; // namespace VCDTypes

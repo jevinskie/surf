@@ -26,9 +26,19 @@ namespace dsl = lexy::dsl;
 
 static constexpr auto ws = dsl::ascii::blank / dsl::ascii::newline;
 
+#include <lexy/action/parse.hpp>         // lexy::parse
+#include <lexy/action/parse_as_tree.hpp> // lexy::parse_as_tree
+#include <lexy/action/trace.hpp>         // lexy::trace_to
+#include <lexy/callback.hpp>             // value callbacks
+#include <lexy/dsl.hpp>                  // lexy::dsl::*
+#include <lexy/input/string_input.hpp>   // lexy::string_input
+#include <lexy/parse_tree.hpp>           // lexy::parse_tree_for
+#include <lexy_ext/report_error.hpp>     // lexy_ext::report_error
+#include <vector>
+
 struct decimal_number {
-    static constexpr auto rule  = dsl::sign + dsl::integer<int64_t>;
-    static constexpr auto value = lexy::as_integer<int64_t>;
+    static constexpr auto rule  = dsl::sign + dsl::integer<int>;
+    static constexpr auto value = lexy::as_integer<int>;
 };
 
 struct decl_list {
@@ -39,11 +49,11 @@ struct decl_list {
         // auto num = dsl::sign + dsl::integer<int64_t>;
         // return dsl::list(num, dsl::sep(ws));
         // auto list = dsl::list(num);
-        auto list = dsl::list(num, dsl::sep(dsl::while_one(dsl::ascii::newline) | dsl::semicolon));
+        auto list = dsl::list(num, dsl::sep(dsl::while_one(dsl::ascii::space)));
         return list;
     }();
 
-    static constexpr auto value = lexy::as_list<std::vector<int64_t>>;
+    static constexpr auto value = lexy::as_list<std::vector<int>>;
 };
 
 struct document {
@@ -60,8 +70,8 @@ struct document {
     //     doc.num = decls[0];
     //     return doc;
     // });
-    static constexpr auto value = lexy::as_list<std::vector<int64_t>> >>
-                                  lexy::callback<Document>([](std::vector<int64_t> &&vec) {
+    static constexpr auto value = lexy::as_list<std::vector<int>> >>
+                                  lexy::callback<Document>([](std::vector<int> &&vec) {
                                       return Document{.nums = std::move(vec)};
                                   });
 
