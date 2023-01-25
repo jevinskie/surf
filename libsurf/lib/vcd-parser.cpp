@@ -34,7 +34,7 @@ struct decimal_number {
 struct decl_list {
     static constexpr auto rule = [] {
         auto num = dsl::integer<int>;
-        return dsl::opt(dsl::list(num));
+        return dsl::if_(dsl::list(num));
     }();
 
     static constexpr auto value = lexy::as_list<std::vector<int>>;
