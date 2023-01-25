@@ -36,7 +36,7 @@ struct decl_list {
     static constexpr auto rule = [] {
         auto num = dsl::p<decimal_number>;
         // auto num = dsl::integer<int>;
-        return dsl::list(num, dsl::sep(LEXY_LIT("")));
+        return dsl::list(dsl::eof >> num);
     }();
 
     static constexpr auto value = lexy::as_list<std::vector<int>>;
