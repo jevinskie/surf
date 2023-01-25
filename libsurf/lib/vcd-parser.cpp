@@ -57,8 +57,11 @@ struct sim_cmd_list {
 };
 
 struct document {
-    static constexpr auto rule =
+    static constexpr auto core_rule =
         dsl::try_(dsl::p<decl_list>) + dsl::try_(dsl::p<sim_cmd_list>) + dsl::eof;
+    static constexpr auto rule = dsl::eof | dsl::else_ >> core_rule;
+
+    // static constexpr auto rule = (dsl::if_(dsl::p<decl_list>) | dsl::else_) + dsl::eof;
 
     static constexpr auto value = lexy::callback<Document>(
         [](std::optional<std::vector<int>> &&decls) {
