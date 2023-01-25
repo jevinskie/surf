@@ -12,7 +12,7 @@ VCDFile::VCDFile(const fs::path &path)
 }
 
 void VCDFile::parse_declarations() {
-    const auto res          = parse_vcd_declarations(data());
+    const auto res          = parse_vcd_declarations(string_view());
     m_document.declarations = std::move(res.decls);
     m_sim_cmds_str          = res.remaining;
 }
