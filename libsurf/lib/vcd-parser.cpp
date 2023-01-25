@@ -32,6 +32,11 @@ struct decimal_number {
     static constexpr auto value = lexy::as_integer<int>;
 };
 
+struct word {
+    static constexpr auto rule  = dsl::list(dsl::ascii::word);
+    static constexpr auto value = lexy::as_string<std::string>;
+};
+
 struct decl_list {
     static constexpr auto rule = [] {
         auto num = dsl::p<decimal_number>;
@@ -41,12 +46,21 @@ struct decl_list {
     static constexpr auto value = lexy::as_list<std::vector<int>>;
 };
 
-struct document {
-    static constexpr auto rule = dsl::p<decl_list> + dsl::eof;
+struct sim_cmd_list {
+    static constexpr auto rule = [] {
+        return dsl::list(dsl::peek_not(dsl::eof) >> dsl::p<word>);
+    }();
+    static constexpr auto value = lexy::as_list<std::vector<std::string>>;
+};
 
-    static constexpr auto value = lexy::callback<Document>([](std::vector<int> &&vec) {
-        return Document{.nums = std::move(vec)};
-    });
+struct document {
+    static constexpr auto rule =
+        dsl::p<decl_list> + LEXY_LIT("BREAK") + dsl::p<sim_cmd_list> + dsl::eof;
+
+    static constexpr auto value =
+        lexy::callback<Document>([](std::vector<int> &&decls, std::vector<std::string> &&sim_cmds) {
+            return Document{.nums = std::move(decls), .words = std::move(sim_cmds)};
+        });
 
     static constexpr auto whitespace = ws;
 };
@@ -93,7 +107,8 @@ void parse_vcd_document_test(std::string_view vcd_str, const fs::path &path) {
     auto doc_res = lexy::parse<grammar::document>(input, lexy_ext::report_error.path(path.c_str()));
     if (doc_res.has_value()) {
         auto doc = doc_res.value();
-        fmt::print("doc: num: {:d} nums: {}\n", doc.num, fmt::join(doc.nums, ", "));
+        fmt::print("doc: num: {:d} nums: {} words: {}\n", doc.num, fmt::join(doc.nums, ", "),
+                   fmt::join(doc.words, ", "));
     } else {
         fmt::print("doc: no value!\n");
     }
