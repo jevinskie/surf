@@ -39,7 +39,7 @@ struct decl_list {
         // auto num = dsl::sign + dsl::integer<int64_t>;
         // return dsl::list(num, dsl::sep(ws));
         // auto list = dsl::list(num);
-        auto list = dsl::list(num, dsl::sep(ws));
+        auto list = dsl::list(num, dsl::sep(dsl::while_one(dsl::ascii::newline) | dsl::semicolon));
         return list;
     }();
 
