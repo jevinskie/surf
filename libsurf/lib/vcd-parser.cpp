@@ -64,15 +64,15 @@ struct document {
     static constexpr auto decls_and_cmds = decls + cmds + dsl::eof;
     static constexpr auto empty          = dsl::eof;
     static constexpr auto core_rule      = dsl::try_(decls) + dsl::try_(cmds) + dsl::eof;
-    static constexpr auto a              = dsl::if_(dsl::peek(decls_and_cmds));
-    static constexpr auto b              = a + dsl::if_(dsl::peek(just_decls));
-    static constexpr auto c              = b + dsl::if_(dsl::peek(just_cmds));
-    static constexpr auto d              = c + dsl::if_(dsl::peek(empty));
+    static constexpr auto a              = dsl::peek(decls_and_cmds) >> decls_and_cmds;
+    static constexpr auto b              = a | dsl::peek(just_decls) >> just_decls;
+    static constexpr auto c              = b | dsl::peek(just_cmds) >> just_cmds;
+    static constexpr auto d              = c | dsl::else_ >> empty;
     // static constexpr auto d              = c + dsl::if_(dsl::peek(dsl::eof));
     // static constexpr auto d              = c | empty;
     // static constexpr auto c = b | empty;
 
-    static constexpr auto rule = c;
+    static constexpr auto rule = d;
 
     static constexpr auto value = lexy::callback<Document>(
         [](std::optional<std::vector<int>> &&decls) {
