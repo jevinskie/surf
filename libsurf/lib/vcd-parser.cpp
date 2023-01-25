@@ -64,10 +64,10 @@ struct document {
     static constexpr auto decls_and_cmds = decls + cmds + dsl::eof;
     static constexpr auto empty          = dsl::eof;
     static constexpr auto core_rule      = dsl::try_(decls) + dsl::try_(cmds) + dsl::eof;
-    static constexpr auto a              = dsl::try_(just_decls);
-    static constexpr auto b              = a + dsl::try_(just_cmds);
-    static constexpr auto c              = b + dsl::try_(decls_and_cmds);
-    static constexpr auto d              = c + dsl::try_(empty);
+    static constexpr auto a              = just_decls;
+    static constexpr auto b              = a | just_cmds;
+    static constexpr auto c              = b | decls_and_cmds;
+    static constexpr auto d              = c | empty;
 
     static constexpr auto rule = d;
 
