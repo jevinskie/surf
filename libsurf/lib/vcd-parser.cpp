@@ -38,12 +38,16 @@ struct decl_list {
         // return dsl::list(num, dsl::sep(ws));
         // auto num = dsl::sign + dsl::integer<int64_t>;
         // return dsl::list(num, dsl::sep(ws));
-        // auto list = dsl::list(num);
+        // auto list = dsl::list(num);`
         // auto list = dsl::list(num, dsl::sep(dsl::ascii::space >> ws);
         // return list;
         auto integer = dsl::integer<int>;
-        return dsl::list(integer, dsl::sep(dsl::comma));
+        // auto integer = dsl::terminator(dsl::ascii::space).opt_list(dsl::integer<int>);
+        return dsl::opt(dsl::list(integer));
     }();
+
+    static constexpr auto bp   = false;
+    static constexpr auto sink = false;
 
     static constexpr auto value = lexy::as_list<std::vector<int>>;
 };
