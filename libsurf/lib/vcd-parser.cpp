@@ -35,31 +35,15 @@ struct decimal_number {
 struct decl_list {
     static constexpr auto rule = [] {
         auto num = dsl::p<decimal_number>;
-        // auto num = dsl::integer<int>;
         return dsl::list(dsl::peek_not(dsl::eof) >> num);
     }();
-    static constexpr auto whitespace = ws;
 
     static constexpr auto value = lexy::as_list<std::vector<int>>;
-    // static constexpr auto value = lexy::callback([](std::vector<int> ints) {
-    // return ints;
-    // });
 };
 
 struct document {
-    // static constexpr auto rule = dsl::p<decimal_number> + dsl::eof;
+    static constexpr auto rule = dsl::p<decl_list> + dsl::eof;
 
-    static constexpr auto rule = [] {
-        // auto num = dsl::p<decimal_number>;
-        auto decls = dsl::p<decl_list> + dsl::eof;
-        return decls;
-    }();
-
-    // static constexpr auto value = lexy::callback<Document>([](std::vector<int> decls) {
-    //     Document doc;
-    //     doc.num = decls[0];
-    //     return doc;
-    // });
     static constexpr auto value = lexy::callback<Document>([](std::vector<int> &&vec) {
         return Document{.nums = std::move(vec)};
     });
