@@ -48,8 +48,7 @@ struct decl_list {
 
 struct sim_cmd_list {
     static constexpr auto rule = [] {
-        auto wrd = dsl::p<word>;
-        return dsl::list(dsl::peek_not(dsl::eof) >> wrd);
+        return dsl::list(dsl::peek_not(dsl::eof) >> dsl::p<word>);
     }();
     static constexpr auto value = lexy::as_list<std::vector<std::string>>;
 };
