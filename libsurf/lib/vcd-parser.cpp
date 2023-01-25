@@ -37,10 +37,14 @@ struct word {
     static constexpr auto value = lexy::as_string<std::string>;
 };
 
+struct end_decls {
+    static constexpr auto rule = LEXY_LIT("$enddefinitions") + LEXY_LIT("$end");
+};
+
 struct decl_list {
     static constexpr auto rule = [] {
         auto num = dsl::p<decimal_number>;
-        return dsl::list(dsl::peek_not(LEXY_LIT("BREAK")) >> num);
+        return dsl::list(dsl::peek_not(dsl::p<end_decls>) >> num);
     }();
 
     static constexpr auto value = lexy::as_list<std::vector<int>>;
@@ -55,8 +59,8 @@ struct sim_cmd_list {
 };
 
 struct document {
-    static constexpr auto rule =
-        dsl::p<decl_list> + LEXY_LIT("BREAK") + dsl::p<sim_cmd_list> + dsl::eof;
+    static constexpr auto rule = dsl::p<decl_list> + LEXY_LIT("$enddefinitions") +
+                                 LEXY_LIT("$end") + dsl::p<sim_cmd_list> + dsl::eof;
 
     static constexpr auto value =
         lexy::callback<Document>([](std::vector<int> &&decls, std::vector<std::string> &&sim_cmds) {
