@@ -57,11 +57,14 @@ struct sim_cmd_list {
 };
 
 struct document {
-    static constexpr auto rule = dsl::p<decl_list> + dsl::p<sim_cmd_list> + dsl::eof;
+    static constexpr auto rule = dsl::try_(dsl::p<decl_list>) + dsl::p<sim_cmd_list> + dsl::eof;
 
-    static constexpr auto value =
-        lexy::callback<Document>([](std::vector<int> &&decls, std::vector<std::string> &&sim_cmds) {
+    static constexpr auto value = lexy::callback<Document>(
+        [](std::optional<std::vector<int>> &&decls, std::vector<std::string> &&sim_cmds) {
             return Document{.nums = std::move(decls), .words = std::move(sim_cmds)};
+        },
+        [](std::vector<std::string> &&sim_cmds) {
+            return Document{.nums = {}, .words = std::move(sim_cmds)};
         });
 
     static constexpr auto whitespace = ws;
@@ -109,7 +112,8 @@ void parse_vcd_document_test(std::string_view vcd_str, const fs::path &path) {
     auto doc_res = lexy::parse<grammar::document>(input, lexy_ext::report_error.path(path.c_str()));
     if (doc_res.has_value()) {
         auto doc = doc_res.value();
-        fmt::print("doc: num: {:d} nums: {} words: {}\n", doc.num, fmt::join(doc.nums, ", "),
+        fmt::print("doc: num: {:d} nums: {} words: {}\n", doc.num,
+                   doc.nums ? fmt::join(*doc.nums, ", ") : fmt::join(std::vector<int>(), ", "),
                    fmt::join(doc.words, ", "));
     } else {
         fmt::print("doc: no value!\n");
