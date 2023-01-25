@@ -33,7 +33,7 @@ struct decimal_number {
 };
 
 struct word {
-    static constexpr auto rule  = dsl::list(dsl::ascii::word);
+    static constexpr auto rule  = dsl::identifier(dsl::ascii::word);
     static constexpr auto value = lexy::as_string<std::string>;
 };
 
@@ -48,7 +48,8 @@ struct decl_list {
 
 struct sim_cmd_list {
     static constexpr auto rule = [] {
-        return dsl::list(dsl::peek_not(dsl::eof) >> dsl::p<word>);
+        auto wrd = dsl::p<word>;
+        return dsl::list(dsl::peek_not(dsl::eof) >> wrd);
     }();
     static constexpr auto value = lexy::as_list<std::vector<std::string>>;
 };
