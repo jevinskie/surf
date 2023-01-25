@@ -33,8 +33,8 @@ struct decimal_number {
 
 struct decl_list {
     static constexpr auto rule = [] {
-        auto num = dsl::p<decimal_number>;
-        return dsl::list(dsl::peek_not(dsl::lit_c<'('>) >> num);
+        auto num = dsl::token(dsl::p<decimal_number>);
+        return dsl::list(dsl::capture(num));
     }();
 
     static constexpr auto value = lexy::as_list<std::vector<int>>;
