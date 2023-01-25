@@ -33,21 +33,9 @@ struct decimal_number {
 
 struct decl_list {
     static constexpr auto rule = [] {
-        // auto num = dsl::token(dsl::integer<int>);
-        // auto num = dsl::p<decimal_number>;
-        // return dsl::list(num, dsl::sep(ws));
-        // auto num = dsl::sign + dsl::integer<int64_t>;
-        // return dsl::list(num, dsl::sep(ws));
-        // auto list = dsl::list(num);`
-        // auto list = dsl::list(num, dsl::sep(dsl::ascii::space >> ws);
-        // return list;
-        auto integer = dsl::integer<int>;
-        // auto integer = dsl::terminator(dsl::ascii::space).opt_list(dsl::integer<int>);
-        return dsl::opt(dsl::list(integer));
+        auto num = dsl::integer<int>;
+        return dsl::opt(dsl::list(num));
     }();
-
-    static constexpr auto bp   = false;
-    static constexpr auto sink = false;
 
     static constexpr auto value = lexy::as_list<std::vector<int>>;
 };
