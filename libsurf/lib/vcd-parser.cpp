@@ -24,17 +24,7 @@ namespace {
 namespace grammar {
 namespace dsl = lexy::dsl;
 
-static constexpr auto ws = dsl::ascii::blank / dsl::ascii::newline;
-
-#include <lexy/action/parse.hpp>         // lexy::parse
-#include <lexy/action/parse_as_tree.hpp> // lexy::parse_as_tree
-#include <lexy/action/trace.hpp>         // lexy::trace_to
-#include <lexy/callback.hpp>             // value callbacks
-#include <lexy/dsl.hpp>                  // lexy::dsl::*
-#include <lexy/input/string_input.hpp>   // lexy::string_input
-#include <lexy/parse_tree.hpp>           // lexy::parse_tree_for
-#include <lexy_ext/report_error.hpp>     // lexy_ext::report_error
-#include <vector>
+static constexpr auto ws = dsl::whitespace(dsl::ascii::space);
 
 struct decimal_number {
     static constexpr auto rule  = dsl::sign + dsl::integer<int>;
@@ -43,14 +33,16 @@ struct decimal_number {
 
 struct decl_list {
     static constexpr auto rule = [] {
-        // auto num = dsl::integer<int64_t>;
-        auto num = dsl::p<decimal_number>;
+        // auto num = dsl::token(dsl::integer<int>);
+        // auto num = dsl::p<decimal_number>;
         // return dsl::list(num, dsl::sep(ws));
         // auto num = dsl::sign + dsl::integer<int64_t>;
         // return dsl::list(num, dsl::sep(ws));
         // auto list = dsl::list(num);
-        auto list = dsl::list(num, dsl::sep(dsl::while_one(dsl::ascii::space)));
-        return list;
+        // auto list = dsl::list(num, dsl::sep(dsl::ascii::space >> ws);
+        // return list;
+        auto integer = dsl::integer<int>;
+        return dsl::list(integer, dsl::sep(dsl::comma));
     }();
 
     static constexpr auto value = lexy::as_list<std::vector<int>>;
@@ -61,7 +53,7 @@ struct document {
 
     static constexpr auto rule = [] {
         // auto num = dsl::p<decimal_number>;
-        auto decls = dsl::p<decl_list>;
+        auto decls = dsl::p<decl_list> + dsl::eof;
         return decls;
     }();
 
