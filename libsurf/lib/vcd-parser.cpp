@@ -130,7 +130,7 @@ struct document {
     static constexpr auto c    = b | dsl::else_ >> dsl::try_(dsl::else_ >> cs);
     static constexpr auto d    = c | dsl::else_ >> ef;
     static constexpr auto rule = dsl::opt(dsl::else_ >> dsl::try_(dsl::p<decl_list>)) +
-                                 dsl::opt(dsl::else_ >> dsl::try_(dsl::p<sim_cmd_list>)) + dsl::eof;
+                                 dsl::opt(dsl::try_(dsl::p<sim_cmd_list>)) + dsl::eof;
 #endif
 
     // static constexpr auto rule = dsl::try_(decls) + dsl::try_(cmds) + dsl::eof;
@@ -147,6 +147,19 @@ struct document {
             return Document{};
         },
         [](std::vector<int> &&decls, std::vector<std::string> &&sim_cmds) {
+            return Document{.nums = std::move(decls), .words = std::move(sim_cmds)};
+        },
+        [](std::vector<int> &&decls, lexy::nullopt sim_cmds) {
+            return Document{.nums = std::move(decls)};
+        },
+        [](lexy::nullopt decls, std::vector<std::string> &&sim_cmds) {
+            return Document{.words = std::move(decls)};
+        },
+        [](lexy::nullopt decls, lexy::nullopt sim_cmds) {
+            return Document{};
+        },
+        [](lexy::nullopt wtf) {
+            fmt::print("single nullopt wtf");
             return Document{};
         },
         [](Document &&doc) {
