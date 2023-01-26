@@ -116,12 +116,21 @@ struct document {
     static constexpr auto rule = d;
 #endif
 
-#if 1
-    static constexpr auto a    = dsl::try_(dsl::peek(ds_and_cs) >> ds_and_cs);
-    static constexpr auto b    = a | dsl::else_ >> dsl::try_(dsl::peek(ds) >> ds);
-    static constexpr auto c    = b | dsl::else_ >> dsl::try_(dsl::peek(cs) >> cs);
+#if 0
+    static constexpr auto a    = dsl::else_ >> dsl::try_(ds_and_cs);
+    static constexpr auto b    = a | dsl::else_ >> dsl::try_(dsl::else_ >> ds);
+    static constexpr auto c    = b | dsl::else_ >> dsl::try_(dsl::else_ >> cs);
     static constexpr auto d    = c | dsl::else_ >> ef;
     static constexpr auto rule = d;
+#endif
+
+#if 1
+    static constexpr auto a    = dsl::else_ >> dsl::try_(ds_and_cs);
+    static constexpr auto b    = a | dsl::else_ >> dsl::try_(dsl::else_ >> ds);
+    static constexpr auto c    = b | dsl::else_ >> dsl::try_(dsl::else_ >> cs);
+    static constexpr auto d    = c | dsl::else_ >> ef;
+    static constexpr auto rule = dsl::opt(dsl::else_ >> dsl::try_(dsl::p<decl_list>)) +
+                                 dsl::opt(dsl::else_ >> dsl::try_(dsl::p<sim_cmd_list>)) + dsl::eof;
 #endif
 
     // static constexpr auto rule = dsl::try_(decls) + dsl::try_(cmds) + dsl::eof;
@@ -131,6 +140,15 @@ struct document {
     // static constexpr auto value = lexy::callback<Document>();
 
     static constexpr auto value = lexy::callback<Document>(
+        [](std::vector<int> &&decls) {
+            return Document{};
+        },
+        [](std::vector<std::string> &&sim_cmds) {
+            return Document{};
+        },
+        [](std::vector<int> &&decls, std::vector<std::string> &&sim_cmds) {
+            return Document{};
+        },
         [](Document &&doc) {
             return std::move(doc);
         },
