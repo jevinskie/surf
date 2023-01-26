@@ -42,12 +42,13 @@ struct sim_cmd {
     static constexpr auto value = lexy::forward<std::string>;
 };
 
+static constexpr auto end_defs_decl_pair =
+    LEXY_LIT("$enddefinitions") + dsl::try_(ws) + LEXY_LIT("$end");
+
 struct decl_list {
     static constexpr auto rule = [] {
         auto num = dsl::p<decimal_number>;
-        return dsl::terminator(dsl::token(LEXY_LIT("$enddefinitions") + (dsl::peek(ws) >> ws) +
-                                          LEXY_LIT("$end")))
-            .list(num);
+        return dsl::terminator(dsl::token(end_defs_decl_pair)).list(num);
     }();
 
     static constexpr auto value = lexy::as_list<std::vector<int>>;
@@ -116,9 +117,9 @@ struct document {
 #endif
 
 #if 1
-    static constexpr auto a    = dsl::peek(ds_and_cs);
-    static constexpr auto b    = a | dsl::else_ >> dsl::try_(ds);
-    static constexpr auto c    = b | dsl::else_ >> dsl::try_(cs);
+    static constexpr auto a    = dsl::try_(dsl::peek(ds_and_cs) >> ds_and_cs);
+    static constexpr auto b    = a | dsl::else_ >> dsl::try_(dsl::peek(ds) >> ds);
+    static constexpr auto c    = b | dsl::else_ >> dsl::try_(dsl::peek(cs) >> cs);
     static constexpr auto d    = c | dsl::else_ >> ef;
     static constexpr auto rule = d;
 #endif
