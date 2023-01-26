@@ -41,7 +41,7 @@ struct sim_cmd {
 };
 
 static constexpr auto end_defs_decl_pair =
-    LEXY_LIT("$enddefinitions") + dsl::try_(ws) + LEXY_LIT("$end");
+    LEXY_LIT("$enddefinitions") + dsl::token(ws) + LEXY_LIT("$end");
 
 struct decl_list {
     static constexpr auto rule = [] {
@@ -54,7 +54,7 @@ struct decl_list {
 
 struct sim_cmd_list {
     // static constexpr auto rule  = dsl::list(dsl::peek_not(dsl::eof) >> dsl::p<word>);
-    static constexpr auto rule  = dsl::terminator(dsl::eof).list(dsl::p<word>);
+    static constexpr auto rule  = dsl::list(dsl::p<word>);
     static constexpr auto value = lexy::as_list<std::vector<std::string>>;
 };
 
@@ -140,32 +140,39 @@ struct document {
 
     static constexpr auto value = lexy::callback<Document>(
         [](std::vector<int> &&decls) {
+            fmt::print("single decls arg\n");
             return Document{};
         },
         [](std::vector<std::string> &&sim_cmds) {
+            fmt::print("single sim_cmds arg\n");
             return Document{};
         },
         [](std::vector<int> &&decls, std::vector<std::string> &&sim_cmds) {
+            fmt::print("decls and sim_cmds\n");
             return Document{.nums = std::move(decls), .words = std::move(sim_cmds)};
         },
         [](std::vector<int> &&decls, lexy::nullopt sim_cmds) {
+            fmt::print("just decls\n");
             return Document{.nums = std::move(decls)};
         },
         [](lexy::nullopt decls, std::vector<std::string> &&sim_cmds) {
+            fmt::print("just sim_cmds\n");
             return Document{.words = std::move(decls)};
         },
         [](lexy::nullopt decls, lexy::nullopt sim_cmds) {
+            fmt::print("two nullopt\n");
             return Document{};
         },
         [](lexy::nullopt wtf) {
-            fmt::print("single nullopt wtf");
+            fmt::print("single nullopt wtf\n");
             return Document{};
         },
         [](Document &&doc) {
+            fmt::print("doc rvalue\n");
             return std::move(doc);
         },
         []() {
-            fmt::print("empty wtf\n");
+            fmt::print("void\n");
             return Document{};
         });
 
