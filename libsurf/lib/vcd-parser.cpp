@@ -72,10 +72,10 @@ struct document {
     // static constexpr auto d              = c + dsl::if_(dsl::peek(dsl::eof));
     // static constexpr auto d              = c | empty;
     // static constexpr auto c = b | empty;
-    static constexpr auto a = dsl::if_(dsl::peek(decls) >> decls);
-    // static constexpr auto b = a | dsl::else_ >> just_decls;
-    // static constexpr auto c = b | dsl::else_ >> just_cmds;
-    // static constexpr auto d = c | dsl::else_ >> empty;
+    static constexpr auto a = dsl::else_ >> decls_and_cmds;
+    static constexpr auto b = a | dsl::else_ >> just_decls;
+    static constexpr auto c = b | dsl::else_ >> just_cmds;
+    static constexpr auto d = c | dsl::else_ >> empty;
 
     // static constexpr auto rule = d;
     static constexpr auto rule = decls;
