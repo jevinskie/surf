@@ -140,6 +140,7 @@ struct document {
 
     static constexpr auto value = lexy::callback<Document>(
         [](std::vector<int> &&decls) {
+            DUMP_STACK();
             fmt::print("single decls arg\n");
             return Document{};
         },
@@ -172,6 +173,7 @@ struct document {
             return std::move(doc);
         },
         []() {
+            DUMP_STACK();
             fmt::print("void\n");
             return Document{};
         });

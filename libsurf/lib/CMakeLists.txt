@@ -41,13 +41,11 @@ foreach(SRC ${SURF_SRC})
     endif()
 endforeach()
 
-find_package(Boost REQUIRED)
-
 set(SURF_PUBLIC_LIBS
 )
 
 set(SURF_PRIVATE_LIBS
-    Boost::boost
+    backward
     concurrencpp
     fmt
     fpng

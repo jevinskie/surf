@@ -19,3 +19,6 @@
 [submodule "libsurf/3rdparty/concurrencpp"]
 	path = libsurf/3rdparty/concurrencpp
 	url = https://github.com/David-Haim/concurrencpp
+[submodule "libsurf/3rdparty/backward-cpp"]
+	path = libsurf/3rdparty/backward-cpp
+	url = https://github.com/bombela/backward-cpp

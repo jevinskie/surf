@@ -1,5 +1,5 @@
 add_subdirectory(argparse)
-
+add_subdirectory(backward-cpp)
 add_subdirectory(concurrencpp)
 
 option(FMT_DOC OFF)

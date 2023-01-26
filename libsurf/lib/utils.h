@@ -4,6 +4,17 @@
 
 #include <bit>
 
+#include <backward.hpp>
+
+#define DUMP_STACK()                                                                               \
+    do {                                                                                           \
+        {                                                                                          \
+            backward::StackTrace st;                                                               \
+            st.load_here(32);                                                                      \
+            backward::Printer pr;                                                                  \
+            pr.print(st);                                                                          \
+        }                                                                                          \
+    } while (0)
 #define MCA_BEGIN(name)                                                                            \
     do {                                                                                           \
         __asm volatile("# LLVM-MCA-BEGIN " #name ::: "memory");                                    \
