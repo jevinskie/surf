@@ -45,8 +45,8 @@ struct sim_cmd {
 struct decl_list {
     static constexpr auto rule = [] {
         auto num = dsl::p<decimal_number>;
-        return dsl::terminator(dsl::token(LEXY_LIT("$enddefinitions") +
-                                          dsl::if_(dsl::peek(ws) >> ws) + LEXY_LIT("$end")))
+        return dsl::terminator(dsl::token(LEXY_LIT("$enddefinitions") + (dsl::peek(ws) >> ws) +
+                                          LEXY_LIT("$end")))
             .list(num);
     }();
 
@@ -65,20 +65,20 @@ struct document {
     static constexpr auto just_cmds      = cmds + dsl::eof;
     static constexpr auto decls_and_cmds = decls + cmds + dsl::eof;
     static constexpr auto empty          = dsl::eof;
-    // static constexpr auto a              = dsl::if_(dsl::peek(decls_and_cmds) >> decls_and_cmds);
-    // static constexpr auto b              = a | dsl::if_(dsl::peek(just_decls) >> just_decls);
-    // static constexpr auto c              = b | dsl::if_(dsl::peek(just_cmds) >> just_cmds);
-    // static constexpr auto d              = c | dsl::else_ >> empty;
+    static constexpr auto a = dsl::else_ >> dsl::if_(dsl::peek(decls_and_cmds) >> decls_and_cmds);
+    static constexpr auto b = a | dsl::else_ >> dsl::if_(dsl::peek(just_decls) >> just_decls);
+    static constexpr auto c = b | dsl::else_ >> dsl::if_(dsl::peek(just_cmds) >> just_cmds);
+    static constexpr auto d = c | dsl::else_ >> empty;
     // static constexpr auto d              = c + dsl::if_(dsl::peek(dsl::eof));
     // static constexpr auto d              = c | empty;
     // static constexpr auto c = b | empty;
-    static constexpr auto a = dsl::else_ >> decls_and_cmds;
-    static constexpr auto b = a | dsl::else_ >> just_decls;
-    static constexpr auto c = b | dsl::else_ >> just_cmds;
-    static constexpr auto d = c | dsl::else_ >> empty;
+    // static constexpr auto a = dsl::else_ >> decls_and_cmds;
+    // static constexpr auto b = a | dsl::else_ >> just_decls;
+    // static constexpr auto c = b | dsl::else_ >> just_cmds;
+    // static constexpr auto d = c | dsl::else_ >> empty;
 
     // static constexpr auto rule = d;
-    static constexpr auto rule = decls;
+    static constexpr auto rule = dsl::try_(decls) + dsl::try_(cmds) + dsl::eof;
     // static constexpr auto rule = dsl::peek(decls_and_cmds) >> decls_and_cmds | dsl::else_ >>
     // just_decls | dsl::else_ >> just_cmds | dsl::else_ >> empty;
 
@@ -90,6 +90,12 @@ struct document {
         },
         [](std::vector<int> &&decls, std::vector<std::string> &&sim_cmds) {
             return Document{.nums = std::move(decls), .words = std::move(sim_cmds)};
+        },
+        [](std::vector<int> &&decls, std::vector<std::string> &&sim_cmds,
+           std::vector<int> &&just_decls) {
+            fmt::print("wtf\n");
+            return Document{};
+            // return Document{.nums = std::move(decls), .words = std::move(sim_cmds)};
         },
         [](std::vector<std::string> &&sim_cmds) {
             return Document{.nums = {}, .words = std::move(sim_cmds)};
