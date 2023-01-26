@@ -13,6 +13,10 @@
             backward::StackTrace st;                                                               \
             st.load_here(32);                                                                      \
             backward::Printer pr;                                                                  \
+            pr.snippet    = true;                                                                  \
+            pr.color_mode = backward::ColorMode::always;                                           \
+            pr.address    = true;                                                                  \
+            pr.object     = true;                                                                  \
             pr.print(st);                                                                          \
             std::cout << (name) << " STACK END" << std::endl;                                      \
         }                                                                                          \
