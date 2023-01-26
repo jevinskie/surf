@@ -70,7 +70,7 @@ struct document {
     // static constexpr auto d              = c + dsl::if_(dsl::peek(dsl::eof));
     // static constexpr auto d              = c | empty;
     // static constexpr auto c = b | empty;
-    static constexpr auto a = dsl::peek(decls) >> decls;
+    static constexpr auto a = dsl::peek(dsl::p<decimal_number>) >> decls;
     // static constexpr auto b = a | dsl::else_ >> just_decls;
     // static constexpr auto c = b | dsl::else_ >> just_cmds;
     // static constexpr auto d = c | dsl::else_ >> empty;
