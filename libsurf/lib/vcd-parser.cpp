@@ -58,13 +58,40 @@ struct sim_cmd_list {
     static constexpr auto value = lexy::as_list<std::vector<std::string>>;
 };
 
+struct decls_and_cmds {
+    static constexpr auto rule = dsl::p<decl_list> + dsl::p<sim_cmd_list> + dsl::eof;
+    static constexpr auto value =
+        lexy::callback<Document>([](std::vector<int> &&decls, std::vector<std::string> &&sim_cmds) {
+            return Document{.nums = std::move(decls), .words = std::move(sim_cmds)};
+        });
+};
+
+struct just_decls {
+    static constexpr auto rule  = dsl::p<decl_list> + dsl::eof;
+    static constexpr auto value = lexy::callback<Document>([](std::vector<int> &&decls) {
+        return Document{.nums = std::move(decls)};
+    });
+};
+
+struct just_cmds {
+    static constexpr auto rule  = dsl::p<sim_cmd_list> + dsl::eof;
+    static constexpr auto value = lexy::callback<Document>([](std::vector<std::string> &&sim_cmds) {
+        return Document{.words = std::move(sim_cmds)};
+    });
+};
+
+struct empty {
+    static constexpr auto rule  = dsl::eof;
+    static constexpr auto value = lexy::callback<Document>([]() {
+        return Document{};
+    });
+};
+
 struct document {
-    static constexpr auto decls          = dsl::p<decl_list>;
-    static constexpr auto cmds           = dsl::p<sim_cmd_list>;
-    static constexpr auto just_decls     = decls + dsl::eof;
-    static constexpr auto just_cmds      = cmds + dsl::eof;
-    static constexpr auto decls_and_cmds = decls + cmds + dsl::eof;
-    static constexpr auto empty          = dsl::eof;
+    static constexpr auto ds_and_cs = dsl::p<decls_and_cmds>;
+    static constexpr auto ds        = dsl::p<just_decls>;
+    static constexpr auto cs        = dsl::p<just_cmds>;
+    static constexpr auto ef        = dsl::p<empty>;
 
 #if 0    
     static constexpr auto a = dsl::else_ >> dsl::if_(dsl::peek(decls_and_cmds) >> decls_and_cmds);
@@ -89,10 +116,10 @@ struct document {
 #endif
 
 #if 1
-    static constexpr auto a    = dsl::else_ >> dsl::try_(decls_and_cmds);
-    static constexpr auto b    = a | dsl::else_ >> dsl::try_(just_decls);
-    static constexpr auto c    = b | dsl::else_ >> dsl::try_(just_cmds);
-    static constexpr auto d    = c | dsl::else_ >> empty;
+    static constexpr auto a    = dsl::peek(ds_and_cs);
+    static constexpr auto b    = a | dsl::else_ >> dsl::try_(ds);
+    static constexpr auto c    = b | dsl::else_ >> dsl::try_(cs);
+    static constexpr auto d    = c | dsl::else_ >> ef;
     static constexpr auto rule = d;
 #endif
 
@@ -103,17 +130,12 @@ struct document {
     // static constexpr auto value = lexy::callback<Document>();
 
     static constexpr auto value = lexy::callback<Document>(
-        [](std::optional<std::vector<int>> &&decls) {
-            return Document{.nums = std::move(decls), .words = {}};
-        },
-        [](std::vector<int> &&decls, std::vector<std::string> &&sim_cmds) {
-            return Document{.nums = std::move(decls), .words = std::move(sim_cmds)};
-        },
-        [](std::vector<std::string> &&sim_cmds) {
-            return Document{.nums = {}, .words = std::move(sim_cmds)};
+        [](Document &&doc) {
+            return std::move(doc);
         },
         []() {
-            return Document{.nums = {}, .words = {}};
+            fmt::print("empty wtf\n");
+            return Document{};
         });
 
     static constexpr auto whitespace = ws;
