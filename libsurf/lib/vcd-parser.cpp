@@ -56,11 +56,13 @@ struct sim_cmd_list {
     // static constexpr auto rule  = dsl::list(dsl::peek_not(dsl::eof) >> dsl::p<word>);
     static constexpr auto rule = dsl::list(dsl::p<word>);
     // static constexpr auto value = lexy::as_list<std::vector<std::string>>;
-    static constexpr auto value = lexy::callback<std::vector<std::string>>([](void) {
-        DUMP_STACK("sim_cmd_list");
-        fmt::print("sim_cmd_list\n");
-        return std::vector<std::string>();
-    });
+    static constexpr auto
+        value = lexy::as_list<std::vector<std::string>> >>
+                lexy::callback<std::vector<std::string>>([](std::vector<std::string> &&sim_cmds) {
+                    DUMP_STACK("sim_cmd_list vector<string>");
+                    fmt::print("sim_cmd_list vector<string>\n");
+                    return std::move(sim_cmds);
+                });
 };
 
 struct decls_and_cmds {
