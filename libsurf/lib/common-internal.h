@@ -10,6 +10,7 @@ using namespace surf;
 #include <cstring>
 #include <exception>
 #include <fcntl.h>
+#include <iostream>
 #include <optional>
 #include <system_error>
 #include <unistd.h>

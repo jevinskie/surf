@@ -54,8 +54,13 @@ struct decl_list {
 
 struct sim_cmd_list {
     // static constexpr auto rule  = dsl::list(dsl::peek_not(dsl::eof) >> dsl::p<word>);
-    static constexpr auto rule  = dsl::list(dsl::p<word>);
-    static constexpr auto value = lexy::as_list<std::vector<std::string>>;
+    static constexpr auto rule = dsl::list(dsl::p<word>);
+    // static constexpr auto value = lexy::as_list<std::vector<std::string>>;
+    static constexpr auto value = lexy::callback<std::vector<std::string>>([](void) {
+        DUMP_STACK("sim_cmd_list");
+        fmt::print("sim_cmd_list\n");
+        return std::vector<std::string>();
+    });
 };
 
 struct decls_and_cmds {
@@ -140,7 +145,7 @@ struct document {
 
     static constexpr auto value = lexy::callback<Document>(
         [](std::vector<int> &&decls) {
-            DUMP_STACK();
+            DUMP_STACK("single decls arg");
             fmt::print("single decls arg\n");
             return Document{};
         },
@@ -173,7 +178,7 @@ struct document {
             return std::move(doc);
         },
         []() {
-            DUMP_STACK();
+            DUMP_STACK("void");
             fmt::print("void\n");
             return Document{};
         });

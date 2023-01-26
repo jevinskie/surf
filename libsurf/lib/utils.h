@@ -6,13 +6,15 @@
 
 #include <backward.hpp>
 
-#define DUMP_STACK()                                                                               \
+#define DUMP_STACK(name)                                                                           \
     do {                                                                                           \
         {                                                                                          \
+            std::cout << (name) << " STACK BEGIN:" << std::endl;                                   \
             backward::StackTrace st;                                                               \
             st.load_here(32);                                                                      \
             backward::Printer pr;                                                                  \
             pr.print(st);                                                                          \
+            std::cout << (name) << " STACK END" << std::endl;                                      \
         }                                                                                          \
     } while (0)
 #define MCA_BEGIN(name)                                                                            \
