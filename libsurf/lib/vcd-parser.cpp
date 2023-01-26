@@ -80,12 +80,22 @@ struct document {
     static constexpr auto d = c | dsl::else_ >> empty;
 #endif
 
+#if 0
     static constexpr auto a = dsl::peek(decls_and_cmds) >> decls_and_cmds;
     static constexpr auto b = a | dsl::peek(just_decls) >> just_decls;
     static constexpr auto c = b | dsl::peek(just_cmds) >> just_cmds;
     static constexpr auto d = c | dsl::else_ >> empty;
-
     static constexpr auto rule = d;
+#endif
+
+#if 1
+    static constexpr auto a    = dsl::else_ >> dsl::try_(decls_and_cmds);
+    static constexpr auto b    = a | dsl::else_ >> dsl::try_(just_decls);
+    static constexpr auto c    = b | dsl::else_ >> dsl::try_(just_cmds);
+    static constexpr auto d    = c | dsl::else_ >> empty;
+    static constexpr auto rule = d;
+#endif
+
     // static constexpr auto rule = dsl::try_(decls) + dsl::try_(cmds) + dsl::eof;
     // static constexpr auto rule = dsl::peek(decls_and_cmds) >> decls_and_cmds | dsl::else_ >>
     // just_decls | dsl::else_ >> just_cmds | dsl::else_ >> empty;
