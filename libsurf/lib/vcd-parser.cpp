@@ -2,8 +2,6 @@
 #include "common-internal.h"
 #include <utils.h>
 
-#include <boost/spirit/home/x3.hpp>
-
 #include <lexy/action/parse.hpp>         // lexy::parse
 #include <lexy/action/parse_as_tree.hpp> // lexy::parse_as_tree
 #include <lexy/action/trace.hpp>         // lexy::trace_to
@@ -55,7 +53,8 @@ struct decl_list {
 };
 
 struct sim_cmd_list {
-    static constexpr auto rule  = dsl::list(dsl::peek_not(dsl::eof) >> dsl::p<word>);
+    // static constexpr auto rule  = dsl::list(dsl::peek_not(dsl::eof) >> dsl::p<word>);
+    static constexpr auto rule  = dsl::terminator(dsl::eof).list(dsl::p<word>);
     static constexpr auto value = lexy::as_list<std::vector<std::string>>;
 };
 
@@ -130,7 +129,7 @@ struct document {
     static constexpr auto c    = b | dsl::else_ >> dsl::try_(dsl::else_ >> cs);
     static constexpr auto d    = c | dsl::else_ >> ef;
     static constexpr auto rule = dsl::opt(dsl::else_ >> dsl::try_(dsl::p<decl_list>)) +
-                                 dsl::opt(dsl::try_(dsl::p<sim_cmd_list>)) + dsl::eof;
+                                 dsl::opt(dsl::else_ >> dsl::try_(dsl::p<sim_cmd_list>)) + dsl::eof;
 #endif
 
     // static constexpr auto rule = dsl::try_(decls) + dsl::try_(cmds) + dsl::eof;
