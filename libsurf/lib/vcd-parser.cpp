@@ -52,17 +52,49 @@ struct decl_list {
     static constexpr auto value = lexy::as_list<std::vector<int>>;
 };
 
+struct opt_decl_list {
+    static constexpr auto rule  = dsl::opt(dsl::else_ >> dsl::try_(dsl::p<decl_list>));
+    static constexpr auto value = lexy::as_list<std::vector<int>> >>
+                                  lexy::callback<std::vector<int>>(
+                                      [](std::vector<int> &&decls) {
+                                          fmt::print("opt_decl_list vector<int>\n");
+                                          return std::move(decls);
+                                      },
+                                      [](void) {
+                                          fmt::print("opt_decl_list void\n");
+                                          return std::vector<int>{};
+                                      },
+                                      [](lexy::nullopt decls) {
+                                          fmt::print("opt_decl_list nullopt\n");
+                                          return std::vector<int>{};
+                                      });
+};
+
+static constexpr auto end_cmds_decl_pair = LEXY_LIT("$endcmds") + dsl::token(ws) + LEXY_LIT("$end");
+
 struct sim_cmd_list {
     // static constexpr auto rule  = dsl::list(dsl::peek_not(dsl::eof) >> dsl::p<word>);
-    static constexpr auto rule = dsl::list(dsl::p<word>);
-    // static constexpr auto value = lexy::as_list<std::vector<std::string>>;
-    static constexpr auto
-        value = lexy::as_list<std::vector<std::string>> >>
-                lexy::callback<std::vector<std::string>>([](std::vector<std::string> &&sim_cmds) {
-                    // DUMP_STACK("sim_cmd_list vector<string>");
-                    // fmt::print("sim_cmd_list vector<string>\n");
-                    return std::move(sim_cmds);
-                });
+    // static constexpr auto rule = dsl::list(dsl::p<word>);
+    static constexpr auto rule = dsl::terminator(dsl::token(end_cmds_decl_pair)).list(dsl::p<word>);
+    static constexpr auto value = lexy::as_list<std::vector<std::string>>;
+};
+
+struct opt_sim_cmd_list {
+    static constexpr auto rule  = dsl::opt(dsl::else_ >> dsl::try_(dsl::p<sim_cmd_list>));
+    static constexpr auto value = lexy::as_list<std::vector<std::string>> >>
+                                  lexy::callback<std::vector<std::string>>(
+                                      [](std::vector<std::string> &&sim_cmds) {
+                                          fmt::print("opt_sim_cmd_list vector<string>\n");
+                                          return std::move(sim_cmds);
+                                      },
+                                      [](void) {
+                                          fmt::print("opt_sim_cmd_list void\n");
+                                          return std::vector<std::string>{};
+                                      },
+                                      [](lexy::nullopt sim_cmds) {
+                                          fmt::print("opt_sim_cmd_list nullopt\n");
+                                          return std::vector<std::string>{};
+                                      });
 };
 
 struct decls_and_cmds {
@@ -131,12 +163,12 @@ struct document {
 #endif
 
 #if 1
-    static constexpr auto a    = dsl::else_ >> dsl::try_(ds_and_cs);
-    static constexpr auto b    = a | dsl::else_ >> dsl::try_(dsl::else_ >> ds);
-    static constexpr auto c    = b | dsl::else_ >> dsl::try_(dsl::else_ >> cs);
-    static constexpr auto d    = c | dsl::else_ >> ef;
-    static constexpr auto rule = dsl::opt(dsl::else_ >> dsl::try_(dsl::p<decl_list>)) +
-                                 dsl::opt(dsl::else_ >> dsl::try_(dsl::p<sim_cmd_list>)) + dsl::eof;
+    static constexpr auto a = dsl::else_ >> dsl::try_(dsl::else_ >> ds_and_cs);
+    static constexpr auto b = a | dsl::else_ >> dsl::try_(dsl::else_ >> ds);
+    static constexpr auto c = b | dsl::else_ >> dsl::try_(dsl::else_ >> cs);
+    static constexpr auto d = c | dsl::else_ >> ef;
+    static constexpr auto rule =
+        dsl::p<opt_decl_list> + dsl::try_(dsl::p<opt_sim_cmd_list>) + dsl::eof;
 #endif
 
     // static constexpr auto rule = dsl::try_(decls) + dsl::try_(cmds) + dsl::eof;
