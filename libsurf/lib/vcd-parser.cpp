@@ -1,5 +1,6 @@
 #include "vcd-parser.h"
 #include "common-internal.h"
+#include "vcd-lexer.h"
 #include <utils.h>
 
 #include <lexy/action/parse.hpp>         // lexy::parse
@@ -246,6 +247,7 @@ Document parse_vcd_document(std::string_view vcd_str, const fs::path &path) {
             .sim_cmds     = parse_vcd_sim_cmds(declsret.remaining)};
 }
 
+#if 0
 void parse_vcd_document_test(std::string_view vcd_str, const fs::path &path) {
     auto input = lexy::string_input<lexy::ascii_encoding>(vcd_str);
     auto validate_res =
@@ -281,6 +283,16 @@ void parse_vcd_document_test(std::string_view vcd_str, const fs::path &path) {
         }
     } else {
         fmt::print("doc: no value!\n");
+    }
+}
+#endif
+
+void parse_vcd_document_test(std::string_view vcd_str, const fs::path &path) {
+    (void)path;
+    VCDLexer lexer;
+    const auto base = vcd_str.data();
+    for (const auto p : lexer.parse(vcd_str.data())) {
+        fmt::print("cursor: {}\n", p - base);
     }
 }
 

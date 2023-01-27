@@ -10,7 +10,7 @@ void VCDLexer::YYDEBUG(int state, char input) {
     m_input = input;
 }
 
-ssize_t VCDLexer::parse(const char *vcd_cstr) {
+concurrencpp::generator<const char *> VCDLexer::parse(const char *vcd_cstr) {
     auto YYCURSOR = vcd_cstr;
     int count = 0;
 
@@ -19,8 +19,8 @@ ssize_t VCDLexer::parse(const char *vcd_cstr) {
         re2c:define:YYCTYPE = char;
         re2c:yyfill:enable = 0;
 
-        *      { return -1; }
-        [\x00] { return count; }
+        *      { co_yield YYCURSOR; }
+        [\x00] { co_return; }
         [a-z]+ { ++count; continue; }
         [ ]+   { continue; }
     */
