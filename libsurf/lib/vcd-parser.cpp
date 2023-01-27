@@ -168,7 +168,7 @@ struct document {
     static constexpr auto c = b | dsl::else_ >> dsl::try_(dsl::else_ >> cs);
     static constexpr auto d = c | dsl::else_ >> ef;
     static constexpr auto rule =
-        dsl::p<opt_decl_list> + dsl::try_(dsl::p<opt_sim_cmd_list>) + dsl::eof;
+        dsl::p<opt_decl_list> + dsl::try_(dsl::try_(dsl::p<opt_sim_cmd_list>)) + dsl::eof;
 #endif
 
     // static constexpr auto rule = dsl::try_(decls) + dsl::try_(cmds) + dsl::eof;
