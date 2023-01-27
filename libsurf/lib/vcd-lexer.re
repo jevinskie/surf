@@ -19,10 +19,10 @@ concurrencpp::generator<const char *> VCDLexer::parse(const char *vcd_cstr) {
         re2c:define:YYCTYPE = char;
         re2c:yyfill:enable = 0;
 
-        *      { co_yield YYCURSOR; }
-        [\x00] { co_return; }
-        [a-z]+ { ++count; continue; }
-        [ ]+   { continue; }
+        *      { fmt::print("*\n"); co_yield YYCURSOR; }
+        [\x00] { fmt::print("\\0\n"); co_return; }
+        [a-z]+ { fmt::print("[a-z]+\n"); ++count; continue; }
+        [ ]+   { fmt::print("space\n"); continue; }
     */
     }
 
