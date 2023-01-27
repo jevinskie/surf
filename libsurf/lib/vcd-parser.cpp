@@ -165,15 +165,16 @@ struct document {
 #endif
 
 #if 1
-    static constexpr auto a = dsl::else_ >> dsl::try_(dsl::else_ >> ds_and_cs);
-    static constexpr auto b = a | dsl::else_ >> dsl::try_(dsl::else_ >> ds);
-    static constexpr auto c = b | dsl::else_ >> dsl::try_(dsl::else_ >> cs);
-    static constexpr auto d = c | dsl::else_ >> ef;
-    static constexpr auto rule =
-        dsl::if_(dsl::lookahead(LEXY_LIT("$enddefinitions"), LEXY_LIT("$enddefinitions")) >>
-                 dsl::try_(dsl::p<opt_decl_list>)) +
-        dsl::if_(dsl::peek(dsl::token(ws) + LEXY_LIT("#")) >> dsl::try_(dsl::p<opt_sim_cmd_list>)) +
-        dsl::eof;
+    static constexpr auto a    = dsl::else_ >> dsl::try_(dsl::else_ >> ds_and_cs);
+    static constexpr auto b    = a | dsl::else_ >> dsl::try_(dsl::else_ >> ds);
+    static constexpr auto c    = b | dsl::else_ >> dsl::try_(dsl::else_ >> cs);
+    static constexpr auto d    = c | dsl::else_ >> ef;
+    static constexpr auto rule = (dsl::else_ >> dsl::lookahead(LEXY_LIT("$enddefinitions"),
+                                                               LEXY_LIT("$enddefinitions"))) >>
+                                 dsl::try_(dsl::p<opt_decl_list>) +
+                                     (dsl::else_ >>
+                                      dsl::lookahead(LEXY_LIT("$endcmds"), LEXY_LIT("$endcmds"))) >>
+                                 dsl::try_(dsl::p<opt_sim_cmd_list>) + dsl::eof;
 #endif
 
     // static constexpr auto rule = dsl::try_(decls) + dsl::try_(cmds) + dsl::eof;
