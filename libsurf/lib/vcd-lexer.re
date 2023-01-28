@@ -12,6 +12,7 @@ void VCDLexer::YYDEBUG(int state, char input) {
 
 concurrencpp::generator<const char *> VCDLexer::parse(const char *vcd_cstr) {
     auto YYCURSOR = vcd_cstr;
+    const char *YYMARKER;
     int count = 0;
 
     for (;;) {
@@ -21,7 +22,7 @@ concurrencpp::generator<const char *> VCDLexer::parse(const char *vcd_cstr) {
 
         *      { fmt::print("*\n"); co_yield YYCURSOR; }
         [\x00] { fmt::print("\\0\n"); co_return; }
-        [a-z]+ { fmt::print("[a-z]+\n"); ++count; continue; }
+        ("deadbeef"|[m-z]+) { fmt::print("[a-z]+\n"); ++count; continue; }
         [ ]+   { fmt::print("space\n"); continue; }
     */
     }

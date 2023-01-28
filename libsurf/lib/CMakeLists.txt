@@ -1,6 +1,6 @@
 add_custom_command(OUTPUT
     ${CMAKE_CURRENT_BINARY_DIR}/vcd-lexer.cpp
-    COMMAND /opt/homebrew/opt/re2c/bin/re2c ${CMAKE_CURRENT_SOURCE_DIR}/vcd-lexer.re -o ${CMAKE_CURRENT_BINARY_DIR}/vcd-lexer.cpp --case-ranges  --debug-output -i -Werror
+    COMMAND /opt/homebrew/opt/re2c/bin/re2c ${CMAKE_CURRENT_SOURCE_DIR}/vcd-lexer.re -o ${CMAKE_CURRENT_BINARY_DIR}/vcd-lexer.cpp --case-ranges -i -Werror
     DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/vcd-lexer.re
 )
 
