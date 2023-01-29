@@ -134,7 +134,7 @@ struct empty {
     SCA whitespace = ws;
 };
 
-#if 0
+#if 1
 struct document {
     SCA ds_and_cs = dsl::p<decls_and_cmds>;
     SCA ds        = dsl::p<just_decls>;
@@ -172,16 +172,20 @@ struct document {
 #endif
 
 #if 1
-    SCA a    = dsl::else_ >> dsl::try_(dsl::else_ >> ds_and_cs);
-    SCA b    = a | dsl::else_ >> dsl::try_(dsl::else_ >> ds);
-    SCA c    = b | dsl::else_ >> dsl::try_(dsl::else_ >> cs);
-    SCA d    = c | dsl::else_ >> ef;
-    SCA rule = (dsl::else_ >> dsl::lookahead(LEXY_LIT("$enddefinitions"),
-                                                               LEXY_LIT("$enddefinitions"))) >>
-                                 dsl::try_(dsl::p<opt_decl_list>) +
-                                     (dsl::else_ >>
-                                      dsl::lookahead(LEXY_LIT("$endcmds"), LEXY_LIT("$endcmds"))) >>
-                                 dsl::try_(dsl::p<opt_sim_cmd_list>) + dsl::eof;
+    SCA a = dsl::else_ >> dsl::try_(dsl::else_ >> ds_and_cs);
+    SCA b = a | dsl::else_ >> dsl::try_(dsl::else_ >> ds);
+    SCA c = b | dsl::else_ >> dsl::try_(dsl::else_ >> cs);
+    SCA d = c | dsl::else_ >> ef;
+    // SCA rule = (dsl::else_ >> dsl::lookahead(LEXY_LIT("$enddefinitions"),
+    //                                                            LEXY_LIT("$enddefinitions"))) >>
+    //                              dsl::try_(dsl::p<opt_decl_list>) +
+    //                                  (dsl::else_ >>
+    //                                   dsl::lookahead(LEXY_LIT("$endcmds"), LEXY_LIT("$endcmds")))
+    //                                   >>
+    //                              dsl::try_(dsl::p<opt_sim_cmd_list>) + dsl::eof;
+
+    SCA rule = d;
+
 #endif
 
     // SCA rule = dsl::try_(decls) + dsl::try_(cmds) + dsl::eof;
@@ -236,6 +240,7 @@ struct skip_whitespace {
     SCA whitespace = dsl::ascii::space;
 };
 
+#if 0
 struct document : lexy::scan_production<Document> {
     template <typename Reader, typename Context>
     static scan_result scan(lexy::rule_scanner<Context, Reader> &scanner) {
@@ -247,6 +252,9 @@ struct document : lexy::scan_production<Document> {
         // using ds_and_cs_parser = lexy::parser_for<lexyd::_pas<T, Rule>, scan_final_parser>;
         // auto success
         //     = parser::parse(static_cast<Derived&>(*this).context(), _reader, &result._value);
+        auto ds_and_cs_res = lexy::parse<grammar::decls_and_cmds>(orig_input, lexy_ext::report_error);
+        // if (!ds_and_cs_res.is_error);
+
         auto ds_and_cs = scanner.parse(decls_and_cmds{});
         fmt::print("ds_and_cs: scanner: {}\n", (bool)scanner);
         if (scanner) {
@@ -272,6 +280,7 @@ struct document : lexy::scan_production<Document> {
         return lexy::scan_failed;
     }
 };
+#endif
 
 }; // namespace grammar
 
@@ -314,6 +323,9 @@ void parse_vcd_document_test(std::string_view vcd_str, const fs::path &path) {
     fmt::print("{:s}\n", trace);
 
     auto doc_res = lexy::parse<grammar::document>(input, lexy_ext::report_error.path(path.c_str()));
+    fmt::print("doc: is_success: {} is_error: {} is_recovered_error: {} is_fatal_error: {}\n",
+               doc_res.is_success(), doc_res.is_error(), doc_res.is_recovered_error(),
+               doc_res.is_fatal_error());
     if (doc_res.has_value()) {
         auto doc = LEXY_MOV(doc_res.value());
         fmt::print("doc:\n");
