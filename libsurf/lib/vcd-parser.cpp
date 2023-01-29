@@ -172,19 +172,13 @@ struct document {
 #endif
 
 #if 1
-    SCA a = dsl::else_ >> dsl::try_(dsl::else_ >> ds_and_cs);
-    SCA b = a | dsl::else_ >> dsl::try_(dsl::else_ >> ds);
-    SCA c = b | dsl::else_ >> dsl::try_(dsl::else_ >> cs);
-    SCA d = c | dsl::else_ >> ef;
-    // SCA rule = (dsl::else_ >> dsl::lookahead(LEXY_LIT("$enddefinitions"),
-    //                                                            LEXY_LIT("$enddefinitions"))) >>
-    //                              dsl::try_(dsl::p<opt_decl_list>) +
-    //                                  (dsl::else_ >>
-    //                                   dsl::lookahead(LEXY_LIT("$endcmds"), LEXY_LIT("$endcmds")))
-    //                                   >>
-    //                              dsl::try_(dsl::p<opt_sim_cmd_list>) + dsl::eof;
+    SCA a    = dsl::else_ >> dsl::try_(dsl::else_ >> ds_and_cs);
+    SCA b    = a | dsl::else_ >> dsl::try_(dsl::else_ >> ds);
+    SCA c    = b | dsl::else_ >> dsl::try_(dsl::else_ >> cs);
+    SCA d    = c | dsl::else_ >> ef;
+    SCA rule = dsl::try_(dsl::p<opt_decl_list>) + dsl::try_(dsl::p<opt_sim_cmd_list>) + dsl::eof;
 
-    SCA rule = d;
+    // SCA rule = d;
 
 #endif
 
