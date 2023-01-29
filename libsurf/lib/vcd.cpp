@@ -25,7 +25,7 @@ const VCDTypes::Document &VCDFile::document() {
     return m_document;
 }
 
-const VCDTypes::Declarations &VCDFile::declarations() const {
+const std::optional<VCDTypes::Declarations> &VCDFile::declarations() const {
     return m_document.declarations;
 }
 
@@ -33,7 +33,7 @@ void VCDFile::parse_test() const {
     parse_vcd_document_test(string_view(), path());
 }
 
-const std::vector<VCDTypes::SimCmd> &VCDFile::sim_cmds() {
+const std::optional<std::vector<VCDTypes::SimCmd>> &VCDFile::sim_cmds() {
     if (!m_parsed_changes) {
         m_document.sim_cmds = parse_vcd_sim_cmds(m_sim_cmds_str);
         m_parsed_changes    = true;

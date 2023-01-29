@@ -39,12 +39,19 @@ struct Change {
 using SimCmd = std::variant<Comment, SimTime, Change>;
 
 struct Document {
-    Declarations declarations;
-    std::vector<SimCmd> sim_cmds;
+    std::optional<Declarations> declarations;
+    std::optional<std::vector<SimCmd>> sim_cmds;
     int64_t num;
     std::optional<std::vector<int>> nums;
     std::optional<std::vector<std::string>> words;
 };
+// static_assert(std::is_literal_type_v<Document>);
+
+struct Document2 {
+    std::optional<Declarations> declarations;
+    std::optional<std::vector<SimCmd>> sim_cmds;
+};
+// static_assert(std::is_literal_type_v<Document2>);
 
 }; // namespace VCDTypes
 
@@ -60,8 +67,8 @@ public:
     size_t size() const;
     std::string_view string_view() const;
     const VCDTypes::Document &document();
-    const VCDTypes::Declarations &declarations() const;
-    const std::vector<VCDTypes::SimCmd> &sim_cmds();
+    const std::optional<VCDTypes::Declarations> &declarations() const;
+    const std::optional<std::vector<VCDTypes::SimCmd>> &sim_cmds();
     void parse_test() const;
 
 private:

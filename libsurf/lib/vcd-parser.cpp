@@ -17,6 +17,8 @@
 
 // need combination_duplicate for decl parsing
 
+#define SCA static constexpr auto
+
 using namespace VCDTypes;
 
 namespace surf {
@@ -26,151 +28,155 @@ namespace {
 namespace grammar {
 namespace dsl = lexy::dsl;
 
-static constexpr auto ws = dsl::whitespace(dsl::ascii::space);
+SCA ws = dsl::whitespace(dsl::ascii::space);
 
 struct decimal_number {
-    static constexpr auto rule  = dsl::sign + dsl::integer<int>;
-    static constexpr auto value = lexy::as_integer<int>;
+    SCA rule  = dsl::sign + dsl::integer<int>;
+    SCA value = lexy::as_integer<int>;
 };
 
 struct word {
-    static constexpr auto rule  = dsl::identifier(dsl::ascii::word);
-    static constexpr auto value = lexy::as_string<std::string>;
+    SCA rule  = dsl::identifier(dsl::ascii::word);
+    SCA value = lexy::as_string<std::string>;
 };
 
 struct sim_cmd {
-    static constexpr auto rule  = dsl::p<word>;
-    static constexpr auto value = lexy::forward<std::string>;
+    SCA rule  = dsl::p<word>;
+    SCA value = lexy::forward<std::string>;
 };
 
-static constexpr auto end_defs_decl_pair =
-    LEXY_LIT("$enddefinitions") + dsl::token(ws) + LEXY_LIT("$end");
+SCA end_defs_decl_pair = LEXY_LIT("$enddefinitions") + dsl::token(ws) + LEXY_LIT("$end");
 
 struct decl_list {
-    static constexpr auto rule = [] {
+    SCA rule = [] {
         auto num = dsl::p<decimal_number>;
         return dsl::terminator(dsl::token(end_defs_decl_pair)).list(num);
     }();
 
-    static constexpr auto value = lexy::as_list<std::vector<int>>;
+    SCA value = lexy::as_list<std::vector<int>>;
 };
 
 struct opt_decl_list {
-    static constexpr auto rule  = dsl::opt(dsl::else_ >> dsl::try_(dsl::p<decl_list>));
-    static constexpr auto value = lexy::as_list<std::vector<int>> >>
-                                  lexy::callback<std::vector<int>>(
-                                      [](std::vector<int> &&decls) {
-                                          fmt::print("opt_decl_list vector<int>\n");
-                                          return std::move(decls);
-                                      },
-                                      [](void) {
-                                          fmt::print("opt_decl_list void\n");
-                                          return std::vector<int>{};
-                                      },
-                                      [](lexy::nullopt decls) {
-                                          fmt::print("opt_decl_list nullopt\n");
-                                          return std::vector<int>{};
-                                      });
+    SCA rule  = dsl::opt(dsl::else_ >> dsl::try_(dsl::p<decl_list>));
+    SCA value = lexy::as_list<std::vector<int>> >>
+                lexy::callback<std::vector<int>>(
+                    [](std::vector<int> &&decls) {
+                        fmt::print("opt_decl_list vector<int>\n");
+                        return LEXY_MOV(decls);
+                    },
+                    [](void) {
+                        fmt::print("opt_decl_list void\n");
+                        return std::vector<int>{};
+                    },
+                    [](lexy::nullopt decls) {
+                        fmt::print("opt_decl_list nullopt\n");
+                        return std::vector<int>{};
+                    });
 };
 
-static constexpr auto end_cmds_decl_pair = LEXY_LIT("$endcmds") + dsl::token(ws) + LEXY_LIT("$end");
+SCA end_cmds_decl_pair = LEXY_LIT("$endcmds") + dsl::token(ws) + LEXY_LIT("$end");
 
 struct sim_cmd_list {
-    // static constexpr auto rule  = dsl::list(dsl::peek_not(dsl::eof) >> dsl::p<word>);
-    // static constexpr auto rule = dsl::list(dsl::p<word>);
-    static constexpr auto rule = dsl::terminator(dsl::token(end_cmds_decl_pair)).list(dsl::p<word>);
-    static constexpr auto value = lexy::as_list<std::vector<std::string>>;
+    // SCA rule  = dsl::list(dsl::peek_not(dsl::eof) >> dsl::p<word>);
+    // SCA rule = dsl::list(dsl::p<word>);
+    SCA rule  = dsl::terminator(dsl::token(end_cmds_decl_pair)).list(dsl::p<word>);
+    SCA value = lexy::as_list<std::vector<std::string>>;
 };
 
 struct opt_sim_cmd_list {
-    static constexpr auto rule  = dsl::opt(dsl::else_ >> dsl::try_(dsl::p<sim_cmd_list>));
-    static constexpr auto value = lexy::as_list<std::vector<std::string>> >>
-                                  lexy::callback<std::vector<std::string>>(
-                                      [](std::vector<std::string> &&sim_cmds) {
-                                          fmt::print("opt_sim_cmd_list vector<string>\n");
-                                          return std::move(sim_cmds);
-                                      },
-                                      [](void) {
-                                          fmt::print("opt_sim_cmd_list void\n");
-                                          return std::vector<std::string>{};
-                                      },
-                                      [](lexy::nullopt sim_cmds) {
-                                          fmt::print("opt_sim_cmd_list nullopt\n");
-                                          return std::vector<std::string>{};
-                                      });
+    SCA rule  = dsl::opt(dsl::else_ >> dsl::try_(dsl::p<sim_cmd_list>));
+    SCA value = lexy::as_list<std::vector<std::string>> >>
+                lexy::callback<std::vector<std::string>>(
+                    [](std::vector<std::string> &&sim_cmds) {
+                        fmt::print("opt_sim_cmd_list vector<string>\n");
+                        return LEXY_MOV(sim_cmds);
+                    },
+                    [](void) {
+                        fmt::print("opt_sim_cmd_list void\n");
+                        return std::vector<std::string>{};
+                    },
+                    [](lexy::nullopt sim_cmds) {
+                        fmt::print("opt_sim_cmd_list nullopt\n");
+                        return std::vector<std::string>{};
+                    });
 };
 
 struct decls_and_cmds {
-    static constexpr auto rule = dsl::p<decl_list> + dsl::p<sim_cmd_list> + dsl::eof;
-    static constexpr auto value =
+    SCA rule = dsl::p<decl_list> + dsl::p<sim_cmd_list> + dsl::eof;
+    SCA value =
         lexy::callback<Document>([](std::vector<int> &&decls, std::vector<std::string> &&sim_cmds) {
-            return Document{.nums = std::move(decls), .words = std::move(sim_cmds)};
+            return Document{.nums = LEXY_MOV(decls), .words = LEXY_MOV(sim_cmds)};
         });
+    SCA whitespace = ws;
 };
 
 struct just_decls {
-    static constexpr auto rule  = dsl::p<decl_list> + dsl::eof;
-    static constexpr auto value = lexy::callback<Document>([](std::vector<int> &&decls) {
-        return Document{.nums = std::move(decls)};
+    SCA rule       = dsl::p<decl_list> + dsl::eof;
+    SCA value      = lexy::callback<Document>([](std::vector<int> &&decls) {
+        return Document{.nums = LEXY_MOV(decls)};
     });
+    SCA whitespace = ws;
 };
 
 struct just_cmds {
-    static constexpr auto rule  = dsl::p<sim_cmd_list> + dsl::eof;
-    static constexpr auto value = lexy::callback<Document>([](std::vector<std::string> &&sim_cmds) {
-        return Document{.words = std::move(sim_cmds)};
+    SCA rule       = dsl::p<sim_cmd_list> + dsl::eof;
+    SCA value      = lexy::callback<Document>([](std::vector<std::string> &&sim_cmds) {
+        return Document{.words = LEXY_MOV(sim_cmds)};
     });
+    SCA whitespace = ws;
 };
 
 struct empty {
-    static constexpr auto rule  = dsl::eof;
-    static constexpr auto value = lexy::callback<Document>([]() {
+    SCA rule       = dsl::eof;
+    SCA value      = lexy::callback<Document>([]() {
         return Document{};
     });
+    SCA whitespace = ws;
 };
 
+#if 0
 struct document {
-    static constexpr auto ds_and_cs = dsl::p<decls_and_cmds>;
-    static constexpr auto ds        = dsl::p<just_decls>;
-    static constexpr auto cs        = dsl::p<just_cmds>;
-    static constexpr auto ef        = dsl::p<empty>;
+    SCA ds_and_cs = dsl::p<decls_and_cmds>;
+    SCA ds        = dsl::p<just_decls>;
+    SCA cs        = dsl::p<just_cmds>;
+    SCA ef        = dsl::p<empty>;
 
 #if 0    
-    static constexpr auto a = dsl::else_ >> dsl::if_(dsl::peek(decls_and_cmds) >> decls_and_cmds);
-    static constexpr auto b = a | dsl::else_ >> dsl::if_(dsl::peek(just_decls) >> just_decls);
-    static constexpr auto c = b | dsl::else_ >> dsl::if_(dsl::peek(just_cmds) >> just_cmds);
-    static constexpr auto d = c | dsl::else_ >> empty;
-    static constexpr auto d = c + dsl::if_(dsl::peek(dsl::eof));
-    static constexpr auto d = c | empty;
-    static constexpr auto c = b | empty;
-    static constexpr auto a = dsl::else_ >> decls_and_cmds;
-    static constexpr auto b = a | dsl::else_ >> just_decls;
-    static constexpr auto c = b | dsl::else_ >> just_cmds;
-    static constexpr auto d = c | dsl::else_ >> empty;
+    SCA a = dsl::else_ >> dsl::if_(dsl::peek(decls_and_cmds) >> decls_and_cmds);
+    SCA b = a | dsl::else_ >> dsl::if_(dsl::peek(just_decls) >> just_decls);
+    SCA c = b | dsl::else_ >> dsl::if_(dsl::peek(just_cmds) >> just_cmds);
+    SCA d = c | dsl::else_ >> empty;
+    SCA d = c + dsl::if_(dsl::peek(dsl::eof));
+    SCA d = c | empty;
+    SCA c = b | empty;
+    SCA a = dsl::else_ >> decls_and_cmds;
+    SCA b = a | dsl::else_ >> just_decls;
+    SCA c = b | dsl::else_ >> just_cmds;
+    SCA d = c | dsl::else_ >> empty;
 #endif
 
 #if 0
-    static constexpr auto a = dsl::peek(decls_and_cmds) >> decls_and_cmds;
-    static constexpr auto b = a | dsl::peek(just_decls) >> just_decls;
-    static constexpr auto c = b | dsl::peek(just_cmds) >> just_cmds;
-    static constexpr auto d = c | dsl::else_ >> empty;
-    static constexpr auto rule = d;
+    SCA a = dsl::peek(decls_and_cmds) >> decls_and_cmds;
+    SCA b = a | dsl::peek(just_decls) >> just_decls;
+    SCA c = b | dsl::peek(just_cmds) >> just_cmds;
+    SCA d = c | dsl::else_ >> empty;
+    SCA rule = d;
 #endif
 
 #if 0
-    static constexpr auto a    = dsl::else_ >> dsl::try_(ds_and_cs);
-    static constexpr auto b    = a | dsl::else_ >> dsl::try_(dsl::else_ >> ds);
-    static constexpr auto c    = b | dsl::else_ >> dsl::try_(dsl::else_ >> cs);
-    static constexpr auto d    = c | dsl::else_ >> ef;
-    static constexpr auto rule = d;
+    SCA a    = dsl::else_ >> dsl::try_(ds_and_cs);
+    SCA b    = a | dsl::else_ >> dsl::try_(dsl::else_ >> ds);
+    SCA c    = b | dsl::else_ >> dsl::try_(dsl::else_ >> cs);
+    SCA d    = c | dsl::else_ >> ef;
+    SCA rule = d;
 #endif
 
 #if 1
-    static constexpr auto a    = dsl::else_ >> dsl::try_(dsl::else_ >> ds_and_cs);
-    static constexpr auto b    = a | dsl::else_ >> dsl::try_(dsl::else_ >> ds);
-    static constexpr auto c    = b | dsl::else_ >> dsl::try_(dsl::else_ >> cs);
-    static constexpr auto d    = c | dsl::else_ >> ef;
-    static constexpr auto rule = (dsl::else_ >> dsl::lookahead(LEXY_LIT("$enddefinitions"),
+    SCA a    = dsl::else_ >> dsl::try_(dsl::else_ >> ds_and_cs);
+    SCA b    = a | dsl::else_ >> dsl::try_(dsl::else_ >> ds);
+    SCA c    = b | dsl::else_ >> dsl::try_(dsl::else_ >> cs);
+    SCA d    = c | dsl::else_ >> ef;
+    SCA rule = (dsl::else_ >> dsl::lookahead(LEXY_LIT("$enddefinitions"),
                                                                LEXY_LIT("$enddefinitions"))) >>
                                  dsl::try_(dsl::p<opt_decl_list>) +
                                      (dsl::else_ >>
@@ -178,33 +184,33 @@ struct document {
                                  dsl::try_(dsl::p<opt_sim_cmd_list>) + dsl::eof;
 #endif
 
-    // static constexpr auto rule = dsl::try_(decls) + dsl::try_(cmds) + dsl::eof;
-    // static constexpr auto rule = dsl::peek(decls_and_cmds) >> decls_and_cmds | dsl::else_ >>
+    // SCA rule = dsl::try_(decls) + dsl::try_(cmds) + dsl::eof;
+    // SCA rule = dsl::peek(decls_and_cmds) >> decls_and_cmds | dsl::else_ >>
     // just_decls | dsl::else_ >> just_cmds | dsl::else_ >> empty;
 
-    // static constexpr auto value = lexy::callback<Document>();
+    // SCA value = lexy::callback<Document>();
 
-    static constexpr auto value = lexy::callback<Document>(
+    SCA value = lexy::callback<Document>(
         [](std::vector<int> &&decls) {
             // DUMP_STACK("single decls arg");
             fmt::print("single decls arg\n");
-            return Document{.nums = std::move(decls)};
+            return Document{.nums = LEXY_MOV(decls)};
         },
         [](std::vector<std::string> &&sim_cmds) {
             fmt::print("single sim_cmds arg\n");
-            return Document{.words = std::move(sim_cmds)};
+            return Document{.words = LEXY_MOV(sim_cmds)};
         },
         [](std::vector<int> &&decls, std::vector<std::string> &&sim_cmds) {
             fmt::print("decls and sim_cmds\n");
-            return Document{.nums = std::move(decls), .words = std::move(sim_cmds)};
+            return Document{.nums = LEXY_MOV(decls), .words = LEXY_MOV(sim_cmds)};
         },
         [](std::vector<int> &&decls, lexy::nullopt sim_cmds) {
             fmt::print("just decls\n");
-            return Document{.nums = std::move(decls)};
+            return Document{.nums = LEXY_MOV(decls)};
         },
         [](lexy::nullopt decls, std::vector<std::string> &&sim_cmds) {
             fmt::print("just sim_cmds\n");
-            return Document{.words = std::move(decls)};
+            return Document{.words = LEXY_MOV(decls)};
         },
         [](lexy::nullopt decls, lexy::nullopt sim_cmds) {
             fmt::print("two nullopt\n");
@@ -216,15 +222,55 @@ struct document {
         },
         [](Document &&doc) {
             fmt::print("doc rvalue\n");
-            return std::move(doc);
+            return LEXY_MOV(doc);
         },
         []() {
             // DUMP_STACK("void");
             fmt::print("void\n");
             return Document{};
         });
+};
+#endif
 
-    static constexpr auto whitespace = ws;
+struct skip_whitespace {
+    SCA whitespace = dsl::ascii::space;
+};
+
+struct document : lexy::scan_production<Document> {
+    template <typename Reader, typename Context>
+    static scan_result scan(lexy::rule_scanner<Context, Reader> &scanner) {
+        fmt::print("Reader: {}\n", type_name<Reader>());
+        fmt::print("Context: {}\n", type_name<Context>());
+        const auto orig_input = scanner.remaining_input();
+        lexy::scan_result<document> result;
+
+        // using ds_and_cs_parser = lexy::parser_for<lexyd::_pas<T, Rule>, scan_final_parser>;
+        // auto success
+        //     = parser::parse(static_cast<Derived&>(*this).context(), _reader, &result._value);
+        auto ds_and_cs = scanner.parse(decls_and_cmds{});
+        fmt::print("ds_and_cs: scanner: {}\n", (bool)scanner);
+        if (scanner) {
+            return Document{.nums  = std::vector<int>{1, 2, 3},
+                            .words = std::vector<std::string>{"a", "b", "c"}};
+        }
+        auto ds = scanner.parse(just_decls{});
+        fmt::print("ds: scanner: {}\n", (bool)scanner);
+        if (scanner) {
+            return Document{.nums = std::vector<int>{1, 2, 3}};
+        }
+        auto cs = scanner.parse(just_cmds{});
+        fmt::print("cs: scanner: {}\n", (bool)scanner);
+        if (scanner) {
+            return Document{.words = std::vector<std::string>{"a", "b", "c"}};
+        }
+        auto ef = scanner.parse(empty{});
+        fmt::print("ef: scanner: {}\n", (bool)scanner);
+        if (scanner) {
+            return Document{};
+        }
+
+        return lexy::scan_failed;
+    }
 };
 
 }; // namespace grammar
@@ -243,7 +289,7 @@ std::vector<SimCmd> parse_vcd_sim_cmds(std::string_view sim_cmds_str) {
 
 Document parse_vcd_document(std::string_view vcd_str, const fs::path &path) {
     auto declsret = parse_vcd_declarations(vcd_str);
-    return {.declarations = std::move(declsret.decls),
+    return {.declarations = LEXY_MOV(declsret.decls),
             .sim_cmds     = parse_vcd_sim_cmds(declsret.remaining)};
 }
 
@@ -269,7 +315,7 @@ void parse_vcd_document_test(std::string_view vcd_str, const fs::path &path) {
 
     auto doc_res = lexy::parse<grammar::document>(input, lexy_ext::report_error.path(path.c_str()));
     if (doc_res.has_value()) {
-        auto doc = std::move(doc_res.value());
+        auto doc = LEXY_MOV(doc_res.value());
         fmt::print("doc:\n");
         if (doc.nums) {
             fmt::print("nums: {}\n", fmt::join(*doc.nums, ", "));

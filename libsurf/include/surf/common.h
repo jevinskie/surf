@@ -4,9 +4,11 @@
 #include <filesystem>
 #include <map>
 #include <memory>
+#include <optional>
 #include <set>
 #include <string>
 #include <string_view>
+#include <variant>
 #include <vector>
 
 #define SURF_EXPORT __attribute__((visibility("default")))
