@@ -5,17 +5,36 @@
 #include "time.h"
 #include "trace.h"
 
+#define SURF_TOY
+
 namespace surf {
 
 namespace VCDTypes {
 
-class Comment : public std::string {};
+using Comment  = std::string;
+using Date     = std::string;
+using Version  = std::string;
+using TimeUnit = std::string;
+using Var      = std::string;
+using Scope    = std::string;
 
-struct Declarations {
-    std::optional<std::string> comment;
-    std::optional<std::string> date;
-    std::optional<std::string> version;
+struct Timescale {
+    int time_number;
+    TimeUnit time_unit;
 };
+
+#ifndef SURF_TOY
+struct Declarations {
+    std::optional<std::vector<Comment>> comments;
+    std::optional<Date> date;
+    std::optional<Version> version;
+    std::optional<Timescale> timescale;
+    std::optional<std::vector<Var>> vars;
+    std::optional<std::vector<Scope>> scopes;
+};
+#else
+using Declarations = std::vector<int>;
+#endif
 
 using SimTime = uint64_t;
 using ID      = std::string;
@@ -36,22 +55,16 @@ struct Change {
     ID id;
 };
 
+#ifndef SURF_TOY
 using SimCmd = std::variant<Comment, SimTime, Change>;
+#else
+using SimCmd       = std::string;
+#endif
 
 struct Document {
-    std::optional<Declarations> declarations;
-    std::optional<std::vector<SimCmd>> sim_cmds;
-    int64_t num;
-    std::optional<std::vector<int>> nums;
-    std::optional<std::vector<std::string>> words;
+    Declarations declarations;
+    std::vector<SimCmd> sim_cmds;
 };
-// static_assert(std::is_literal_type_v<Document>);
-
-struct Document2 {
-    std::optional<Declarations> declarations;
-    std::optional<std::vector<SimCmd>> sim_cmds;
-};
-// static_assert(std::is_literal_type_v<Document2>);
 
 }; // namespace VCDTypes
 
@@ -67,8 +80,8 @@ public:
     size_t size() const;
     std::string_view string_view() const;
     const VCDTypes::Document &document();
-    const std::optional<VCDTypes::Declarations> &declarations() const;
-    const std::optional<std::vector<VCDTypes::SimCmd>> &sim_cmds();
+    const VCDTypes::Declarations &declarations() const;
+    const std::vector<VCDTypes::SimCmd> &sim_cmds();
     void parse_test() const;
 
 private:
