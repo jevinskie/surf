@@ -3,6 +3,8 @@
 #include "vcd-lexer.h"
 #include <utils.h>
 
+#include <sstream>
+
 #include <lexy/action/parse.hpp>         // lexy::parse
 #include <lexy/action/parse_as_tree.hpp> // lexy::parse_as_tree
 #include <lexy/action/trace.hpp>         // lexy::trace_to
@@ -77,9 +79,9 @@ struct opt_decl_list {
 SCA end_cmds_decl_pair = LEXY_LIT("$endcmds") + dsl::token(ws) + LEXY_LIT("$end");
 
 struct sim_cmd_list {
-    // SCA rule  = dsl::list(dsl::peek_not(dsl::eof) >> dsl::p<word>);
+    SCA rule = dsl::list(dsl::peek_not(dsl::eof) >> dsl::p<word>);
     // SCA rule = dsl::list(dsl::p<word>);
-    SCA rule  = dsl::terminator(dsl::token(end_cmds_decl_pair)).list(dsl::p<word>);
+    // SCA rule  = dsl::terminator(dsl::token(end_cmds_decl_pair)).list(dsl::p<word>);
     SCA value = lexy::as_list<std::vector<std::string>>;
 };
 
@@ -134,7 +136,7 @@ struct empty {
     SCA whitespace = ws;
 };
 
-#if 1
+#if 0
 struct document {
     SCA ds_and_cs = dsl::p<decls_and_cmds>;
     SCA ds        = dsl::p<just_decls>;
@@ -234,43 +236,52 @@ struct skip_whitespace {
     SCA whitespace = dsl::ascii::space;
 };
 
-#if 0
+#if 1
 struct document : lexy::scan_production<Document> {
+    SCA whitespace = dsl::ascii::space;
+
     template <typename Reader, typename Context>
     static scan_result scan(lexy::rule_scanner<Context, Reader> &scanner) {
-        fmt::print("Reader: {}\n", type_name<Reader>());
-        fmt::print("Context: {}\n", type_name<Context>());
         const auto orig_input = scanner.remaining_input();
-        lexy::scan_result<document> result;
+        lexy::scan_result<Document> result;
 
-        // using ds_and_cs_parser = lexy::parser_for<lexyd::_pas<T, Rule>, scan_final_parser>;
-        // auto success
-        //     = parser::parse(static_cast<Derived&>(*this).context(), _reader, &result._value);
-        auto ds_and_cs_res = lexy::parse<grammar::decls_and_cmds>(orig_input, lexy_ext::report_error);
-        // if (!ds_and_cs_res.is_error);
-
-        auto ds_and_cs = scanner.parse(decls_and_cmds{});
-        fmt::print("ds_and_cs: scanner: {}\n", (bool)scanner);
-        if (scanner) {
-            return Document{.nums  = std::vector<int>{1, 2, 3},
-                            .words = std::vector<std::string>{"a", "b", "c"}};
-        }
-        auto ds = scanner.parse(just_decls{});
-        fmt::print("ds: scanner: {}\n", (bool)scanner);
-        if (scanner) {
-            return Document{.nums = std::vector<int>{1, 2, 3}};
-        }
-        auto cs = scanner.parse(just_cmds{});
-        fmt::print("cs: scanner: {}\n", (bool)scanner);
-        if (scanner) {
-            return Document{.words = std::vector<std::string>{"a", "b", "c"}};
-        }
-        auto ef = scanner.parse(empty{});
-        fmt::print("ef: scanner: {}\n", (bool)scanner);
-        if (scanner) {
-            return Document{};
+        fmt::print("a\n");
+        std::string ds_and_cs_err;
+        auto ds_and_cs_res = lexy::parse<grammar::decls_and_cmds>(
+            orig_input, lexy_ext::report_error.to(std::back_insert_iterator(ds_and_cs_err)));
+        if (ds_and_cs_res.is_success()) {
+            fmt::print("scan ds_and_cs match\n");
+            return scan_result{LEXY_MOV(ds_and_cs_res.value())};
         }
 
+        fmt::print("b\n");
+        std::string ds_err;
+        auto ds_res = lexy::parse<grammar::just_decls>(
+            orig_input, lexy_ext::report_error.to(std::back_insert_iterator(ds_err)));
+        if (ds_res.is_success()) {
+            fmt::print("scan ds match\n");
+            return scan_result{LEXY_MOV(ds_res.value())};
+        }
+
+        fmt::print("c\n");
+        std::string cs_err;
+        auto cs_res = lexy::parse<grammar::just_cmds>(
+            orig_input, lexy_ext::report_error.to(std::back_insert_iterator(cs_err)));
+        if (cs_res.is_success()) {
+            fmt::print("scan cs match\n");
+            return scan_result{LEXY_MOV(cs_res.value())};
+        }
+
+        fmt::print("d\n");
+        std::string empty_err;
+        auto empty_res = lexy::parse<grammar::empty>(
+            orig_input, lexy_ext::report_error.to(std::back_insert_iterator(empty_err)));
+        if (empty_res.is_success()) {
+            fmt::print("scan empty match\n");
+            return scan_result{LEXY_MOV(empty_res.value())};
+        }
+
+        fmt::print("e\n");
         return lexy::scan_failed;
     }
 };
@@ -299,27 +310,28 @@ Document parse_vcd_document(std::string_view vcd_str, const fs::path &path) {
 #if 1
 void parse_vcd_document_test(std::string_view vcd_str, const fs::path &path) {
     auto input = lexy::string_input<lexy::ascii_encoding>(vcd_str);
-    auto validate_res =
-        lexy::validate<grammar::document>(input, lexy_ext::report_error.path(path.c_str()));
-    fmt::print("is_error: {}\n", validate_res.is_error());
+    // auto validate_res =
+    //     lexy::validate<grammar::document>(input, lexy_ext::report_error.path(path.c_str()));
+    // fmt::print("is_error: {}\n", validate_res.is_error());
 
-    lexy::parse_tree_for<decltype(input)> parse_tree;
-    auto tree_res = lexy::parse_as_tree<grammar::document>(parse_tree, input, lexy::noop);
-    if (tree_res.is_success()) {
-        lexy::visualize(stdout, parse_tree, {lexy::visualize_fancy});
-    } else {
-        fmt::print("parse_as_tree error: {}\n", tree_res.errors());
-    }
+    // lexy::parse_tree_for<decltype(input)> parse_tree;
+    // auto tree_res = lexy::parse_as_tree<grammar::document>(parse_tree, input, lexy::noop);
+    // if (tree_res.is_success()) {
+    //     lexy::visualize(stdout, parse_tree, {lexy::visualize_fancy});
+    // } else {
+    //     fmt::print("parse_as_tree error: {}\n", tree_res.errors());
+    // }
 
-    std::string trace;
-    lexy::trace_to<grammar::document>(std::back_insert_iterator(trace), input,
-                                      {lexy::visualize_fancy});
-    fmt::print("{:s}\n", trace);
+    // std::string trace;
+    // lexy::trace_to<grammar::document>(std::back_insert_iterator(trace), input,
+    //                                   {lexy::visualize_fancy});
+    // fmt::print("{:s}\n", trace);
 
     auto doc_res = lexy::parse<grammar::document>(input, lexy_ext::report_error.path(path.c_str()));
-    fmt::print("doc: is_success: {} is_error: {} is_recovered_error: {} is_fatal_error: {}\n",
+    fmt::print("doc: is_success: {} is_error: {} is_recovered_error: {} is_fatal_error: {} "
+               "has_value: {}\n",
                doc_res.is_success(), doc_res.is_error(), doc_res.is_recovered_error(),
-               doc_res.is_fatal_error());
+               doc_res.is_fatal_error(), doc_res.has_value());
     if (doc_res.has_value()) {
         auto doc = LEXY_MOV(doc_res.value());
         fmt::print("doc:\n");
