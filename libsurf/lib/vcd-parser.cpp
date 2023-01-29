@@ -54,13 +54,18 @@ struct decl_list {
         auto num = dsl::p<decimal_number>;
         return dsl::terminator(dsl::token(end_defs_decl_pair)).list(num);
     }();
+    SCA value      = lexy::as_list<std::vector<int>>;
+    SCA whitespace = ws;
+};
 
-    SCA value = lexy::as_list<std::vector<int>>;
+struct ws_eof {
+    SCA rule = dsl::token(ws) + dsl::eof;
 };
 
 struct sim_cmd_eof_list {
-    SCA rule  = dsl::terminator(dsl::eof).list(dsl::p<word>);
-    SCA value = lexy::as_list<std::vector<std::string>>;
+    SCA rule       = dsl::terminator(dsl::eof).list(dsl::p<word>);
+    SCA value      = lexy::as_list<std::vector<std::string>>;
+    SCA whitespace = ws;
 };
 
 }; // namespace grammar
@@ -94,7 +99,7 @@ std::vector<std::string> parse_vcd_sim_cmds(std::string_view sim_cmds_str, fs::p
 Document parse_vcd_document(std::string_view vcd_str, const fs::path &path) {
     auto declsret = parse_vcd_declarations(vcd_str, path);
     return {.declarations = LEXY_MOV(declsret.decls),
-            .sim_cmds     = parse_vcd_sim_cmds(declsret.remaining)};
+            .sim_cmds     = LEXY_MOV(parse_vcd_sim_cmds(declsret.remaining))};
 }
 
 #if 1
@@ -123,6 +128,13 @@ void parse_vcd_document_test(std::string_view vcd_str, const fs::path &path) {
         res.declarations = LEXY_MOV(decls_ret.decls);
     } catch (const VCDDeclParseError &decl_parse_error) {
         fmt::print(stderr, "Error parsing VCD declarations:\n{:s}\n", decl_parse_error.what());
+    }
+    try {
+        auto decls_ret = parse_vcd_declarations(vcd_str, path);
+        res.sim_cmds   = LEXY_MOV(parse_vcd_sim_cmds(decls_ret.remaining, path));
+    } catch (const VCDDeclParseError &decl_parse_error) {
+        fmt::print(stderr, "Error parsing VCD simulation commands:\n{:s}\n",
+                   decl_parse_error.what());
     }
 }
 #endif
