@@ -60,9 +60,11 @@ constexpr U rounddown_pow2_mul(U num, size_t pow2_mul) {
     return num & ~mask;
 }
 
-SURF_EXPORT void posix_check(int retval, const std::string &msg);
+void posix_check(int retval, const std::string &msg);
 
-SURF_EXPORT unsigned int get_num_cores();
+unsigned int get_num_cores();
+
+bool can_use_term_colors();
 
 template <typename T> constexpr auto type_name() {
     std::string_view name, prefix, suffix;

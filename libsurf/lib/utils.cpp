@@ -1,6 +1,16 @@
 #include "utils.h"
 
+#include <cstdio>
+
+#if defined(SURF_LINUX) || defined(SURF_APPLE)
+#include <unistd.h>
+#endif
+#ifdef SURF_APPLE
 #include <sys/sysctl.h>
+#endif
+#ifdef SURF_WIN
+#include <windows.h>
+#endif
 
 namespace surf {
 
@@ -15,13 +25,21 @@ void posix_check(int retval, const std::string &msg) {
 }
 
 uint32_t get_num_cores() {
-#ifdef __APPLE__
+#ifdef SURF_APPLE
     uint32_t num;
     size_t sz = sizeof(num);
     posix_check(sysctlbyname("hw.logicalcpu", &num, &sz, nullptr, 0), "get_num_cores");
     return num;
 #else
 #error get_num_cores unimplemented OS
+#endif
+}
+
+bool can_use_term_colors() {
+#if defined(SURF_LINUX) || defined(SURF_APPLE)
+    return isatty(fileno(stdout));
+#elif defined(SURF_WIN)
+    return _isatty(fileno(stdout));
 #endif
 }
 

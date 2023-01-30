@@ -11,6 +11,16 @@
 #include <variant>
 #include <vector>
 
+#ifdef __linux__
+#define SURF_LINUX
+#endif
+#ifdef _WIN32
+#define SURF_WIN
+#endif
+#ifdef __APPLE__
+#define SURF_APPLE
+#endif
+
 #define SURF_EXPORT __attribute__((visibility("default")))
 #define SURF_INLINE __attribute__((always_inline))
 // #define SURF_INLINE
