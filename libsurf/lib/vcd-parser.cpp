@@ -140,7 +140,6 @@ Document parse_vcd_document(std::string_view vcd_str, const fs::path &path,
 #if 1
 void parse_vcd_document_test(std::string_view vcd_str, const fs::path &path) {
     auto input = lexy::string_input<lexy::ascii_encoding>(vcd_str);
-    Document res;
     // auto validate_res =
     //     lexy::validate<grammar::document>(input, lexy_ext::report_error.path(path.c_str()));
     // fmt::print("is_error: {}\n", validate_res.is_error());
@@ -158,6 +157,7 @@ void parse_vcd_document_test(std::string_view vcd_str, const fs::path &path) {
     //                                   {lexy::visualize_fancy});
     // fmt::print("{:s}\n", trace);
 
+    Document res;
     VCDParserDeclRet decls_ret;
 
     try {
@@ -172,6 +172,8 @@ void parse_vcd_document_test(std::string_view vcd_str, const fs::path &path) {
         fmt::print(stderr, "Error parsing VCD simulation commands:\n{:s}\n",
                    cmds_parse_error.what());
     }
+    fmt::print("2-step decls: {}\n", fmt::join(res.declarations, ", "));
+    fmt::print("2-step cmds: {}\n", fmt::join(res.sim_cmds, ", "));
 
     auto doc_res =
         lexy::parse<grammar::vcd_document>(input, lexy_ext::report_error.path(path.c_str()));
