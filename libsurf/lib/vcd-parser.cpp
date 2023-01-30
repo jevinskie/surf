@@ -51,6 +51,16 @@ struct sim_cmd {
     SCA value = lexy::forward<std::string>;
 };
 
+struct sim_time {
+    SCA rule  = dsl::lit_c<'#'> + dsl::integer<SimTime>;
+    SCA value = lexy::forward<SimTime>;
+};
+
+struct value_change {
+    SCA rule  = LEXY_LIT("TODO");
+    SCA value = lexy::noop;
+};
+
 SCA end_defs_decl_pair = LEXY_LIT("$enddefinitions") + dsl::token(ws) + LEXY_LIT("$end");
 
 struct decl_list {
