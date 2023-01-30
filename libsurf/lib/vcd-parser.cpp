@@ -3,10 +3,9 @@
 #include "vcd-lexer.h"
 #include <utils.h>
 
-#include <sstream>
-
 #include <lexy/action/parse.hpp>         // lexy::parse
 #include <lexy/action/parse_as_tree.hpp> // lexy::parse_as_tree
+#include <lexy/action/scan.hpp>          // lexy::scan
 #include <lexy/action/trace.hpp>         // lexy::trace_to
 #include <lexy/callback.hpp>             // value callbacks
 #include <lexy/dsl.hpp>                  // lexy::dsl::*
@@ -63,7 +62,7 @@ struct ws_eof {
 };
 
 struct sim_cmd_eof_list {
-    SCA rule       = dsl::terminator(dsl::eof).list(dsl::p<word>);
+    SCA rule       = dsl::list(dsl::peek_not(dsl::eof) >> dsl::p<word>);
     SCA value      = lexy::as_list<std::vector<std::string>>;
     SCA whitespace = ws;
 };
@@ -73,33 +72,37 @@ struct sim_cmd_eof_list {
 }; // namespace
 
 VCDParserDeclRet parse_vcd_declarations(std::string_view decls_str, fs::path path) {
+    VCDParserDeclRet res;
     auto input = lexy::string_input<lexy::ascii_encoding>(decls_str);
     std::string decls_err;
-    auto decls_res = lexy::parse<grammar::decl_list>(
+    auto scanner = lexy::scan(
         input, lexy_ext::report_error.to(std::back_insert_iterator(decls_err)).path(path.c_str()));
-    if (!decls_res.is_success()) {
+    auto decls_res = scanner.parse<grammar::decl_list>();
+    if (!scanner || !decls_res.has_value()) {
         throw std::logic_error("VCD declaration (header) parsing failed.\n" + decls_err);
     }
-    fmt::print("input pos: {}\n", input.data());
-    return VCDParserDeclRet{.decls = decls_res.value(), .remaining = {}};
+    auto cstr_rest = scanner.remaining_input().reader().position();
+    return VCDParserDeclRet{
+        .decls     = std::move(decls_res.value()),
+        .remaining = {cstr_rest, decls_str.size() - (cstr_rest - decls_str.data())}};
 }
 
 std::vector<std::string> parse_vcd_sim_cmds(std::string_view sim_cmds_str, fs::path path) {
-    std::vector<SimCmd> cmds;
     auto input = lexy::string_input<lexy::ascii_encoding>(sim_cmds_str);
     std::string cmds_err;
-    auto cmds_res = lexy::parse<grammar::sim_cmd_eof_list>(
+    auto scanner = lexy::scan(
         input, lexy_ext::report_error.to(std::back_insert_iterator(cmds_err)).path(path.c_str()));
-    if (!cmds_res.is_success()) {
-        throw std::logic_error("VCD simulation commands (changes) parsing failed.\n" + cmds_err);
+    auto cmds_res = scanner.parse<grammar::sim_cmd_eof_list>();
+    if (!scanner || !cmds_res.has_value()) {
+        throw std::logic_error("VCD commands (changes) parsing failed.\n" + cmds_err);
     }
-    return cmds_res.value();
+    return std::move(cmds_res.value());
 }
 
 Document parse_vcd_document(std::string_view vcd_str, const fs::path &path) {
-    auto declsret = parse_vcd_declarations(vcd_str, path);
-    return {.declarations = LEXY_MOV(declsret.decls),
-            .sim_cmds     = LEXY_MOV(parse_vcd_sim_cmds(declsret.remaining))};
+    auto decls_ret = parse_vcd_declarations(vcd_str, path);
+    return {.declarations = std::move(decls_ret.decls),
+            .sim_cmds     = parse_vcd_sim_cmds(decls_ret.remaining)};
 }
 
 #if 1
@@ -123,15 +126,16 @@ void parse_vcd_document_test(std::string_view vcd_str, const fs::path &path) {
     //                                   {lexy::visualize_fancy});
     // fmt::print("{:s}\n", trace);
 
+    VCDParserDeclRet decls_ret;
+
     try {
-        auto decls_ret   = parse_vcd_declarations(vcd_str, path);
-        res.declarations = LEXY_MOV(decls_ret.decls);
+        decls_ret        = parse_vcd_declarations(vcd_str, path);
+        res.declarations = std::move(decls_ret.decls);
     } catch (const VCDDeclParseError &decl_parse_error) {
         fmt::print(stderr, "Error parsing VCD declarations:\n{:s}\n", decl_parse_error.what());
     }
     try {
-        auto decls_ret = parse_vcd_declarations(vcd_str, path);
-        res.sim_cmds   = LEXY_MOV(parse_vcd_sim_cmds(decls_ret.remaining, path));
+        res.sim_cmds = parse_vcd_sim_cmds(decls_ret.remaining, path);
     } catch (const VCDDeclParseError &decl_parse_error) {
         fmt::print(stderr, "Error parsing VCD simulation commands:\n{:s}\n",
                    decl_parse_error.what());
