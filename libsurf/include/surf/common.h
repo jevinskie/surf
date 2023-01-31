@@ -32,4 +32,8 @@
 #define SURF_ASSUME_ALIGNED(ptr, n) __builtin_assume_aligned((ptr), n)
 #define SURF_UNREACHABLE() __builtin_unreachable()
 
-namespace surf {};
+namespace surf {
+static inline std::string boolmoji(bool b) {
+    return b ? "✅" : "❌";
+}
+}; // namespace surf

@@ -17,6 +17,7 @@ using namespace surf;
 #include <unistd.h>
 
 #include <fmt/format.h>
+#include <fmt/std.h>
 
 namespace fs = std::filesystem;
 using namespace std::string_literals;

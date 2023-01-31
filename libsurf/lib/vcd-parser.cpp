@@ -46,19 +46,26 @@ struct word {
     SCA value = lexy::as_string<std::string>;
 };
 
-struct sim_cmd {
-    SCA rule  = dsl::p<word>;
-    SCA value = lexy::forward<std::string>;
+struct comment {
+    SCA rule = LEXY_LIT("$comment") + dsl::any + LEXY_LIT("$end");
 };
 
-struct sim_time {
-    SCA rule  = dsl::lit_c<'#'> + dsl::integer<SimTime>;
-    SCA value = lexy::forward<SimTime>;
+struct tick {
+    using tick_ty = decltype(Tick{}.tick);
+    SCA rule      = dsl::lit_c<'#'> + dsl::integer<tick_ty>;
+    SCA value     = lexy::as_integer<tick_ty>;
 };
 
 struct value_change {
     SCA rule  = LEXY_LIT("TODO");
     SCA value = lexy::noop;
+};
+
+struct sim_cmd {
+    SCA rule  = dsl::peek(dsl::lit_c<'#'>) >> dsl::p<tick> | dsl::p<value_change>;
+    SCA value = lexy::callback<SimCmd>([]() {
+        return SimCmd{};
+    });
 };
 
 SCA end_defs_decl_pair = LEXY_LIT("$enddefinitions") + dsl::token(ws) + LEXY_LIT("$end");
@@ -68,8 +75,7 @@ struct decl_list {
         auto num = dsl::p<decimal_number>;
         return dsl::terminator(dsl::token(end_defs_decl_pair)).list(num);
     }();
-    SCA value      = lexy::as_list<std::vector<int>>;
-    SCA whitespace = ws;
+    SCA value = lexy::as_list<std::vector<int>>;
 };
 
 struct decl_list_remaining {
@@ -81,17 +87,16 @@ struct decl_list_remaining {
 };
 
 struct sim_cmd_eof_list {
-    SCA rule       = dsl::terminator(dsl::eof).list(dsl::p<word>);
-    SCA value      = lexy::as_list<std::vector<std::string>>;
+    SCA rule       = dsl::terminator(dsl::eof).list(dsl::p<sim_cmd>);
+    SCA value      = lexy::as_list<std::vector<SimCmd>>;
     SCA whitespace = ws;
 };
 
 struct vcd_document {
-    SCA rule = dsl::p<decl_list> + dsl::p<sim_cmd_eof_list>;
-    SCA value =
-        lexy::callback<Document>([](std::vector<int> &&decls, std::vector<std::string> &&cmds) {
-            return Document{.declarations = std::move(decls), .sim_cmds = std::move(cmds)};
-        });
+    SCA rule  = dsl::p<decl_list> + dsl::p<sim_cmd_eof_list>;
+    SCA value = lexy::callback<Document>([](std::vector<int> &&decls, std::vector<SimCmd> &&cmds) {
+        return Document{.declarations = std::move(decls), .sim_cmds = std::move(cmds)};
+    });
     SCA whitespace = ws;
 };
 
@@ -126,8 +131,8 @@ VCDParserDeclRet parse_vcd_declarations(std::string_view decls_str, fs::path pat
     return VCDParserDeclRet{.decls = std::move(decls_val.decls), .remaining = remaining};
 }
 
-std::vector<std::string> parse_vcd_sim_cmds(std::string_view sim_cmds_str, fs::path path,
-                                            std::optional<lexy::visualization_options> opts) {
+std::vector<SimCmd> parse_vcd_sim_cmds(std::string_view sim_cmds_str, fs::path path,
+                                       std::optional<lexy::visualization_options> opts) {
     auto input = lexy::string_input<lexy::ascii_encoding>(sim_cmds_str);
     std::string cmds_err;
     auto cmds_parse_res =

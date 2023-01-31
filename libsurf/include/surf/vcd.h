@@ -5,25 +5,44 @@
 #include "time.h"
 #include "trace.h"
 
-#define SURF_TOY
+#include <fmt/format.h>
+
+// #define SURF_TOY
 
 namespace surf {
 
 namespace VCDTypes {
 
-using Comment  = std::string;
-using Date     = std::string;
-using Version  = std::string;
-using TimeUnit = std::string;
-using Var      = std::string;
-using Scope    = std::string;
+struct Comment {
+    std::string comment;
+};
+
+struct Date {
+    std::string date;
+};
+
+struct Version {
+    std::string version;
+};
+
+struct TimeUnit {
+    std::string time_unit;
+};
+
+struct Var {
+    std::string var;
+};
+
+struct Scope {
+    std::string scope;
+};
 
 struct Timescale {
     int time_number;
     TimeUnit time_unit;
 };
 
-#ifndef SURF_TOY
+#if 0
 struct Declarations {
     std::optional<std::vector<Comment>> comments;
     std::optional<Date> date;
@@ -36,11 +55,16 @@ struct Declarations {
 using Declarations = std::vector<int>;
 #endif
 
-using SimTime = uint64_t;
-using ID      = std::string;
+struct Tick {
+    uint64_t tick;
+};
+
+struct ID {
+    std::string id;
+};
 
 struct ScalarValue {
-    bool val;
+    bool value;
     bool x;
     bool z;
 };
@@ -51,12 +75,12 @@ using VectorValue = std::variant<BinaryNum, RealNum>;
 using Value       = std::variant<ScalarValue, BinaryNum, RealNum>;
 
 struct Change {
-    Value val;
+    Value value;
     ID id;
 };
 
 #ifndef SURF_TOY
-using SimCmd = std::variant<Comment, SimTime, Change>;
+using SimCmd = std::variant<Comment, Tick, Change>;
 #else
 using SimCmd       = std::string;
 #endif
@@ -98,3 +122,54 @@ private:
 };
 
 }; // namespace surf
+
+template <> struct fmt::formatter<surf::VCDTypes::Comment> {
+    template <typename ParseContext> constexpr auto parse(ParseContext &ctx) {
+        return ctx.begin();
+    }
+    template <typename FormatContext>
+    auto format(surf::VCDTypes::Comment const &comment, FormatContext &ctx) {
+        return fmt::format_to(ctx.out(), "<Comment '{:s}'>", comment.comment);
+    }
+};
+
+template <> struct fmt::formatter<surf::VCDTypes::Tick> {
+    template <typename ParseContext> constexpr auto parse(ParseContext &ctx) {
+        return ctx.begin();
+    }
+    template <typename FormatContext>
+    auto format(surf::VCDTypes::Tick const &tick, FormatContext &ctx) {
+        return fmt::format_to(ctx.out(), "<Tick #{:d}>", tick.tick);
+    }
+};
+
+template <> struct fmt::formatter<surf::VCDTypes::ID> {
+    template <typename ParseContext> constexpr auto parse(ParseContext &ctx) {
+        return ctx.begin();
+    }
+    template <typename FormatContext>
+    auto format(surf::VCDTypes::ID const &id, FormatContext &ctx) {
+        return fmt::format_to(ctx.out(), "<ID {}>", id.id);
+    }
+};
+
+template <> struct fmt::formatter<surf::VCDTypes::ScalarValue> {
+    template <typename ParseContext> constexpr auto parse(ParseContext &ctx) {
+        return ctx.begin();
+    }
+    template <typename FormatContext>
+    auto format(surf::VCDTypes::ScalarValue const &sv, FormatContext &ctx) {
+        return fmt::format_to(ctx.out(), "<ScalarValue V: {} X: {} Z: {}>", sv.value,
+                              surf::boolmoji(sv.x), surf::boolmoji(sv.z));
+    }
+};
+
+template <> struct fmt::formatter<surf::VCDTypes::Change> {
+    template <typename ParseContext> constexpr auto parse(ParseContext &ctx) {
+        return ctx.begin();
+    }
+    template <typename FormatContext>
+    auto format(surf::VCDTypes::Change const &change, FormatContext &ctx) {
+        return fmt::format_to(ctx.out(), "<Change ID: '{:s}' V: {}>", change.id, change.value);
+    }
+};
