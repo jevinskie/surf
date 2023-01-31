@@ -47,7 +47,7 @@ struct word {
 };
 
 struct comment_contents {
-    SCA rule  = dsl::terminator(LEXY_LIT("$end"))(dsl::p<word>);
+    SCA rule  = dsl::terminator(LEXY_LIT("$end"))(dsl::any);
     SCA value = lexy::callback<Comment>(
         []() {
             fmt::print("comment_contents void args\n");
