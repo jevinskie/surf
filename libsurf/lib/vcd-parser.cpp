@@ -47,13 +47,13 @@ struct word {
 };
 
 struct comment {
-    SCA rule = LEXY_LIT("$comment") + dsl::any + LEXY_LIT("$end");
+    SCA rule  = LEXY_LIT("$comment") + dsl::token(dsl::any) + LEXY_LIT("$end");
+    SCA value = lexy::construct<Comment>;
 };
 
 struct tick {
-    using tick_int_ty = decltype(Tick{}.tick);
-    SCA rule          = dsl::lit_c<'#'> + dsl::integer<tick_int_ty>;
-    SCA value         = lexy::construct<Tick>;
+    SCA rule  = dsl::lit_c<'#'> + dsl::integer<decltype(Tick{}.tick)>;
+    SCA value = lexy::construct<Tick>;
 };
 
 struct value_change {
@@ -62,10 +62,16 @@ struct value_change {
 };
 
 struct sim_cmd {
-    SCA rule  = (dsl::peek(dsl::lit_c<'#'>) >> dsl::p<tick>) | (dsl::else_ >> dsl::p<value_change>);
+    SCA rule = (dsl::peek(dsl::lit_c<'#'>) >> dsl::p<tick>) |
+               (dsl::peek(LEXY_LIT("$comment")) >> dsl::p<comment>) |
+               (dsl::else_ >> dsl::p<value_change>);
     SCA value = lexy::callback<SimCmd>(
         []() {
+            fmt::print("empty (void params) sim_cmd created\n");
             return SimCmd{};
+        },
+        [](Comment comment) {
+            return SimCmd{comment};
         },
         [](Tick tick) {
             return SimCmd{tick};
