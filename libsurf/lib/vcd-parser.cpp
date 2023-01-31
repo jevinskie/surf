@@ -46,14 +46,38 @@ struct word {
     SCA value = lexy::as_string<std::string>;
 };
 
+struct comment_contents {
+    SCA rule  = dsl::capture(dsl::token(dsl::p<word>));
+    SCA value = lexy::as_string<std::string> >>
+                lexy::callback<Comment>(
+                    []() {
+                        fmt::print("comment void args\n");
+                        return Comment{};
+                    },
+                    [](auto comment_lex) {
+                        fmt::print("comment type: {}\n", type_name<decltype(comment_lex)>());
+                        return Comment{};
+                    });
+};
+
 struct comment {
-    SCA rule  = LEXY_LIT("$comment") + dsl::token(dsl::any) + LEXY_LIT("$end");
-    SCA value = lexy::construct<Comment>;
+    SCA rule  = LEXY_LIT("$comment") + dsl::capture(dsl::token(dsl::p<word>)) + LEXY_LIT("$end");
+    SCA value = lexy::as_string<std::string> >>
+                lexy::callback<Comment>(
+                    []() {
+                        fmt::print("comment void args\n");
+                        return Comment{};
+                    },
+                    [](auto comment_lex) {
+                        fmt::print("comment type: {}\n", type_name<decltype(comment_lex)>());
+                        return Comment{};
+                    });
+    // SCA value = lexy::noop;
 };
 
 struct tick {
     SCA rule  = dsl::lit_c<'#'> + dsl::integer<decltype(Tick{}.tick)>;
-    SCA value = lexy::construct<Tick>;
+    SCA value = lexy::as_string<std::string> >> lexy::construct<Tick>;
 };
 
 struct value_change {
@@ -164,6 +188,7 @@ Document parse_vcd_document(std::string_view vcd_str, const fs::path &path,
 
 #if 1
 void parse_vcd_document_test(std::string_view vcd_str, const fs::path &path) {
+    fmt::print("lexeme type: {}\n", type_name<lexy::string_lexeme<>>());
     auto input = lexy::string_input<lexy::ascii_encoding>(vcd_str);
     // auto validate_res =
     //     lexy::validate<grammar::document>(input, lexy_ext::report_error.path(path.c_str()));
