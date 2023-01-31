@@ -48,20 +48,21 @@ struct word {
 
 struct comment_contents {
     SCA rule  = dsl::capture(dsl::token(dsl::p<word>));
-    SCA value = lexy::as_string<std::string> >>
-                lexy::callback<Comment>(
-                    []() {
-                        fmt::print("comment void args\n");
-                        return Comment{};
-                    },
-                    [](auto comment_lex) {
-                        fmt::print("comment type: {}\n", type_name<decltype(comment_lex)>());
-                        return Comment{};
-                    });
+    SCA value = lexy::callback<Comment>(
+        []() {
+            fmt::print("comment_contents void args\n");
+            return Comment{};
+        },
+        [](lexy::lexeme<lexy::_pr<lexy::ascii_encoding>> comment_lex) {
+            fmt::print("comment_contents type: {}\n", type_name<decltype(comment_lex)>());
+            fmt::print("comment_contents comment_lex: {}\n",
+                       std::string_view{comment_lex.data(), comment_lex.size()});
+            return Comment{};
+        });
 };
 
 struct comment {
-    SCA rule  = LEXY_LIT("$comment") + dsl::capture(dsl::token(dsl::p<word>)) + LEXY_LIT("$end");
+    SCA rule  = LEXY_LIT("$comment") + dsl::p<comment_contents> + LEXY_LIT("$end");
     SCA value = lexy::as_string<std::string> >>
                 lexy::callback<Comment>(
                     []() {
@@ -202,10 +203,10 @@ void parse_vcd_document_test(std::string_view vcd_str, const fs::path &path) {
     //     fmt::print("parse_as_tree error: {}\n", tree_res.errors());
     // }
 
-    // std::string trace;
-    // lexy::trace_to<grammar::document>(std::back_insert_iterator(trace), input,
-    //                                   {lexy::visualize_fancy});
-    // fmt::print("{:s}\n", trace);
+    std::string trace;
+    lexy::trace_to<grammar::vcd_document>(std::back_insert_iterator(trace), input,
+                                          {lexy::visualize_fancy});
+    fmt::print("trace:\n\n{:s}\n", trace);
 
     Document res;
     VCDParserDeclRet decls_ret;
