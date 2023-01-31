@@ -47,38 +47,19 @@ struct word {
 };
 
 struct comment_contents {
-    SCA rule  = dsl::while_(dsl::peek_not(LEXY_LIT("$end")) >> dsl::code_point);
-    SCA value = lexy::callback<Comment>(
-        []() {
-            fmt::print("comment_contents void args\n");
-            return Comment{};
-        },
-        [](std::string comment) {
-            fmt::print("comment_contents type: {}\n", type_name<decltype(comment)>());
-            fmt::print("comment_contents comment_lex: {}\n", comment);
-            return Comment{};
-        },
-        [](lexy::lexeme<lexy::_pr<lexy::ascii_encoding>> comment_lex) {
-            fmt::print("comment_contents type: {}\n", type_name<decltype(comment_lex)>());
-            fmt::print("comment_contents comment_lex: {}\n",
-                       std::string_view{comment_lex.data(), comment_lex.size()});
-            return Comment{};
-        });
+    SCA rule = dsl::terminator(dsl::token(ws + LEXY_LIT("$end")))
+                   .list(dsl::no_whitespace(dsl::capture(dsl::ascii::character)));
+    SCA value = lexy::as_string<std::string> >> lexy::callback<Comment>([](std::string &&comment) {
+                    return Comment{.comment = std::move(comment)};
+                });
 };
 
 struct comment {
-    SCA rule  = LEXY_LIT("$comment") + dsl::p<comment_contents>;
-    SCA value = lexy::as_string<std::string> >>
-                lexy::callback<Comment>(
-                    []() {
-                        fmt::print("comment void args\n");
-                        return Comment{};
-                    },
-                    [](auto comment_lex) {
-                        fmt::print("comment type: {}\n", type_name<decltype(comment_lex)>());
-                        return Comment{};
-                    });
-    // SCA value = lexy::noop;
+    SCA rule = LEXY_LIT("$comment") + dsl::terminator(dsl::token(ws + LEXY_LIT("$end")))
+                                          .list(dsl::capture(dsl::ascii::character));
+    SCA value = lexy::as_string<std::string> >> lexy::callback<Comment>([](std::string &&comment) {
+                    return Comment{.comment = std::move(comment)};
+                });
 };
 
 struct tick {
