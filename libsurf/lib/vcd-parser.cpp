@@ -53,7 +53,7 @@ struct comment {
 struct tick {
     using tick_ty = decltype(Tick{}.tick);
     SCA rule      = dsl::lit_c<'#'> + dsl::integer<tick_ty>;
-    SCA value     = lexy::as_integer<tick_ty>;
+    SCA value     = lexy::construct<Tick>;
 };
 
 struct value_change {
@@ -63,9 +63,13 @@ struct value_change {
 
 struct sim_cmd {
     SCA rule  = dsl::peek(dsl::lit_c<'#'>) >> dsl::p<tick> | dsl::p<value_change>;
-    SCA value = lexy::callback<SimCmd>([]() {
-        return SimCmd{};
-    });
+    SCA value = lexy::callback<SimCmd>(
+        []() {
+            return SimCmd{};
+        },
+        [](Tick tick) {
+            return SimCmd{};
+        });
 };
 
 SCA end_defs_decl_pair = LEXY_LIT("$enddefinitions") + dsl::token(ws) + LEXY_LIT("$end");
