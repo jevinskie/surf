@@ -50,14 +50,12 @@ struct comment {
     SCA rule =
         LEXY_LIT("$comment") + dsl::no_whitespace(dsl::terminator(dsl::token(ws + LEXY_LIT("$end")))
                                                       .list(dsl::capture(dsl::ascii::character)));
-    SCA value = lexy::as_string<std::string> >> lexy::callback<Comment>([](std::string &&comment) {
-                    return Comment{.comment = std::move(comment)};
-                });
+    SCA value = lexy::as_string<std::string> >> lexy::construct<Comment>;
 };
 
 struct tick {
     SCA rule  = dsl::lit_c<'#'> + dsl::integer<decltype(Tick{}.tick)>;
-    SCA value = lexy::as_string<std::string> >> lexy::construct<Tick>;
+    SCA value = lexy::construct<Tick>;
 };
 
 struct value_change {
