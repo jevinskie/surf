@@ -93,8 +93,9 @@ struct binary_number {
 };
 
 struct real_number {
-    SCA rule = LEXY_ASCII_ONE_OF("rR") + dsl::capture(dsl::token(dsl::sign + dsl::ascii::digit)) +
-               dsl::opt(dsl::token(dsl::period) >> dsl::capture(dsl::token(dsl::ascii::digit)));
+    SCA rule =
+        LEXY_ASCII_ONE_OF("rR") + dsl::capture(dsl::token(dsl::sign + dsl::integer<uint64_t>)) +
+        dsl::opt(dsl::token(dsl::period) >> dsl::capture(dsl::token(dsl::integer<uint64_t>)));
     SCA value = lexy::callback<RealNum>(
         [](auto leading_lex, lexy::nullopt) {
             auto whole_str =
