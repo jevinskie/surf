@@ -126,8 +126,7 @@ struct RealNum {
     double num;
 };
 
-using VectorValue = std::variant<BinaryNum, RealNum>;
-using Value       = std::variant<ScalarValue, VectorValue>;
+using Value = std::variant<ScalarValue, BinaryNum, RealNum>;
 
 struct Change {
     Value value;

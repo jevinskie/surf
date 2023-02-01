@@ -117,32 +117,20 @@ struct real_number {
         });
 };
 
-struct vector_value {
-    struct bad_vector_val {
-        SCA name = "bad vector value";
-    };
-    SCA rule = (dsl::peek(LEXY_ASCII_ONE_OF("bB")) >> dsl::p<binary_number>) |
-               (dsl::peek(LEXY_ASCII_ONE_OF("rR")) >> dsl::p<real_number>) |
-               (dsl::else_ >> dsl::error<bad_vector_val>);
-    SCA value = lexy::callback<VectorValue>(
-        [](BinaryNum bnum) {
-            return VectorValue{bnum};
-        },
-        [](RealNum rnum) {
-            return VectorValue{rnum};
-        });
-};
-
 struct any_value {
     struct val_error {
         SCA name = "bad value";
     };
-    SCA rule = (dsl::peek(LEXY_ASCII_ONE_OF("bBrR")) >> dsl::p<vector_value>) |
+    SCA rule = (dsl::peek(LEXY_ASCII_ONE_OF("bB")) >> dsl::p<binary_number>) |
                (dsl::peek(val_chars) >> dsl::p<scalar_value>) |
+               (dsl::peek(LEXY_ASCII_ONE_OF("rR")) >> dsl::p<real_number>) |
                (dsl::else_ >> dsl::error<val_error>);
     SCA value = lexy::callback<Value>(
-        [](VectorValue vv) {
-            return Value{vv};
+        [](BinaryNum bnum) {
+            return Value{bnum};
+        },
+        [](RealNum rnum) {
+            return Value{rnum};
         },
         [](ScalarValue sv) {
             return Value{sv};
