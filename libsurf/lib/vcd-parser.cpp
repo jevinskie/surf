@@ -68,21 +68,15 @@ struct tick {
 
 struct id {
     SCA rule  = dsl::identifier(dsl::ascii::word / dsl::ascii::punct);
-    SCA value = lexy::as_string<std::string> >> lexy::callback<ID>(
-                                                    [](str_lex lexeme) {
-                                                        auto sv = to_sv(lexeme);
-                                                        fmt::print("lexeme: {}\n", sv);
-                                                        return ID{.id = std::string(sv)};
-                                                    },
-                                                    [](std::string &&id) {
-                                                        return ID{.id = std::move(id)};
-                                                    });
+    SCA value = lexy::as_string<std::string> >> lexy::callback<ID>([](str_lex lexeme) {
+                    return ID{.id = std::string(to_sv(lexeme))};
+                });
 };
 
 struct scalar_value {
-    SCA rule = dsl::capture(dsl::token(val_chars));
-    // SCA value = lexy::construct<ScalarValue>;
+    SCA rule  = dsl::capture(dsl::token(val_chars));
     SCA value = lexy::callback<ScalarValue>([](auto lexeme) {
+        assert(lexeme.size() == 1);
         return ScalarValue(lexeme.data()[0]);
     });
 };
@@ -111,8 +105,7 @@ struct real_number {
         },
         [](auto leading_lex, str_lex trailing_lex) {
             auto whole_str =
-                std::string(leading_lex.data(),
-                            leading_lex.data() + leading_lex.size() + 1 + trailing_lex.size());
+                std::string(leading_lex.data(), trailing_lex.data() + trailing_lex.size());
             char *end;
             errno    = 0;
             double d = strtod(whole_str.c_str(), &end);
@@ -131,7 +124,6 @@ struct vector_value {
     SCA rule = (dsl::peek(LEXY_ASCII_ONE_OF("bB")) >> dsl::p<binary_number>) |
                (dsl::peek(LEXY_ASCII_ONE_OF("rR")) >> dsl::p<real_number>) |
                (dsl::else_ >> dsl::error<bad_vector_val>);
-    // SCA value = lexy::construct<VectorValue>;
     SCA value = lexy::callback<VectorValue>(
         [](BinaryNum bnum) {
             return VectorValue{bnum};
@@ -157,25 +149,11 @@ struct any_value {
         });
 };
 
-// (dsl::peek(LEXY_ASCII_ONE_OF("01xXzZbBrR")) >> dsl::p<value>) |
-// (dsl::peek(LEXY_ASCII_ONE_OF("bBrR")) >> dsl::p<vector_value_change>);
-
 struct value_change {
     SCA rule  = dsl::p<any_value> + dsl::p<id>;
-    SCA value = lexy::callback<Change>(
-        []() {
-            fmt::print("wtf value_change void callback\n");
-            return Change{.value = 0, .id = {"void"}};
-        },
-        [](Value value, ID id) {
-            return Change{.value = value, .id = id};
-        },
-        [](ScalarValue sv, ID id) {
-            return Change{.value = sv, .id = id};
-        },
-        [](VectorValue vv, ID id) {
-            return Change{.value = vv, .id = id};
-        });
+    SCA value = lexy::callback<Change>([](Value value, ID id) {
+        return Change{.value = value, .id = id};
+    });
 };
 
 struct sim_cmd {
@@ -280,7 +258,6 @@ Document parse_vcd_document(std::string_view vcd_str, const fs::path &path,
 
 #if 1
 void parse_vcd_document_test(std::string_view vcd_str, const fs::path &path) {
-    fmt::print("lexeme type: {}\n", type_name<lexy::string_lexeme<>>());
     auto input = lexy::string_input<lexy::ascii_encoding>(vcd_str);
     // auto validate_res =
     //     lexy::validate<grammar::document>(input, lexy_ext::report_error.path(path.c_str()));
