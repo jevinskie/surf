@@ -204,7 +204,7 @@ template <> struct fmt::formatter<surf::VCDTypes::BinaryNum> {
     }
     template <typename FormatContext>
     auto format(surf::VCDTypes::BinaryNum const &bnum, FormatContext &ctx) {
-        return fmt::format_to(ctx.out(), "<BinaryNum {:0b}>", bnum.num);
+        return fmt::format_to(ctx.out(), "<BinaryNum {:#0b}>", bnum.num);
     }
 };
 
@@ -245,6 +245,6 @@ template <> struct fmt::formatter<surf::VCDTypes::Change> {
     }
     template <typename FormatContext>
     auto format(surf::VCDTypes::Change const &change, FormatContext &ctx) {
-        return fmt::format_to(ctx.out(), "<Change ID: '{:s}' V: {}>", change.id, change.value);
+        return fmt::format_to(ctx.out(), "<Change ID: '{:s}' V: {}>", change.id.id, change.value);
     }
 };
