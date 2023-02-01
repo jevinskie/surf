@@ -259,6 +259,9 @@ void parse_vcd_document_test(std::string_view vcd_str, const fs::path &path) {
     //     fmt::print("parse_as_tree error: {}\n", tree_res.errors());
     // }
 
+    fmt::print("sizeof(Value): {}\n", sizeof(Value));
+    fmt::print("sizeof(SimCmd): {}\n", sizeof(SimCmd));
+
     std::string trace;
     lexy::trace_to<grammar::vcd_document>(std::back_insert_iterator(trace), input,
                                           {lexy::visualize_fancy});

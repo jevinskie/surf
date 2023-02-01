@@ -133,11 +133,7 @@ struct Change {
     ID id;
 };
 
-#ifndef SURF_TOY
 using SimCmd = std::variant<Comment, Tick, Change>;
-#else
-using SimCmd       = std::string;
-#endif
 
 struct Document {
     Declarations declarations;
@@ -233,7 +229,7 @@ template <> struct fmt::formatter<surf::VCDTypes::ScalarValue> {
     }
     template <typename FormatContext>
     auto format(surf::VCDTypes::ScalarValue const &sv, FormatContext &ctx) {
-        return fmt::format_to(ctx.out(), "<ScalarValue V: {} X: {} Z: {}>", sv.b(),
+        return fmt::format_to(ctx.out(), "<ScalarValue V: {} X: {} Z: {}>", sv.b() ? '1' : '0',
                               surf::boolmoji(sv.x()), surf::boolmoji(sv.z()));
     }
 };
