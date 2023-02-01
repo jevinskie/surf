@@ -36,7 +36,13 @@ struct VCDDeclRuleRes {
 namespace grammar {
 namespace dsl = lexy::dsl;
 
-SCA ws = dsl::whitespace(dsl::ascii::space);
+SCA ws        = dsl::whitespace(dsl::ascii::space);
+using str_lex = lexy::string_lexeme<lexy::ascii_encoding>;
+SCA val_chars = LEXY_ASCII_ONE_OF("01xXzZ");
+
+SCA to_sv(str_lex lexeme) {
+    return std::string_view{lexeme.data(), lexeme.size()};
+}
 
 struct decimal_number {
     SCA rule  = dsl::sign + dsl::integer<int>;
@@ -62,18 +68,23 @@ struct tick {
 
 struct id {
     SCA rule  = dsl::identifier(dsl::ascii::word / dsl::ascii::punct);
-    SCA value = lexy::as_string<std::string>;
+    SCA value = lexy::as_string<std::string> >> lexy::callback<ID>(
+                                                    [](str_lex lexeme) {
+                                                        auto sv = to_sv(lexeme);
+                                                        fmt::print("lexeme: {}\n", sv);
+                                                        return ID{.id = std::string(sv)};
+                                                    },
+                                                    [](std::string &&id) {
+                                                        return ID{.id = std::move(id)};
+                                                    });
 };
 
 struct scalar_value {
-    SCA rule  = LEXY_ASCII_ONE_OF("01xXzZ");
-    SCA value = lexy::callback<ScalarValue>([](char v) {
-        return ScalarValue('0');
+    SCA rule = dsl::capture(dsl::token(val_chars));
+    // SCA value = lexy::construct<ScalarValue>;
+    SCA value = lexy::callback<ScalarValue>([](auto lexeme) {
+        return ScalarValue(lexeme.data()[0]);
     });
-};
-
-struct scalar_value_change {
-    SCA rule = dsl::p<scalar_value> + dsl::p<id>;
 };
 
 struct binary_number {
@@ -82,45 +93,82 @@ struct binary_number {
 };
 
 struct real_number {
-    SCA rule = LEXY_ASCII_ONE_OF("rR") +
-               dsl::capture(dsl::token(dsl::sign) + dsl::token(dsl::ascii::digit)) +
+    SCA rule = LEXY_ASCII_ONE_OF("rR") + dsl::capture(dsl::token(dsl::sign + dsl::ascii::digit)) +
                dsl::opt(dsl::token(dsl::period) >> dsl::capture(dsl::token(dsl::ascii::digit)));
-    SCA value = lexy::callback<RealNum>([](auto leading_lex, auto trailing_lex) {
-        double d;
-        auto whole_str = std::string_view(
-            leading_lex.data(), leading_lex.data() + leading_lex.size() + 1 + trailing_lex.size());
-        auto conv_res = std::from_chars(whole_str.data(), whole_str.data() + whole_str.size(), d);
-        if (conv_res.ec != std::errc()) {
-            if (conv_res.ec == std::errc::invalid_argument) {
-                throw std::invalid_argument(
-                    fmt::format("real_number invalid argument: '{:s}'", whole_str));
-            } else if (conv_res.ec == std::errc::result_out_of_range) {
+    SCA value = lexy::callback<RealNum>(
+        [](auto leading_lex, lexy::nullopt) {
+            auto whole_str =
+                std::string(leading_lex.data(), leading_lex.data() + leading_lex.size());
+            char *end;
+            errno    = 0;
+            double d = strtod(whole_str.c_str(), &end);
+            if (errno == ERANGE || d < std::numeric_limits<double>::lowest() ||
+                d > std::numeric_limits<double>::max()) {
                 throw std::range_error(fmt::format("real_number out of range: '{:s}'", whole_str));
-            } else {
-                throw std::
             }
-        }
-        return RealNum{.num = d};
-    });
+            return RealNum{.num = d};
+        },
+        [](auto leading_lex, str_lex trailing_lex) {
+            auto whole_str =
+                std::string(leading_lex.data(),
+                            leading_lex.data() + leading_lex.size() + 1 + trailing_lex.size());
+            char *end;
+            errno    = 0;
+            double d = strtod(whole_str.c_str(), &end);
+            if (errno == ERANGE || d < std::numeric_limits<double>::lowest() ||
+                d > std::numeric_limits<double>::max()) {
+                throw std::range_error(fmt::format("real_number out of range: '{:s}'", whole_str));
+            }
+            return RealNum{.num = d};
+        });
 };
 
 struct vector_value {
-    SCA rule  = LEXY_ASCII_ONE_OF("01xXzZ");
-    SCA value = lexy::callback<VectorValue>([](char v) {
-        return ScalarValue('0');
-    });
+    struct bad_vector_val {
+        SCA name = "bad vector value";
+    };
+    SCA rule = (dsl::peek(LEXY_ASCII_ONE_OF("bB")) >> dsl::p<binary_number>) |
+               (dsl::peek(LEXY_ASCII_ONE_OF("rR")) >> dsl::p<real_number>) |
+               (dsl::else_ >> dsl::error<bad_vector_val>);
+    // SCA value = lexy::construct<VectorValue>;
+    SCA value = lexy::callback<VectorValue>(
+        [](BinaryNum bnum) {
+            return VectorValue{bnum};
+        },
+        [](RealNum rnum) {
+            return VectorValue{rnum};
+        });
 };
 
-struct vector_value_change {
-    SCA rule  = dsl::p<vector_value> + dsl::p<id>;
-    SCA value = lexy::callback<Change>([](VectorValue vv, std::string &&id) {
-        return Change{.value = vv, .id = std::move(id)};
-    });
+struct any_value {
+    struct val_error {
+        SCA name = "bad value";
+    };
+    SCA rule = (dsl::peek(LEXY_ASCII_ONE_OF("bBrR")) >> dsl::p<vector_value>) |
+               (dsl::peek(val_chars) >> dsl::p<scalar_value>) |
+               (dsl::else_ >> dsl::error<val_error>);
+    SCA value = lexy::callback<Value>(
+        [](VectorValue vv) {
+            return Value{vv};
+        },
+        [](ScalarValue sv) {
+            return Value{sv};
+        });
 };
+
+// (dsl::peek(LEXY_ASCII_ONE_OF("01xXzZbBrR")) >> dsl::p<value>) |
+// (dsl::peek(LEXY_ASCII_ONE_OF("bBrR")) >> dsl::p<vector_value_change>);
 
 struct value_change {
-    SCA rule  = dsl::p<scalar_value_change> | dsl::p<vector_value_change>;
+    SCA rule  = dsl::p<any_value> + dsl::p<id>;
     SCA value = lexy::callback<Change>(
+        []() {
+            fmt::print("wtf value_change void callback\n");
+            return Change{.value = 0, .id = {"void"}};
+        },
+        [](Value value, ID id) {
+            return Change{.value = value, .id = id};
+        },
         [](ScalarValue sv, ID id) {
             return Change{.value = sv, .id = id};
         },
@@ -139,6 +187,9 @@ struct sim_cmd {
         },
         [](Tick tick) {
             return SimCmd{tick};
+        },
+        [](Change change) {
+            return SimCmd{change};
         });
 };
 

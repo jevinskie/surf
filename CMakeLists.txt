@@ -16,6 +16,9 @@ set(BUILD_SHARED_LIBS OFF)
 
 # set(CMAKE_OSX_ARCHITECTURES arm64 x86_64)
 
+# To enable building with upstream LLVM/Clang that doesn't support -index-store-path option
+# set(CMAKE_XCODE_ATTRIBUTE_COMPILER_INDEX_STORE_ENABLE NO)
+
 add_compile_options(-ggdb3)
 # add_compile_options(-g0)
 

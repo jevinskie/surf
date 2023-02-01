@@ -81,9 +81,10 @@ public:
             m_sve = ScalarValueEnum::vX;
         } else if (c == 'z' || c == 'Z') {
             m_sve = ScalarValueEnum::vZ;
+        } else {
+            throw std::out_of_range(
+                fmt::format("ScalarValue '{:c}' not recognized as 0, 1, x, X, z, or Z", (char)c));
         }
-        throw std::out_of_range(
-            fmt::format("ScalarValue '{:c}' not recognized as 0, 1, x, X, z, or Z"));
     }
     ScalarValue(bool b, bool x, bool z) {
         if (SURF_UNLIKELY((int)b + (int)x + (int)z > 1)) {
