@@ -46,17 +46,10 @@ struct word {
     SCA value = lexy::as_string<std::string>;
 };
 
-struct comment_contents {
-    SCA rule = dsl::terminator(dsl::token(ws + LEXY_LIT("$end")))
-                   .list(dsl::no_whitespace(dsl::capture(dsl::ascii::character)));
-    SCA value = lexy::as_string<std::string> >> lexy::callback<Comment>([](std::string &&comment) {
-                    return Comment{.comment = std::move(comment)};
-                });
-};
-
 struct comment {
-    SCA rule = LEXY_LIT("$comment") + dsl::terminator(dsl::token(ws + LEXY_LIT("$end")))
-                                          .list(dsl::capture(dsl::ascii::character));
+    SCA rule =
+        LEXY_LIT("$comment") + dsl::no_whitespace(dsl::terminator(dsl::token(ws + LEXY_LIT("$end")))
+                                                      .list(dsl::capture(dsl::ascii::character)));
     SCA value = lexy::as_string<std::string> >> lexy::callback<Comment>([](std::string &&comment) {
                     return Comment{.comment = std::move(comment)};
                 });
