@@ -20,7 +20,9 @@ MappedReadOnlyFile::MappedReadOnlyFile(const fs::path &path, const void *preferr
         (const uint8_t *)mmap((void *)preferred_addr, st.st_size + 1, PROT_READ,
                               MAP_PRIVATE | (preferred_addr ? MAP_FIXED : 0), fd_res, 0);
     if (buf == MAP_FAILED) {
-        throw std::system_error(std::make_error_code((std::errc)errno), "MappedReadOnlyFile mmap");
+        throw std::system_error(
+            std::make_error_code((std::errc)errno),
+            fmt::format("MappedReadOnlyFile mmap error: {:s}", strerror(errno)));
     }
     const auto close_res = close(fd_res);
     posix_check(close_res, "MappedReadOnlyFile close");

@@ -63,16 +63,70 @@ struct ID {
     std::string id;
 };
 
-struct ScalarValue {
-    bool value;
-    bool x;
-    bool z;
+enum class ScalarValueEnum : uint8_t {
+    v0 = 0,
+    v1 = 1,
+    vX = 0b10,
+    vZ = 0b100
 };
 
-using BinaryNum   = uint64_t;
-using RealNum     = double;
+class ScalarValue {
+public:
+    ScalarValue(char c) {
+        if (c == '0') {
+            m_sve = ScalarValueEnum::v0;
+        } else if (c == '1') {
+            m_sve = ScalarValueEnum::v1;
+        } else if (c == 'x' || c == 'X') {
+            m_sve = ScalarValueEnum::vX;
+        } else if (c == 'z' || c == 'Z') {
+            m_sve = ScalarValueEnum::vZ;
+        }
+        throw std::out_of_range(
+            fmt::format("ScalarValue '{:c}' not recognized as 0, 1, x, X, z, or Z"));
+    }
+    ScalarValue(bool b, bool x, bool z) {
+        if (SURF_UNLIKELY((int)b + (int)x + (int)z > 1)) {
+            throw std::out_of_range(
+                fmt::format("ScalarValue: more than one bit set: B: {} X: {} Z: {}", b, x, z));
+        }
+        if (SURF_LIKELY((int)x + (int)z == 0)) {
+            m_sve = b ? ScalarValueEnum::v1 : ScalarValueEnum::v0;
+            return;
+        }
+        if (x) {
+            m_sve = ScalarValueEnum::vX;
+            return;
+        }
+        if (z) {
+            m_sve = ScalarValueEnum::vZ;
+            return;
+        }
+    }
+    bool b() const {
+        return m_sve == ScalarValueEnum::v1;
+    }
+    bool x() const {
+        return m_sve == ScalarValueEnum::vX;
+    }
+    bool z() const {
+        return m_sve == ScalarValueEnum::vZ;
+    }
+
+private:
+    ScalarValueEnum m_sve;
+};
+
+struct BinaryNum {
+    uint64_t num;
+};
+
+struct RealNum {
+    double num;
+};
+
 using VectorValue = std::variant<BinaryNum, RealNum>;
-using Value       = std::variant<ScalarValue, BinaryNum, RealNum>;
+using Value       = std::variant<ScalarValue, VectorValue>;
 
 struct Change {
     Value value;
@@ -143,6 +197,26 @@ template <> struct fmt::formatter<surf::VCDTypes::Tick> {
     }
 };
 
+template <> struct fmt::formatter<surf::VCDTypes::BinaryNum> {
+    template <typename ParseContext> constexpr auto parse(ParseContext &ctx) {
+        return ctx.begin();
+    }
+    template <typename FormatContext>
+    auto format(surf::VCDTypes::BinaryNum const &bnum, FormatContext &ctx) {
+        return fmt::format_to(ctx.out(), "<BinaryNum {:0b}>", bnum.num);
+    }
+};
+
+template <> struct fmt::formatter<surf::VCDTypes::RealNum> {
+    template <typename ParseContext> constexpr auto parse(ParseContext &ctx) {
+        return ctx.begin();
+    }
+    template <typename FormatContext>
+    auto format(surf::VCDTypes::RealNum const &rnum, FormatContext &ctx) {
+        return fmt::format_to(ctx.out(), "<RealNum {}>", rnum.num);
+    }
+};
+
 template <> struct fmt::formatter<surf::VCDTypes::ID> {
     template <typename ParseContext> constexpr auto parse(ParseContext &ctx) {
         return ctx.begin();
@@ -159,8 +233,8 @@ template <> struct fmt::formatter<surf::VCDTypes::ScalarValue> {
     }
     template <typename FormatContext>
     auto format(surf::VCDTypes::ScalarValue const &sv, FormatContext &ctx) {
-        return fmt::format_to(ctx.out(), "<ScalarValue V: {} X: {} Z: {}>", sv.value,
-                              surf::boolmoji(sv.x), surf::boolmoji(sv.z));
+        return fmt::format_to(ctx.out(), "<ScalarValue V: {} X: {} Z: {}>", sv.b(),
+                              surf::boolmoji(sv.x()), surf::boolmoji(sv.z()));
     }
 };
 

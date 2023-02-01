@@ -12,6 +12,7 @@ using namespace surf;
 #include <fcntl.h>
 #include <iostream>
 #include <optional>
+#include <stdexcept>
 #include <system_error>
 #include <type_traits>
 #include <unistd.h>

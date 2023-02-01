@@ -6,6 +6,7 @@ using namespace surf;
 
 #include <argparse/argparse.hpp>
 #include <fmt/format.h>
+#include <fmt/std.h>
 
 int main(int argc, const char **argv) {
     argparse::ArgumentParser parser("surf-tool");
@@ -40,7 +41,7 @@ int main(int argc, const char **argv) {
         return -2;
     }
 
-    fmt::print("cwd is: {:s}\n", std::filesystem::current_path().string());
+    fmt::print("cwd is: {:s}\n", std::filesystem::current_path());
 
     std::shared_ptr<Trace> trace;
 

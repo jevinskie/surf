@@ -3,6 +3,8 @@
 #include "vcd-lexer.h"
 #include <utils.h>
 
+#include <charconv>
+
 #include <lexy/action/parse.hpp>         // lexy::parse
 #include <lexy/action/parse_as_tree.hpp> // lexy::parse_as_tree
 #include <lexy/action/scan.hpp>          // lexy::scan
@@ -58,9 +60,73 @@ struct tick {
     SCA value = lexy::construct<Tick>;
 };
 
+struct id {
+    SCA rule  = dsl::identifier(dsl::ascii::word / dsl::ascii::punct);
+    SCA value = lexy::as_string<std::string>;
+};
+
+struct scalar_value {
+    SCA rule  = LEXY_ASCII_ONE_OF("01xXzZ");
+    SCA value = lexy::callback<ScalarValue>([](char v) {
+        return ScalarValue('0');
+    });
+};
+
+struct scalar_value_change {
+    SCA rule = dsl::p<scalar_value> + dsl::p<id>;
+};
+
+struct binary_number {
+    SCA rule  = LEXY_ASCII_ONE_OF("bB") + dsl::integer<decltype(BinaryNum{}.num), dsl::binary>;
+    SCA value = lexy::construct<BinaryNum>;
+};
+
+struct real_number {
+    SCA rule = LEXY_ASCII_ONE_OF("rR") +
+               dsl::capture(dsl::token(dsl::sign) + dsl::token(dsl::ascii::digit)) +
+               dsl::opt(dsl::token(dsl::period) >> dsl::capture(dsl::token(dsl::ascii::digit)));
+    SCA value = lexy::callback<RealNum>([](auto leading_lex, auto trailing_lex) {
+        double d;
+        auto whole_str = std::string_view(
+            leading_lex.data(), leading_lex.data() + leading_lex.size() + 1 + trailing_lex.size());
+        auto conv_res = std::from_chars(whole_str.data(), whole_str.data() + whole_str.size(), d);
+        if (conv_res.ec != std::errc()) {
+            if (conv_res.ec == std::errc::invalid_argument) {
+                throw std::invalid_argument(
+                    fmt::format("real_number invalid argument: '{:s}'", whole_str));
+            } else if (conv_res.ec == std::errc::result_out_of_range) {
+                throw std::range_error(fmt::format("real_number out of range: '{:s}'", whole_str));
+            } else {
+                throw std::
+            }
+        }
+        return RealNum{.num = d};
+    });
+};
+
+struct vector_value {
+    SCA rule  = LEXY_ASCII_ONE_OF("01xXzZ");
+    SCA value = lexy::callback<VectorValue>([](char v) {
+        return ScalarValue('0');
+    });
+};
+
+struct vector_value_change {
+    SCA rule  = dsl::p<vector_value> + dsl::p<id>;
+    SCA value = lexy::callback<Change>([](VectorValue vv, std::string &&id) {
+        return Change{.value = vv, .id = std::move(id)};
+    });
+};
+
 struct value_change {
-    SCA rule  = LEXY_LIT("TODO");
-    SCA value = lexy::noop;
+    SCA rule  = dsl::p<scalar_value_change> | dsl::p<vector_value_change>;
+    SCA value = lexy::callback<Change>(
+        [](ScalarValue sv, ID id) {
+            return Change{.value = sv, .id = id};
+        },
+        [](VectorValue vv, ID id) {
+            return Change{.value = vv, .id = id};
+        });
 };
 
 struct sim_cmd {
@@ -68,10 +134,6 @@ struct sim_cmd {
                (dsl::peek(LEXY_LIT("$comment")) >> dsl::p<comment>) |
                (dsl::else_ >> dsl::p<value_change>);
     SCA value = lexy::callback<SimCmd>(
-        []() {
-            fmt::print("empty (void params) sim_cmd created\n");
-            return SimCmd{};
-        },
         [](Comment comment) {
             return SimCmd{comment};
         },
