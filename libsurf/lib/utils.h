@@ -4,6 +4,7 @@
 
 #include <bit>
 
+#if 0
 #include <backward.hpp>
 
 #define DUMP_STACK(name)                                                                           \
@@ -29,6 +30,7 @@
     do {                                                                                           \
         __asm volatile("# LLVM-MCA-END" ::: "memory");                                             \
     } while (0)
+#endif
 
 namespace surf {
 

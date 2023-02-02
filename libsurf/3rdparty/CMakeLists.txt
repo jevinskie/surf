@@ -1,5 +1,4 @@
 add_subdirectory(argparse)
-add_subdirectory(backward-cpp)
 add_subdirectory(concurrencpp)
 
 option(FMT_DOC OFF)
@@ -13,7 +12,6 @@ set_target_properties(fpng PROPERTIES PUBLIC_HEADER fpng/src/fpng.h)
 target_include_directories(fpng PUBLIC fpng-scoped-include)
 
 add_subdirectory(lexy)
-
 add_subdirectory(magic_enum)
 
 add_library(thread-pool INTERFACE)
