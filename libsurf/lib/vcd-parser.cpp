@@ -47,13 +47,13 @@ SCA lex2str_cb = lexy::callback<std::string>([](str_lex lexeme) {
     return to_string(lexeme);
 });
 
-SCA ws        = dsl::whitespace(dsl::ascii::space);
-SCA all_chars = dsl::ascii::character;
-SCA val_chars = LEXY_ASCII_ONE_OF("01xXzZ");
-SCA id_chars  = dsl::ascii::word / dsl::ascii::punct;
-SCA end_term  = dsl::terminator(dsl::token(ws + LEXY_LIT("$end")));
-SCA ws_term   = dsl::terminator(dsl::token(ws));
-SCA all_cap   = dsl::capture(all_chars);
+SCA ws           = dsl::whitespace(dsl::ascii::space);
+SCA all_chars    = dsl::ascii::character;
+SCA non_ws_chars = dsl::ascii::character - dsl::ascii::space;
+SCA val_chars    = LEXY_ASCII_ONE_OF("01xXzZ");
+SCA end_term     = dsl::terminator(dsl::token(ws + LEXY_LIT("$end")));
+SCA ws_term      = dsl::terminator(dsl::token(ws));
+SCA all_cap      = dsl::capture(all_chars);
 
 SCA cap_tok(auto rule) {
     return dsl::capture(dsl::token(rule));
@@ -75,7 +75,7 @@ struct tick {
 };
 
 struct id {
-    SCA rule  = dsl::identifier(id_chars);
+    SCA rule  = dsl::identifier(non_ws_chars);
     SCA value = lexy::callback<ID>([](str_lex lexeme) {
         return ID{.id = to_string(lexeme)};
     });
@@ -233,12 +233,8 @@ struct scope_type {
 };
 
 struct scope_id {
-    SCA rule = dsl::while_one(dsl::peek_not(dsl::token(ws)));
-    // SCA value = lexy::as_string<std::string>;
-    SCA value = lexy::callback<std::string>([]() {
-        fmt::print("scope_id void\n");
-        return "void";
-    });
+    SCA rule  = dsl::identifier(non_ws_chars);
+    SCA value = lexy::as_string<std::string>;
 };
 
 SCA upscope_decl_pair = LEXY_LIT("$upscope") + dsl::token(ws) + LEXY_LIT("$end");
