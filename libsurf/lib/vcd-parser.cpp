@@ -52,6 +52,8 @@ SCA all_chars = dsl::ascii::character;
 SCA val_chars = LEXY_ASCII_ONE_OF("01xXzZ");
 SCA id_chars  = dsl::ascii::word / dsl::ascii::punct;
 SCA end_term  = dsl::terminator(dsl::token(ws + LEXY_LIT("$end")));
+SCA ws_term   = dsl::terminator(dsl::token(ws));
+SCA all_cap   = dsl::capture(all_chars);
 
 SCA cap_tok(auto rule) {
     return dsl::capture(dsl::token(rule));
@@ -63,7 +65,7 @@ struct decimal_number {
 };
 
 struct comment {
-    SCA rule  = LEXY_LIT("$comment") + dsl::no_whitespace(end_term.list(dsl::capture(all_chars)));
+    SCA rule  = LEXY_LIT("$comment") + dsl::no_whitespace(end_term.list(all_cap));
     SCA value = lexy::as_string<std::string> >> lexy::construct<Comment>;
 };
 
@@ -217,9 +219,8 @@ struct scope_type {
     struct bad_scope_type {
         SCA name = "bad scope type - should be one of: begin, fork, function, module, task";
     };
-    SCA rule = dsl::capture(dsl::token(LEXY_LITERAL_SET(LEXY_LIT("begin"), LEXY_LIT("fork"),
-                                                        LEXY_LIT("function"), LEXY_LIT("module"),
-                                                        LEXY_LIT("task")))) |
+    SCA rule = cap_tok(LEXY_LITERAL_SET(LEXY_LIT("begin"), LEXY_LIT("fork"), LEXY_LIT("function"),
+                                        LEXY_LIT("module"), LEXY_LIT("task"))) |
                (dsl::else_ >> dsl::error<bad_scope_type>);
     SCA value = lexy::callback<ScopeType>([](str_lex lexeme) {
         auto str        = to_sv(lexeme);
@@ -232,18 +233,23 @@ struct scope_type {
 };
 
 struct scope_id {
-    SCA rule  = cap_tok(all_chars);
-    SCA value = lex2str_cb;
-};
-
-struct scope {
-    SCA rule  = LEXY_LIT("$scope") + dsl::p<scope_type> + dsl::p<scope_id> + LEXY_LIT("$end");
-    SCA value = lexy::callback<Scope>([](ScopeType scope_type, std::string &&scope_id) {
-        return Scope{.id = std::move(scope_id), .type = std::move(scope_type)};
+    SCA rule = dsl::while_one(dsl::peek_not(dsl::token(ws)));
+    // SCA value = lexy::as_string<std::string>;
+    SCA value = lexy::callback<std::string>([]() {
+        fmt::print("scope_id void\n");
+        return "void";
     });
 };
 
 SCA upscope_decl_pair = LEXY_LIT("$upscope") + dsl::token(ws) + LEXY_LIT("$end");
+
+struct scope {
+    SCA rule = LEXY_LIT("$scope") + dsl::p<scope_type> + dsl::p<scope_id> + LEXY_LIT("$end") +
+               upscope_decl_pair;
+    SCA value = lexy::callback<Scope>([](ScopeType scope_type, std::string &&scope_id) {
+        return Scope{.id = std::move(scope_id), .type = std::move(scope_type)};
+    });
+};
 
 struct declaration {
     struct bad_decl {

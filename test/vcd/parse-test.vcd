@@ -1,6 +1,8 @@
 $comment decl comment $end
 $date date string $end
 $timescale 10 ns $end
+$scope module TOP $end
+$upscope $end
 $enddefinitions $end
 #10
 0 a

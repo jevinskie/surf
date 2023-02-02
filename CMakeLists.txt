@@ -25,8 +25,8 @@ add_compile_options(-ggdb3)
 add_compile_options(-O0 -fno-omit-frame-pointer)
 # add_compile_options(-fno-inline)
 
-# add_compile_options(-Os -fvisibility=hidden -fvisibility-inlines-hidden -ffunction-sections -fdata-sections)
-# add_link_options(-Os -Wl,-dead_strip)
+# add_compile_options(-Oz -fvisibility=hidden -fvisibility-inlines-hidden -ffunction-sections -fdata-sections)
+# add_link_options(-Wl,-dead_strip)
 
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_EXTENSIONS NO)
