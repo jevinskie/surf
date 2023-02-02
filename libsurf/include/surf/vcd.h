@@ -77,24 +77,25 @@ enum class ScopeType : uint8_t {
 
 struct Scope {
     std::string id;
+    std::vector<Var> vars;
     std::vector<Scope> subscopes;
     ScopeType type;
 };
+
+struct UpScope {};
 
 struct Timescale {
     TimeNumber time_number;
     TimeUnit time_unit;
 };
 
-using Declaration = std::variant<Comment, Date, Version, Timescale, Scope, Var>;
+using Declaration = std::variant<Comment, Date, Version, Timescale, Scope, Var, UpScope>;
 
 struct Declarations {
     std::optional<std::vector<Comment>> comments;
     std::optional<Date> date;
     std::optional<Version> version;
     std::optional<Timescale> timescale;
-    std::optional<std::vector<Var>> vars;
-    std::optional<std::vector<Scope>> scopes;
 };
 
 struct Tick {
@@ -326,6 +327,16 @@ template <> struct fmt::formatter<surf::VCDTypes::Var> {
     auto format(surf::VCDTypes::Var const &var, FormatContext &ctx) {
         return fmt::format_to(ctx.out(), "<Var {:s} {:d} {:s} {:s}>",
                               magic_enum::enum_name(var.type), var.size, var.id, var.ref);
+    }
+};
+
+template <> struct fmt::formatter<surf::VCDTypes::UpScope> {
+    template <typename ParseContext> constexpr auto parse(ParseContext &ctx) {
+        return ctx.begin();
+    }
+    template <typename FormatContext>
+    auto format(surf::VCDTypes::UpScope const &uscope, FormatContext &ctx) {
+        return fmt::format_to(ctx.out(), "<UpScope>");
     }
 };
 

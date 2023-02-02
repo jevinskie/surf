@@ -267,19 +267,16 @@ struct var {
         });
 };
 
-struct scope_id {
-    SCA rule  = dsl::identifier(non_ws_chars);
-    SCA value = lexy::as_string<std::string>;
-};
-
-SCA upscope_decl_pair = LEXY_LIT("$upscope") + dsl::token(ws) + LEXY_LIT("$end");
-
 struct scope {
-    SCA rule = LEXY_LIT("$scope") + dsl::p<scope_type> + dsl::p<scope_id> + LEXY_LIT("$end") +
-               upscope_decl_pair;
+    SCA rule  = LEXY_LIT("$scope") + dsl::p<scope_type> + dsl::p<id> + LEXY_LIT("$end");
     SCA value = lexy::callback<Scope>([](ScopeType scope_type, std::string &&scope_id) {
         return Scope{.id = std::move(scope_id), .type = std::move(scope_type)};
     });
+};
+
+struct upscope {
+    SCA rule  = LEXY_LIT("$upscope") + dsl::token(ws) + LEXY_LIT("$end");
+    SCA value = lexy::construct<UpScope>;
 };
 
 struct declaration {
@@ -291,7 +288,9 @@ struct declaration {
                (dsl::peek(LEXY_LIT("$version")) >> dsl::p<version>) |
                (dsl::peek(LEXY_LIT("$timescale")) >> dsl::p<timescale>) |
                (dsl::peek(LEXY_LIT("$scope")) >> dsl::p<scope>) |
-               (dsl::peek(LEXY_LIT("$var")) >> dsl::p<var>) | (dsl::else_ >> dsl::error<bad_decl>);
+               (dsl::peek(LEXY_LIT("$var")) >> dsl::p<var>) |
+               (dsl::peek(LEXY_LIT("$upscope")) >> dsl::p<upscope>) |
+               (dsl::else_ >> dsl::error<bad_decl>);
     SCA value = lexy::callback<Declaration>(
         [](Comment &&comment) {
             return Declaration{std::move(comment)};
@@ -310,6 +309,9 @@ struct declaration {
         },
         [](Var &&var) {
             return Declaration{std::move(var)};
+        },
+        [](UpScope &&upscope) {
+            return Declaration{std::move(upscope)};
         });
 };
 
