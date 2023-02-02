@@ -207,9 +207,9 @@ struct sim_cmd_eof_list {
 };
 
 struct vcd_document {
-    SCA rule = dsl::p<decl_list> + dsl::p<sim_cmd_eof_list>;
-    SCA value =
-        lexy::callback<Document>([](std::vector<Declaration> &&decls, std::vector<SimCmd> &&cmds) {
+    SCA rule  = dsl::p<decl_list> + dsl::p<sim_cmd_eof_list>;
+    SCA value = lexy::callback<DocumentRawDecls>(
+        [](std::vector<Declaration> &&decls, std::vector<SimCmd> &&cmds) {
             return DocumentRawDecls{.declarations = std::move(decls), .sim_cmds = std::move(cmds)};
         });
     SCA whitespace = ws;
@@ -219,8 +219,7 @@ struct vcd_document {
 
 }; // namespace
 
-static VCDTypes::Declarations
-decls_from_decl_list(const std::vector<VCDTypes::Declaration> &decl_list) {
+VCDTypes::Declarations decls_from_decl_list(const std::vector<VCDTypes::Declaration> &decl_list) {
     return {};
 }
 
@@ -268,7 +267,7 @@ std::vector<SimCmd> parse_vcd_sim_cmds(std::string_view sim_cmds_str, fs::path p
 Document parse_vcd_document(std::string_view vcd_str, const fs::path &path,
                             std::optional<lexy::visualization_options> opts) {
     auto decls_ret = parse_vcd_declarations(vcd_str, path, opts);
-    return {.declarations = std::move(decls_ret.decls),
+    return {.declarations = decls_from_decl_list(std::move(decls_ret.decls)),
             .sim_cmds     = parse_vcd_sim_cmds(decls_ret.remaining, path, opts)};
 }
 
@@ -301,7 +300,7 @@ void parse_vcd_document_test(std::string_view vcd_str, const fs::path &path) {
 
     try {
         decls_ret        = parse_vcd_declarations(vcd_str, path);
-        res.declarations = std::move(decls_ret.decls);
+        res.declarations = decls_from_decl_list(std::move(decls_ret.decls));
     } catch (const VCDDeclParseError &decl_parse_error) {
         fmt::print(stderr, "Error parsing VCD declarations:\n{:s}\n", decl_parse_error.what());
     }
@@ -311,16 +310,18 @@ void parse_vcd_document_test(std::string_view vcd_str, const fs::path &path) {
         fmt::print(stderr, "Error parsing VCD simulation commands:\n{:s}\n",
                    cmds_parse_error.what());
     }
-    fmt::print("2-step decls: {}\n", fmt::join(res.declarations, ", "));
+    fmt::print("2-step decls: {}\n", res.declarations);
     fmt::print("2-step cmds: {}\n", fmt::join(res.sim_cmds, ", "));
 
     auto doc_res =
         lexy::parse<grammar::vcd_document>(input, lexy_ext::report_error.path(path.c_str()));
     fmt::print("1-step doc success: {}\n", doc_res.is_success());
     if (doc_res.is_success()) {
-        res = std::move(doc_res.value());
+        auto doc_val = std::move(doc_res.value());
+        res = Document{.declarations = decls_from_decl_list(std::move(doc_val.declarations)),
+                       .sim_cmds     = std::move(doc_val.sim_cmds)};
     }
-    fmt::print("1-step decls: {}\n", fmt::join(res.declarations, ", "));
+    fmt::print("1-step decls: {}\n", res.declarations);
     fmt::print("1-step cmds: {}\n", fmt::join(res.sim_cmds, ", "));
 }
 #endif

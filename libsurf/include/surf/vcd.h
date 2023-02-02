@@ -265,3 +265,13 @@ template <> struct fmt::formatter<surf::VCDTypes::Date> {
         return fmt::format_to(ctx.out(), "<Date '{:s}'>", date.date);
     }
 };
+
+template <> struct fmt::formatter<surf::VCDTypes::Declarations> {
+    template <typename ParseContext> constexpr auto parse(ParseContext &ctx) {
+        return ctx.begin();
+    }
+    template <typename FormatContext>
+    auto format(surf::VCDTypes::Declarations const &decls, FormatContext &ctx) {
+        return fmt::format_to(ctx.out(), "<Declarations '{:s}'>", "foo");
+    }
+};

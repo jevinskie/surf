@@ -5,10 +5,6 @@
 #include "vcd-lexer.h"
 #include "vcd-parser.h"
 
-VCDTypes::Declarations decls_from_decl_list(const std::vector<VCDTypes::Declaration> &decl_list) {
-    return {};
-}
-
 VCDFile::VCDFile(const fs::path &path)
     : m_parsed_changes(false), m_mapped_file(path, (const void *)0x80'0000'0000) {
     fmt::print("vcd sz: {:d} data: {:p}\n", size(), fmt::ptr(data()));
