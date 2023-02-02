@@ -76,9 +76,7 @@ struct tick {
 
 struct id {
     SCA rule  = dsl::identifier(non_ws_chars);
-    SCA value = lexy::callback<ID>([](str_lex lexeme) {
-        return ID{.id = to_string(lexeme)};
-    });
+    SCA value = lexy::as_string<std::string>;
 };
 
 struct scalar_value {
@@ -146,8 +144,8 @@ struct any_value {
 
 struct value_change {
     SCA rule  = dsl::p<any_value> + dsl::p<id>;
-    SCA value = lexy::callback<Change>([](Value value, ID id) {
-        return Change{.value = value, .id = id};
+    SCA value = lexy::callback<Change>([](Value value, std::string &&id) {
+        return Change{.value = value, .id = std::move(id)};
     });
 };
 

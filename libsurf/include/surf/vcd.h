@@ -24,10 +24,6 @@ struct Version {
     std::string version;
 };
 
-struct ID {
-    std::string id;
-};
-
 enum class TimeNumber : uint8_t {
     n1   = 1,
     n10  = 10,
@@ -65,7 +61,7 @@ enum class VarType : uint8_t {
 };
 
 struct Var {
-    std::string var;
+    std::string id;
     int size;
     VarType type;
 };
@@ -169,7 +165,7 @@ using Value = std::variant<ScalarValue, BinaryNum, RealNum>;
 
 struct Change {
     Value value;
-    ID id;
+    std::string id;
 };
 
 using SimCmd = std::variant<Comment, Tick, Change>;
@@ -257,16 +253,6 @@ template <> struct fmt::formatter<surf::VCDTypes::RealNum> {
     }
 };
 
-template <> struct fmt::formatter<surf::VCDTypes::ID> {
-    template <typename ParseContext> constexpr auto parse(ParseContext &ctx) {
-        return ctx.begin();
-    }
-    template <typename FormatContext>
-    auto format(surf::VCDTypes::ID const &id, FormatContext &ctx) {
-        return fmt::format_to(ctx.out(), "<ID {}>", id.id);
-    }
-};
-
 template <> struct fmt::formatter<surf::VCDTypes::ScalarValue> {
     template <typename ParseContext> constexpr auto parse(ParseContext &ctx) {
         return ctx.begin();
@@ -284,7 +270,7 @@ template <> struct fmt::formatter<surf::VCDTypes::Change> {
     }
     template <typename FormatContext>
     auto format(surf::VCDTypes::Change const &change, FormatContext &ctx) {
-        return fmt::format_to(ctx.out(), "<Change ID: '{}' V: {}>", change.id.id, change.value);
+        return fmt::format_to(ctx.out(), "<Change ID: '{:s}' V: {}>", change.id, change.value);
     }
 };
 
