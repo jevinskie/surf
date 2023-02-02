@@ -24,6 +24,10 @@ struct Version {
     std::string version;
 };
 
+struct ID {
+    std::string id;
+};
+
 enum class TimeNumber : uint8_t {
     n1   = 1,
     n10  = 10,
@@ -39,8 +43,31 @@ enum class TimeUnit : int8_t {
     fs = -15
 };
 
+enum class VarType : uint8_t {
+    event,
+    integer,
+    parameter,
+    real,
+    realtime,
+    reg,
+    supply0,
+    supply1,
+    time,
+    tri,
+    triand,
+    trior,
+    trireg,
+    tri0,
+    tri1,
+    wand,
+    wire,
+    wor
+};
+
 struct Var {
     std::string var;
+    int size;
+    VarType type;
 };
 
 enum class ScopeType : uint8_t {
@@ -53,7 +80,7 @@ enum class ScopeType : uint8_t {
 
 struct Scope {
     std::string id;
-    std::map<std::string, Scope> subscopes;
+    std::vector<Scope> subscopes;
     ScopeType type;
 };
 
@@ -75,10 +102,6 @@ struct Declarations {
 
 struct Tick {
     uint64_t tick;
-};
-
-struct ID {
-    std::string id;
 };
 
 enum class ScalarValueEnum : uint8_t {

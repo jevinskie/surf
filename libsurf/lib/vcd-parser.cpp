@@ -232,6 +232,29 @@ struct scope_type {
     });
 };
 
+struct var_type {
+    struct bad_var_type {
+        SCA name =
+            "bad var type - should be one of: event, integer, parameter, real, realtime, reg, "
+            "supply0, supply1, time, tri, triand, trior, trireg, tri0, tri1, wand, wire, wor";
+    };
+    SCA rule = cap_tok(LEXY_LITERAL_SET(
+                   LEXY_LIT("event"), LEXY_LIT("integer"), LEXY_LIT("parameter"), LEXY_LIT("real"),
+                   LEXY_LIT("realtime"), LEXY_LIT("reg"), LEXY_LIT("supply0"), LEXY_LIT("supply1"),
+                   LEXY_LIT("time"), LEXY_LIT("tri"), LEXY_LIT("triand"), LEXY_LIT("trior"),
+                   LEXY_LIT("trireg"), LEXY_LIT("tri0"), LEXY_LIT("tri1"), LEXY_LIT("wand"),
+                   LEXY_LIT("wire"), LEXY_LIT("wor"))) |
+               (dsl::else_ >> dsl::error<bad_var_type>);
+    SCA value = lexy::callback<VarType>([](str_lex lexeme) {
+        auto str      = to_sv(lexeme);
+        auto var_type = magic_enum::enum_cast<ScopeType>(str);
+        if (!var_type.has_value()) {
+            throw std::domain_error(fmt::format("Bad var type: '{:s}'", str));
+        }
+        return var_type.value();
+    });
+};
+
 struct scope_id {
     SCA rule  = dsl::identifier(non_ws_chars);
     SCA value = lexy::as_string<std::string>;
