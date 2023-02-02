@@ -3,6 +3,7 @@ $date date string $end
 $timescale 10 ns $end
 $scope module TOP $end
 $upscope $end
+$var wire  1 O" sim_trace lol $end
 $enddefinitions $end
 #10
 0 a

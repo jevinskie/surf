@@ -62,6 +62,7 @@ enum class VarType : uint8_t {
 
 struct Var {
     std::string id;
+    std::string ref;
     int size;
     VarType type;
 };
@@ -85,7 +86,7 @@ struct Timescale {
     TimeUnit time_unit;
 };
 
-using Declaration = std::variant<Comment, Date, Version, Timescale, Scope>;
+using Declaration = std::variant<Comment, Date, Version, Timescale, Scope, Var>;
 
 struct Declarations {
     std::optional<std::vector<Comment>> comments;
@@ -314,6 +315,17 @@ template <> struct fmt::formatter<surf::VCDTypes::Scope> {
     auto format(surf::VCDTypes::Scope const &scope, FormatContext &ctx) {
         return fmt::format_to(ctx.out(), "<Scope {:s} {:s}>", magic_enum::enum_name(scope.type),
                               scope.id);
+    }
+};
+
+template <> struct fmt::formatter<surf::VCDTypes::Var> {
+    template <typename ParseContext> constexpr auto parse(ParseContext &ctx) {
+        return ctx.begin();
+    }
+    template <typename FormatContext>
+    auto format(surf::VCDTypes::Var const &var, FormatContext &ctx) {
+        return fmt::format_to(ctx.out(), "<Var {:s} {:d} {:s} {:s}>",
+                              magic_enum::enum_name(var.type), var.size, var.id, var.ref);
     }
 };
 

@@ -245,12 +245,26 @@ struct var_type {
                (dsl::else_ >> dsl::error<bad_var_type>);
     SCA value = lexy::callback<VarType>([](str_lex lexeme) {
         auto str      = to_sv(lexeme);
-        auto var_type = magic_enum::enum_cast<ScopeType>(str);
+        auto var_type = magic_enum::enum_cast<VarType>(str);
         if (!var_type.has_value()) {
             throw std::domain_error(fmt::format("Bad var type: '{:s}'", str));
         }
         return var_type.value();
     });
+};
+
+struct reference_and_end {
+    SCA rule  = dsl::no_whitespace(end_term.list(all_cap));
+    SCA value = lexy::as_string<std::string>;
+};
+
+struct var {
+    SCA rule = LEXY_LIT("$var") + dsl::p<var_type> + dsl::integer<int> + dsl::p<id> +
+               dsl::p<reference_and_end>;
+    SCA value =
+        lexy::callback<Var>([](VarType var_type, int size, std::string &&id, std::string &&ref) {
+            return Var{.id = std::move(id), .size = size, .type = var_type, .ref = std::move(ref)};
+        });
 };
 
 struct scope_id {
@@ -277,7 +291,7 @@ struct declaration {
                (dsl::peek(LEXY_LIT("$version")) >> dsl::p<version>) |
                (dsl::peek(LEXY_LIT("$timescale")) >> dsl::p<timescale>) |
                (dsl::peek(LEXY_LIT("$scope")) >> dsl::p<scope>) |
-               (dsl::else_ >> dsl::error<bad_decl>);
+               (dsl::peek(LEXY_LIT("$var")) >> dsl::p<var>) | (dsl::else_ >> dsl::error<bad_decl>);
     SCA value = lexy::callback<Declaration>(
         [](Comment &&comment) {
             return Declaration{std::move(comment)};
@@ -293,6 +307,9 @@ struct declaration {
         },
         [](Scope &&scope) {
             return Declaration{std::move(scope)};
+        },
+        [](Var &&var) {
+            return Declaration{std::move(var)};
         });
 };
 
