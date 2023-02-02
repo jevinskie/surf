@@ -42,6 +42,7 @@ foreach(SRC ${SURF_SRC})
 endforeach()
 
 set(SURF_PUBLIC_LIBS
+    magic_enum
 )
 
 set(SURF_PRIVATE_LIBS

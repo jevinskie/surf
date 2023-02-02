@@ -22,3 +22,6 @@
 [submodule "libsurf/3rdparty/backward-cpp"]
 	path = libsurf/3rdparty/backward-cpp
 	url = https://github.com/bombela/backward-cpp
+[submodule "libsurf/3rdparty/magic_enum"]
+	path = libsurf/3rdparty/magic_enum
+	url = https://github.com/Neargye/magic_enum

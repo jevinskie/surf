@@ -36,14 +36,25 @@ struct VCDDeclRuleRes {
 namespace grammar {
 namespace dsl = lexy::dsl;
 
-SCA ws        = dsl::whitespace(dsl::ascii::space);
 using str_lex = lexy::string_lexeme<lexy::ascii_encoding>;
+SCA to_sv(str_lex lexeme) {
+    return std::string_view{lexeme.data(), lexeme.size()};
+}
+std::string to_string(str_lex lexeme) {
+    return std::string(lexeme.data(), lexeme.size());
+}
+SCA lex2str_cb = lexy::callback<std::string>([](str_lex lexeme) {
+    return to_string(lexeme);
+});
+
+SCA ws        = dsl::whitespace(dsl::ascii::space);
+SCA all_chars = dsl::ascii::character;
 SCA val_chars = LEXY_ASCII_ONE_OF("01xXzZ");
 SCA id_chars  = dsl::ascii::word / dsl::ascii::punct;
 SCA end_term  = dsl::terminator(dsl::token(ws + LEXY_LIT("$end")));
 
-SCA to_sv(str_lex lexeme) {
-    return std::string_view{lexeme.data(), lexeme.size()};
+SCA cap_tok(auto rule) {
+    return dsl::capture(dsl::token(rule));
 }
 
 struct decimal_number {
@@ -52,8 +63,7 @@ struct decimal_number {
 };
 
 struct comment {
-    SCA rule = LEXY_LIT("$comment") +
-               dsl::no_whitespace(end_term.list(dsl::capture(dsl::ascii::character)));
+    SCA rule  = LEXY_LIT("$comment") + dsl::no_whitespace(end_term.list(dsl::capture(all_chars)));
     SCA value = lexy::as_string<std::string> >> lexy::construct<Comment>;
 };
 
@@ -64,13 +74,13 @@ struct tick {
 
 struct id {
     SCA rule  = dsl::identifier(id_chars);
-    SCA value = lexy::as_string<std::string> >> lexy::callback<ID>([](str_lex lexeme) {
-                    return ID{.id = std::string(to_sv(lexeme))};
-                });
+    SCA value = lexy::callback<ID>([](str_lex lexeme) {
+        return ID{.id = to_string(lexeme)};
+    });
 };
 
 struct scalar_value {
-    SCA rule  = dsl::capture(dsl::token(val_chars));
+    SCA rule  = cap_tok(val_chars);
     SCA value = lexy::callback<ScalarValue>([](auto lexeme) {
         assert(lexeme.size() == 1);
         return ScalarValue(lexeme.data()[0]);
@@ -83,9 +93,8 @@ struct binary_number {
 };
 
 struct real_number {
-    SCA rule =
-        LEXY_ASCII_ONE_OF("rR") + dsl::capture(dsl::token(dsl::sign + dsl::integer<uint64_t>)) +
-        dsl::opt(dsl::token(dsl::period) >> dsl::capture(dsl::token(dsl::integer<uint64_t>)));
+    SCA rule = LEXY_ASCII_ONE_OF("rR") + cap_tok(dsl::sign + dsl::integer<uint64_t>) +
+               dsl::opt(dsl::token(dsl::period) >> cap_tok(dsl::integer<uint64_t>));
     SCA value = lexy::callback<RealNum>(
         [](auto leading_lex, lexy::nullopt) {
             auto whole_str =
@@ -157,71 +166,81 @@ struct sim_cmd {
 };
 
 struct date {
-    SCA rule =
-        LEXY_LIT("$date") + dsl::no_whitespace(end_term.list(dsl::capture(dsl::ascii::character)));
+    SCA rule  = LEXY_LIT("$date") + dsl::no_whitespace(end_term.list(dsl::capture(all_chars)));
     SCA value = lexy::as_string<std::string> >> lexy::construct<Date>;
 };
 
 struct version {
-    SCA rule = LEXY_LIT("$version") +
-               dsl::no_whitespace(end_term.list(dsl::capture(dsl::ascii::character)));
+    SCA rule  = LEXY_LIT("$version") + dsl::no_whitespace(end_term.list(dsl::capture(all_chars)));
     SCA value = lexy::as_string<std::string> >> lexy::construct<Version>;
 };
 
 struct time_number {
     struct bad_time_num {
-        SCA name = "bad time number - should be one of 1, 10, or 100";
+        SCA name = "bad time number - should be one of: 1, 10, 100";
     };
-    SCA rule =
-        dsl::capture(dsl::token(LEXY_LITERAL_SET(LEXY_LIT("100"), LEXY_LIT("10"), LEXY_LIT("1")))) |
-        (dsl::else_ >> dsl::error<bad_time_num>);
-    SCA value = lexy::callback<TimeNumEnum>([](str_lex lexeme) {
-        auto str = to_sv(lexeme);
-        if (str == "100"sv) {
-            return TimeNumEnum::n100;
-        } else if (str == "10"sv) {
-            return TimeNumEnum::n10;
-        } else {
-            if (str != "1"sv) {
-                throw std::domain_error(fmt::format("Bad time number: '{:s}'", str));
-            }
-            return TimeNumEnum::n1;
+    SCA rule = cap_tok(LEXY_LITERAL_SET(LEXY_LIT("100"), LEXY_LIT("10"), LEXY_LIT("1"))) |
+               (dsl::else_ >> dsl::error<bad_time_num>);
+    SCA value = lexy::callback<TimeNumber>([](str_lex lexeme) {
+        auto str      = "n"s + to_string(lexeme);
+        auto time_num = magic_enum::enum_cast<TimeNumber>(str);
+        if (!time_num.has_value()) {
+            throw std::domain_error(fmt::format("Bad time number: '{:s}'", str));
         }
+        return time_num.value();
     });
 };
 
 struct time_unit {
     struct bad_time_unit {
-        SCA name = "bad time unit - should be one of s, ms, us, ns, ps, fs";
+        SCA name = "bad time unit - should be one of: s, ms, us, ns, ps, fs";
     };
-    SCA rule =
-        dsl::capture(dsl::token(LEXY_LITERAL_SET(LEXY_LIT("fs"), LEXY_LIT("ps"), LEXY_LIT("ns"),
-                                                 LEXY_LIT("us"), LEXY_LIT("ms"), LEXY_LIT("s")))) |
-        (dsl::else_ >> dsl::error<bad_time_unit>);
-    SCA value = lexy::callback<TimeUnitEnum>([](str_lex lexeme) {
-        auto str = to_sv(lexeme);
-        if (str == "fs"sv) {
-            return TimeUnitEnum::fs;
-        } else if (str == "ps"sv) {
-            return TimeUnitEnum::ps;
-        } else if (str == "ns"sv) {
-            return TimeUnitEnum::ns;
-        } else if (str == "us"sv) {
-            return TimeUnitEnum::us;
-        } else if (str == "ms"sv) {
-            return TimeUnitEnum::ms;
-        } else {
-            if (str != "s"sv) {
-                throw std::domain_error(fmt::format("Bad time unit: '{:s}'", str));
-            }
-            return TimeUnitEnum::s;
+    SCA rule = cap_tok(LEXY_LITERAL_SET(LEXY_LIT("fs"), LEXY_LIT("ps"), LEXY_LIT("ns"),
+                                        LEXY_LIT("us"), LEXY_LIT("ms"), LEXY_LIT("s"))) |
+               (dsl::else_ >> dsl::error<bad_time_unit>);
+    SCA value = lexy::callback<TimeUnit>([](str_lex lexeme) {
+        auto str       = to_sv(lexeme);
+        auto time_unit = magic_enum::enum_cast<TimeUnit>(str);
+        if (!time_unit.has_value()) {
+            throw std::domain_error(fmt::format("Bad time unit: '{:s}'", str));
         }
+        return time_unit.value();
     });
 };
 
 struct timescale {
     SCA rule  = LEXY_LIT("$timescale") + dsl::p<time_number> + dsl::p<time_unit> + LEXY_LIT("$end");
     SCA value = lexy::construct<Timescale>;
+};
+
+struct scope_type {
+    struct bad_scope_type {
+        SCA name = "bad scope type - should be one of: begin, fork, function, module, task";
+    };
+    SCA rule = dsl::capture(dsl::token(LEXY_LITERAL_SET(LEXY_LIT("begin"), LEXY_LIT("fork"),
+                                                        LEXY_LIT("function"), LEXY_LIT("module"),
+                                                        LEXY_LIT("task")))) |
+               (dsl::else_ >> dsl::error<bad_scope_type>);
+    SCA value = lexy::callback<ScopeType>([](str_lex lexeme) {
+        auto str        = to_sv(lexeme);
+        auto scope_type = magic_enum::enum_cast<ScopeType>(str);
+        if (!scope_type.has_value()) {
+            throw std::domain_error(fmt::format("Bad scope type: '{:s}'", str));
+        }
+        return scope_type.value();
+    });
+};
+
+struct scope_id {
+    SCA rule  = cap_tok(all_chars);
+    SCA value = lex2str_cb;
+};
+
+struct scope {
+    SCA rule  = LEXY_LIT("$scope") + dsl::p<scope_type> + dsl::p<scope_id> + LEXY_LIT("$end");
+    SCA value = lexy::callback<Scope>([](ScopeType scope_type, std::string &&scope_id) {
+        return Scope{.id = std::move(scope_id), .type = std::move(scope_type)};
+    });
 };
 
 SCA upscope_decl_pair = LEXY_LIT("$upscope") + dsl::token(ws) + LEXY_LIT("$end");
@@ -234,6 +253,7 @@ struct declaration {
                (dsl::peek(LEXY_LIT("$date")) >> dsl::p<date>) |
                (dsl::peek(LEXY_LIT("$version")) >> dsl::p<version>) |
                (dsl::peek(LEXY_LIT("$timescale")) >> dsl::p<timescale>) |
+               (dsl::peek(LEXY_LIT("$scope")) >> dsl::p<scope>) |
                (dsl::else_ >> dsl::error<bad_decl>);
     SCA value = lexy::callback<Declaration>(
         [](Comment &&comment) {
@@ -247,6 +267,9 @@ struct declaration {
         },
         [](Timescale timescale) {
             return Declaration{timescale};
+        },
+        [](Scope &&scope) {
+            return Declaration{std::move(scope)};
         });
 };
 

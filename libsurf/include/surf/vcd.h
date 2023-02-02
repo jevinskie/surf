@@ -6,6 +6,7 @@
 #include "trace.h"
 
 #include <fmt/format.h>
+#include <magic_enum.hpp>
 
 namespace surf {
 
@@ -23,25 +24,13 @@ struct Version {
     std::string version;
 };
 
-enum class TimeNumEnum : uint8_t {
+enum class TimeNumber : uint8_t {
     n1   = 1,
     n10  = 10,
     n100 = 100
 };
 
-static inline std::string to_string(TimeNumEnum tnum) {
-    if (tnum == TimeNumEnum::n1) {
-        return "1";
-    } else if (tnum == TimeNumEnum::n10) {
-        return "10";
-    } else if (tnum == TimeNumEnum::n100) {
-        return "100";
-    } else {
-        throw std::domain_error(fmt::format("Bad time number enum: {:d}", (int)tnum));
-    }
-}
-
-enum class TimeUnitEnum : int8_t {
+enum class TimeUnit : int8_t {
     s  = 0,
     ms = -3,
     us = -6,
@@ -50,38 +39,30 @@ enum class TimeUnitEnum : int8_t {
     fs = -15
 };
 
-static inline std::string to_string(TimeUnitEnum tunit) {
-    if (tunit == TimeUnitEnum::s) {
-        return "s";
-    } else if (tunit == TimeUnitEnum::ms) {
-        return "ms";
-    } else if (tunit == TimeUnitEnum::us) {
-        return "us";
-    } else if (tunit == TimeUnitEnum::ns) {
-        return "ns";
-    } else if (tunit == TimeUnitEnum::ps) {
-        return "ps";
-    } else if (tunit == TimeUnitEnum::fs) {
-        return "fs";
-    } else {
-        throw std::domain_error(fmt::format("Bad time unit enum: {:d}", (int)tunit));
-    }
-}
-
 struct Var {
     std::string var;
 };
 
+enum class ScopeType : uint8_t {
+    begin,
+    fork,
+    function,
+    module,
+    task
+};
+
 struct Scope {
-    std::string scope;
+    std::string id;
+    std::map<std::string, Scope> subscopes;
+    ScopeType type;
 };
 
 struct Timescale {
-    TimeNumEnum time_number;
-    TimeUnitEnum time_unit;
+    TimeNumber time_number;
+    TimeUnit time_unit;
 };
 
-using Declaration = std::variant<Comment, Date, Version, Timescale>;
+using Declaration = std::variant<Comment, Date, Version, Timescale, Scope>;
 
 struct Declarations {
     std::optional<std::vector<Comment>> comments;
@@ -310,8 +291,20 @@ template <> struct fmt::formatter<surf::VCDTypes::Timescale> {
     }
     template <typename FormatContext>
     auto format(surf::VCDTypes::Timescale const &timescale, FormatContext &ctx) {
-        return fmt::format_to(ctx.out(), "<Timescale {:s} {:s}>", to_string(timescale.time_number),
-                              to_string(timescale.time_unit));
+        return fmt::format_to(ctx.out(), "<Timescale {:d} {:s}>",
+                              magic_enum::enum_integer(timescale.time_number),
+                              magic_enum::enum_name(timescale.time_unit));
+    }
+};
+
+template <> struct fmt::formatter<surf::VCDTypes::Scope> {
+    template <typename ParseContext> constexpr auto parse(ParseContext &ctx) {
+        return ctx.begin();
+    }
+    template <typename FormatContext>
+    auto format(surf::VCDTypes::Scope const &scope, FormatContext &ctx) {
+        return fmt::format_to(ctx.out(), "<Scope {:s} {:s}>", magic_enum::enum_name(scope.type),
+                              scope.id);
     }
 };
 
