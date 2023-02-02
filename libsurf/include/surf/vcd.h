@@ -7,8 +7,6 @@
 
 #include <fmt/format.h>
 
-// #define SURF_TOY
-
 namespace surf {
 
 namespace VCDTypes {
@@ -31,6 +29,18 @@ enum class TimeNumEnum : uint8_t {
     n100 = 100
 };
 
+static inline std::string to_string(TimeNumEnum tnum) {
+    if (tnum == TimeNumEnum::n1) {
+        return "1";
+    } else if (tnum == TimeNumEnum::n10) {
+        return "10";
+    } else if (tnum == TimeNumEnum::n100) {
+        return "100";
+    } else {
+        throw std::domain_error(fmt::format("Bad time number enum: {:d}", (int)tnum));
+    }
+}
+
 enum class TimeUnitEnum : int8_t {
     s  = 0,
     ms = -3,
@@ -39,6 +49,24 @@ enum class TimeUnitEnum : int8_t {
     ps = -12,
     fs = -15
 };
+
+static inline std::string to_string(TimeUnitEnum tunit) {
+    if (tunit == TimeUnitEnum::s) {
+        return "s";
+    } else if (tunit == TimeUnitEnum::ms) {
+        return "ms";
+    } else if (tunit == TimeUnitEnum::us) {
+        return "us";
+    } else if (tunit == TimeUnitEnum::ns) {
+        return "ns";
+    } else if (tunit == TimeUnitEnum::ps) {
+        return "ps";
+    } else if (tunit == TimeUnitEnum::fs) {
+        return "fs";
+    } else {
+        throw std::domain_error(fmt::format("Bad time unit enum: {:d}", (int)tunit));
+    }
+}
 
 struct Var {
     std::string var;
@@ -53,7 +81,7 @@ struct Timescale {
     TimeUnitEnum time_unit;
 };
 
-using Declaration = std::variant<Comment, Date, Version>;
+using Declaration = std::variant<Comment, Date, Version, Timescale>;
 
 struct Declarations {
     std::optional<std::vector<Comment>> comments;
@@ -266,12 +294,33 @@ template <> struct fmt::formatter<surf::VCDTypes::Date> {
     }
 };
 
+template <> struct fmt::formatter<surf::VCDTypes::Version> {
+    template <typename ParseContext> constexpr auto parse(ParseContext &ctx) {
+        return ctx.begin();
+    }
+    template <typename FormatContext>
+    auto format(surf::VCDTypes::Version const &version, FormatContext &ctx) {
+        return fmt::format_to(ctx.out(), "<Version '{:s}'>", version.version);
+    }
+};
+
+template <> struct fmt::formatter<surf::VCDTypes::Timescale> {
+    template <typename ParseContext> constexpr auto parse(ParseContext &ctx) {
+        return ctx.begin();
+    }
+    template <typename FormatContext>
+    auto format(surf::VCDTypes::Timescale const &timescale, FormatContext &ctx) {
+        return fmt::format_to(ctx.out(), "<Timescale {:s} {:s}>", to_string(timescale.time_number),
+                              to_string(timescale.time_unit));
+    }
+};
+
 template <> struct fmt::formatter<surf::VCDTypes::Declarations> {
     template <typename ParseContext> constexpr auto parse(ParseContext &ctx) {
         return ctx.begin();
     }
     template <typename FormatContext>
     auto format(surf::VCDTypes::Declarations const &decls, FormatContext &ctx) {
-        return fmt::format_to(ctx.out(), "<Declarations '{:s}'>", "foo");
+        return fmt::format_to(ctx.out(), "<Declarations '{:s}'>", "fmt::TODO");
     }
 };

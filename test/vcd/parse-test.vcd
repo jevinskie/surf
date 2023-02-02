@@ -1,5 +1,6 @@
 $comment decl comment $end
 $date date string $end
+$timescale 10 ns $end
 $enddefinitions $end
 #10
 0 a

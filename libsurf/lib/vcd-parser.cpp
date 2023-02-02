@@ -40,7 +40,7 @@ SCA ws        = dsl::whitespace(dsl::ascii::space);
 using str_lex = lexy::string_lexeme<lexy::ascii_encoding>;
 SCA val_chars = LEXY_ASCII_ONE_OF("01xXzZ");
 SCA id_chars  = dsl::ascii::word / dsl::ascii::punct;
-SCA end_term  = dsl::terminator(LEXY_LIT("$end"));
+SCA end_term  = dsl::terminator(dsl::token(ws + LEXY_LIT("$end")));
 
 SCA to_sv(str_lex lexeme) {
     return std::string_view{lexeme.data(), lexeme.size()};
@@ -52,9 +52,8 @@ struct decimal_number {
 };
 
 struct comment {
-    SCA rule =
-        LEXY_LIT("$comment") + dsl::no_whitespace(dsl::terminator(dsl::token(ws + LEXY_LIT("$end")))
-                                                      .list(dsl::capture(dsl::ascii::character)));
+    SCA rule = LEXY_LIT("$comment") +
+               dsl::no_whitespace(end_term.list(dsl::capture(dsl::ascii::character)));
     SCA value = lexy::as_string<std::string> >> lexy::construct<Comment>;
 };
 
@@ -146,28 +145,95 @@ struct sim_cmd {
                (dsl::peek(LEXY_LIT("$comment")) >> dsl::p<comment>) |
                (dsl::else_ >> dsl::p<value_change>);
     SCA value = lexy::callback<SimCmd>(
-        [](Comment comment) {
-            return SimCmd{comment};
+        [](Comment &&comment) {
+            return SimCmd{std::move(comment)};
         },
-        [](Tick tick) {
-            return SimCmd{tick};
+        [](Tick &&tick) {
+            return SimCmd{std::move(tick)};
         },
-        [](Change change) {
-            return SimCmd{change};
+        [](Change &&change) {
+            return SimCmd{std::move(change)};
         });
 };
 
 struct date {
-    SCA rule  = LEXY_LIT("$date") + end_term(dsl::ascii::character);
+    SCA rule =
+        LEXY_LIT("$date") + dsl::no_whitespace(end_term.list(dsl::capture(dsl::ascii::character)));
     SCA value = lexy::as_string<std::string> >> lexy::construct<Date>;
 };
+
+struct version {
+    SCA rule = LEXY_LIT("$version") +
+               dsl::no_whitespace(end_term.list(dsl::capture(dsl::ascii::character)));
+    SCA value = lexy::as_string<std::string> >> lexy::construct<Version>;
+};
+
+struct time_number {
+    struct bad_time_num {
+        SCA name = "bad time number - should be one of 1, 10, or 100";
+    };
+    SCA rule =
+        dsl::capture(dsl::token(LEXY_LITERAL_SET(LEXY_LIT("100"), LEXY_LIT("10"), LEXY_LIT("1")))) |
+        (dsl::else_ >> dsl::error<bad_time_num>);
+    SCA value = lexy::callback<TimeNumEnum>([](str_lex lexeme) {
+        auto str = to_sv(lexeme);
+        if (str == "100"sv) {
+            return TimeNumEnum::n100;
+        } else if (str == "10"sv) {
+            return TimeNumEnum::n10;
+        } else {
+            if (str != "1"sv) {
+                throw std::domain_error(fmt::format("Bad time number: '{:s}'", str));
+            }
+            return TimeNumEnum::n1;
+        }
+    });
+};
+
+struct time_unit {
+    struct bad_time_unit {
+        SCA name = "bad time unit - should be one of s, ms, us, ns, ps, fs";
+    };
+    SCA rule =
+        dsl::capture(dsl::token(LEXY_LITERAL_SET(LEXY_LIT("fs"), LEXY_LIT("ps"), LEXY_LIT("ns"),
+                                                 LEXY_LIT("us"), LEXY_LIT("ms"), LEXY_LIT("s")))) |
+        (dsl::else_ >> dsl::error<bad_time_unit>);
+    SCA value = lexy::callback<TimeUnitEnum>([](str_lex lexeme) {
+        auto str = to_sv(lexeme);
+        if (str == "fs"sv) {
+            return TimeUnitEnum::fs;
+        } else if (str == "ps"sv) {
+            return TimeUnitEnum::ps;
+        } else if (str == "ns"sv) {
+            return TimeUnitEnum::ns;
+        } else if (str == "us"sv) {
+            return TimeUnitEnum::us;
+        } else if (str == "ms"sv) {
+            return TimeUnitEnum::ms;
+        } else {
+            if (str != "s"sv) {
+                throw std::domain_error(fmt::format("Bad time unit: '{:s}'", str));
+            }
+            return TimeUnitEnum::s;
+        }
+    });
+};
+
+struct timescale {
+    SCA rule  = LEXY_LIT("$timescale") + dsl::p<time_number> + dsl::p<time_unit> + LEXY_LIT("$end");
+    SCA value = lexy::construct<Timescale>;
+};
+
+SCA upscope_decl_pair = LEXY_LIT("$upscope") + dsl::token(ws) + LEXY_LIT("$end");
 
 struct declaration {
     struct bad_decl {
         SCA name = "bad declaration";
     };
-    SCA rule = (dsl::peek(LEXY_LIT("$date")) >> dsl::p<date>) |
-               (dsl::peek(LEXY_LIT("$comment") >> dsl::p<comment>)) |
+    SCA rule = (dsl::peek(LEXY_LIT("$comment")) >> dsl::p<comment>) |
+               (dsl::peek(LEXY_LIT("$date")) >> dsl::p<date>) |
+               (dsl::peek(LEXY_LIT("$version")) >> dsl::p<version>) |
+               (dsl::peek(LEXY_LIT("$timescale")) >> dsl::p<timescale>) |
                (dsl::else_ >> dsl::error<bad_decl>);
     SCA value = lexy::callback<Declaration>(
         [](Comment &&comment) {
@@ -176,8 +242,11 @@ struct declaration {
         [](Date &&date) {
             return Declaration{std::move(date)};
         },
-        []() {
-            return Declaration{Comment{}};
+        [](Version &&version) {
+            return Declaration{std::move(version)};
+        },
+        [](Timescale timescale) {
+            return Declaration{timescale};
         });
 };
 
@@ -300,7 +369,7 @@ void parse_vcd_document_test(std::string_view vcd_str, const fs::path &path) {
 
     try {
         decls_ret        = parse_vcd_declarations(vcd_str, path);
-        res.declarations = decls_from_decl_list(std::move(decls_ret.decls));
+        res.declarations = decls_from_decl_list(decls_ret.decls);
     } catch (const VCDDeclParseError &decl_parse_error) {
         fmt::print(stderr, "Error parsing VCD declarations:\n{:s}\n", decl_parse_error.what());
     }
@@ -310,6 +379,7 @@ void parse_vcd_document_test(std::string_view vcd_str, const fs::path &path) {
         fmt::print(stderr, "Error parsing VCD simulation commands:\n{:s}\n",
                    cmds_parse_error.what());
     }
+    fmt::print("2-step raw decls: {}\n", fmt::join(decls_ret.decls, ", "));
     fmt::print("2-step decls: {}\n", res.declarations);
     fmt::print("2-step cmds: {}\n", fmt::join(res.sim_cmds, ", "));
 
