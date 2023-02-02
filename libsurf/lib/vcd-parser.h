@@ -13,7 +13,7 @@ struct VCDDeclParseError : public std::invalid_argument {};
 struct VCDSimCmdsParseError : public std::invalid_argument {};
 
 struct VCDParserDeclRet {
-    VCDTypes::Declarations decls;
+    std::vector<VCDTypes::Declaration> decls;
     std::string_view remaining;
 };
 VCDParserDeclRet parse_vcd_declarations(std::string_view decls_str, fs::path = "unknown",

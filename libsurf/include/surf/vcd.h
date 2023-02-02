@@ -25,8 +25,19 @@ struct Version {
     std::string version;
 };
 
-struct TimeUnit {
-    std::string time_unit;
+enum class TimeNumEnum : uint8_t {
+    n1   = 1,
+    n10  = 10,
+    n100 = 100
+};
+
+enum class TimeUnitEnum : int8_t {
+    s  = 0,
+    ms = -3,
+    us = -6,
+    ns = -9,
+    ps = -12,
+    fs = -15
 };
 
 struct Var {
@@ -38,11 +49,12 @@ struct Scope {
 };
 
 struct Timescale {
-    int time_number;
-    TimeUnit time_unit;
+    TimeNumEnum time_number;
+    TimeUnitEnum time_unit;
 };
 
-#if 0
+using Declaration = std::variant<Comment, Date, Version>;
+
 struct Declarations {
     std::optional<std::vector<Comment>> comments;
     std::optional<Date> date;
@@ -51,9 +63,6 @@ struct Declarations {
     std::optional<std::vector<Var>> vars;
     std::optional<std::vector<Scope>> scopes;
 };
-#else
-using Declarations = std::vector<int>;
-#endif
 
 struct Tick {
     uint64_t tick;
@@ -83,7 +92,7 @@ public:
             m_sve = ScalarValueEnum::vZ;
         } else {
             throw std::out_of_range(
-                fmt::format("ScalarValue '{:c}' not recognized as 0, 1, x, X, z, or Z", (char)c));
+                fmt::format("ScalarValue '{:c}' not recognized as 0, 1, x, X, z, or Z", c));
         }
     }
     ScalarValue(bool b, bool x, bool z) {
@@ -94,12 +103,10 @@ public:
         if (SURF_LIKELY((int)x + (int)z == 0)) {
             m_sve = b ? ScalarValueEnum::v1 : ScalarValueEnum::v0;
             return;
-        }
-        if (x) {
+        } else if (x) {
             m_sve = ScalarValueEnum::vX;
             return;
-        }
-        if (z) {
+        } else if (z) {
             m_sve = ScalarValueEnum::vZ;
             return;
         }
@@ -134,6 +141,11 @@ struct Change {
 };
 
 using SimCmd = std::variant<Comment, Tick, Change>;
+
+struct DocumentRawDecls {
+    std::vector<Declaration> declarations;
+    std::vector<SimCmd> sim_cmds;
+};
 
 struct Document {
     Declarations declarations;
@@ -240,6 +252,16 @@ template <> struct fmt::formatter<surf::VCDTypes::Change> {
     }
     template <typename FormatContext>
     auto format(surf::VCDTypes::Change const &change, FormatContext &ctx) {
-        return fmt::format_to(ctx.out(), "<Change ID: '{:s}' V: {}>", change.id.id, change.value);
+        return fmt::format_to(ctx.out(), "<Change ID: '{}' V: {}>", change.id.id, change.value);
+    }
+};
+
+template <> struct fmt::formatter<surf::VCDTypes::Date> {
+    template <typename ParseContext> constexpr auto parse(ParseContext &ctx) {
+        return ctx.begin();
+    }
+    template <typename FormatContext>
+    auto format(surf::VCDTypes::Date const &date, FormatContext &ctx) {
+        return fmt::format_to(ctx.out(), "<Date '{:s}'>", date.date);
     }
 };

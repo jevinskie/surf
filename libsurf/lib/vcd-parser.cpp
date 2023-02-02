@@ -29,7 +29,7 @@ namespace surf {
 namespace {
 
 struct VCDDeclRuleRes {
-    std::vector<int> decls;
+    std::vector<Declaration> decls;
     const char *position;
 };
 
@@ -39,6 +39,8 @@ namespace dsl = lexy::dsl;
 SCA ws        = dsl::whitespace(dsl::ascii::space);
 using str_lex = lexy::string_lexeme<lexy::ascii_encoding>;
 SCA val_chars = LEXY_ASCII_ONE_OF("01xXzZ");
+SCA id_chars  = dsl::ascii::word / dsl::ascii::punct;
+SCA end_term  = dsl::terminator(LEXY_LIT("$end"));
 
 SCA to_sv(str_lex lexeme) {
     return std::string_view{lexeme.data(), lexeme.size()};
@@ -47,11 +49,6 @@ SCA to_sv(str_lex lexeme) {
 struct decimal_number {
     SCA rule  = dsl::sign + dsl::integer<int>;
     SCA value = lexy::as_integer<int>;
-};
-
-struct word {
-    SCA rule  = dsl::identifier(dsl::ascii::word);
-    SCA value = lexy::as_string<std::string>;
 };
 
 struct comment {
@@ -67,7 +64,7 @@ struct tick {
 };
 
 struct id {
-    SCA rule  = dsl::identifier(dsl::ascii::word / dsl::ascii::punct);
+    SCA rule  = dsl::identifier(id_chars);
     SCA value = lexy::as_string<std::string> >> lexy::callback<ID>([](str_lex lexeme) {
                     return ID{.id = std::string(to_sv(lexeme))};
                 });
@@ -160,21 +157,46 @@ struct sim_cmd {
         });
 };
 
+struct date {
+    SCA rule  = LEXY_LIT("$date") + end_term(dsl::ascii::character);
+    SCA value = lexy::as_string<std::string> >> lexy::construct<Date>;
+};
+
+struct declaration {
+    struct bad_decl {
+        SCA name = "bad declaration";
+    };
+    SCA rule = (dsl::peek(LEXY_LIT("$date")) >> dsl::p<date>) |
+               (dsl::peek(LEXY_LIT("$comment") >> dsl::p<comment>)) |
+               (dsl::else_ >> dsl::error<bad_decl>);
+    SCA value = lexy::callback<Declaration>(
+        [](Comment &&comment) {
+            return Declaration{std::move(comment)};
+        },
+        [](Date &&date) {
+            return Declaration{std::move(date)};
+        },
+        []() {
+            return Declaration{Comment{}};
+        });
+};
+
 SCA end_defs_decl_pair = LEXY_LIT("$enddefinitions") + dsl::token(ws) + LEXY_LIT("$end");
 
 struct decl_list {
     SCA rule = [] {
-        auto num = dsl::p<decimal_number>;
-        return dsl::terminator(dsl::token(end_defs_decl_pair)).list(num);
+        auto decl = dsl::p<declaration>;
+        return dsl::terminator(dsl::token(end_defs_decl_pair)).list(decl);
     }();
-    SCA value = lexy::as_list<std::vector<int>>;
+    SCA value = lexy::as_list<std::vector<Declaration>>;
 };
 
 struct decl_list_remaining {
-    SCA rule  = dsl::p<decl_list> + dsl::position;
-    SCA value = lexy::callback<VCDDeclRuleRes>([](std::vector<int> &&decls, const char *position) {
-        return VCDDeclRuleRes{.decls = std::move(decls), .position = position};
-    });
+    SCA rule = dsl::p<decl_list> + dsl::position;
+    SCA value =
+        lexy::callback<VCDDeclRuleRes>([](std::vector<Declaration> &&decls, const char *position) {
+            return VCDDeclRuleRes{.decls = std::move(decls), .position = position};
+        });
     SCA whitespace = ws;
 };
 
@@ -185,16 +207,22 @@ struct sim_cmd_eof_list {
 };
 
 struct vcd_document {
-    SCA rule  = dsl::p<decl_list> + dsl::p<sim_cmd_eof_list>;
-    SCA value = lexy::callback<Document>([](std::vector<int> &&decls, std::vector<SimCmd> &&cmds) {
-        return Document{.declarations = std::move(decls), .sim_cmds = std::move(cmds)};
-    });
+    SCA rule = dsl::p<decl_list> + dsl::p<sim_cmd_eof_list>;
+    SCA value =
+        lexy::callback<Document>([](std::vector<Declaration> &&decls, std::vector<SimCmd> &&cmds) {
+            return DocumentRawDecls{.declarations = std::move(decls), .sim_cmds = std::move(cmds)};
+        });
     SCA whitespace = ws;
 };
 
 }; // namespace grammar
 
 }; // namespace
+
+static VCDTypes::Declarations
+decls_from_decl_list(const std::vector<VCDTypes::Declaration> &decl_list) {
+    return {};
+}
 
 static lexy::visualization_options realize_opts(std::optional<lexy::visualization_options> opts) {
     if (opts) {
@@ -261,6 +289,7 @@ void parse_vcd_document_test(std::string_view vcd_str, const fs::path &path) {
 
     fmt::print("sizeof(Value): {}\n", sizeof(Value));
     fmt::print("sizeof(SimCmd): {}\n", sizeof(SimCmd));
+    fmt::print("sizeof(ScalarValue): {}\n", sizeof(ScalarValue));
 
     std::string trace;
     lexy::trace_to<grammar::vcd_document>(std::back_insert_iterator(trace), input,

@@ -1,7 +1,5 @@
-243
-7
-11
--11
+$comment decl comment $end
+$date date string $end
 $enddefinitions $end
 #10
 0 a
