@@ -2,8 +2,11 @@ $comment decl comment $end
 $date date string $end
 $timescale 10 ns $end
 $scope module TOP $end
+    $var wire  1 O" sim_trace lol $end
+    $scope module cpu $end
+        $var wire 32 !! pc_addr [31:0] $end
+    $upscope $end
 $upscope $end
-$var wire  1 O" sim_trace lol $end
 $enddefinitions $end
 #10
 0 a
