@@ -24,6 +24,9 @@ add_compile_options(-ggdb3)
 
 add_compile_options(-O0 -fno-omit-frame-pointer)
 # add_compile_options(-fno-inline)
+if (LINUX)
+add_link_options(-fuse-ld=lld)
+endif()
 
 # add_compile_options(-Oz -fvisibility=hidden -fvisibility-inlines-hidden -ffunction-sections -fdata-sections)
 # add_link_options(-Wl,-dead_strip)

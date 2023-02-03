@@ -25,11 +25,13 @@ void posix_check(int retval, const std::string &msg) {
 }
 
 uint32_t get_num_cores() {
-#ifdef SURF_APPLE
+#if defined(SURF_APPLE)
     uint32_t num;
     size_t sz = sizeof(num);
     posix_check(sysctlbyname("hw.logicalcpu", &num, &sz, nullptr, 0), "get_num_cores");
     return num;
+#elif defined(SURF_LINUX)
+    return (uint32_t)sysconf(_SC_NPROCESSORS_ONLN);
 #else
 #error get_num_cores unimplemented OS
 #endif

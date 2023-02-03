@@ -263,7 +263,7 @@ struct var {
                dsl::p<reference_and_end>;
     SCA value =
         lexy::callback<Var>([](VarType var_type, int size, std::string &&id, std::string &&ref) {
-            return Var{.id = std::move(id), .size = size, .type = var_type, .ref = std::move(ref)};
+            return Var{.id = std::move(id), .ref = std::move(ref), .size = size, .type = var_type};
         });
 };
 
@@ -379,8 +379,9 @@ VCDParserDeclRet parse_vcd_declarations(std::string_view decls_str, fs::path pat
         throw std::logic_error("VCD declaration (header) parsing failed.\n" + decls_err);
     }
     auto decls_val = decls_parse_res.value();
-    auto remaining = std::string_view(decls_val.position,
-                                      decls_str.size() - (decls_val.position - decls_str.data()));
+    auto remaining =
+        std::string_view(decls_val.position, decls_str.size() - ((uintptr_t)decls_val.position -
+                                                                 (uintptr_t)decls_str.data()));
     return VCDParserDeclRet{.decls = std::move(decls_val.decls), .remaining = remaining};
 }
 

@@ -17,7 +17,7 @@ MappedReadOnlyFile::MappedReadOnlyFile(const fs::path &path, const void *preferr
 
     // sz + 1 to add a null terminator
     const auto *buf =
-        (const uint8_t *)mmap((void *)preferred_addr, st.st_size + 1, PROT_READ,
+        (const uint8_t *)mmap((void *)preferred_addr, (size_t)st.st_size + 1, PROT_READ,
                               MAP_PRIVATE | (preferred_addr ? MAP_FIXED : 0), fd_res, 0);
     if (buf == MAP_FAILED) {
         throw std::system_error(
@@ -28,7 +28,7 @@ MappedReadOnlyFile::MappedReadOnlyFile(const fs::path &path, const void *preferr
     posix_check(close_res, "MappedReadOnlyFile close");
 
     m_mapping = buf;
-    m_size    = st.st_size;
+    m_size    = (size_t)st.st_size;
 }
 
 MappedReadOnlyFile::~MappedReadOnlyFile() {
