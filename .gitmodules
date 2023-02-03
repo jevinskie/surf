@@ -22,3 +22,6 @@
 [submodule "libsurf/3rdparty/magic_enum"]
 	path = libsurf/3rdparty/magic_enum
 	url = https://github.com/Neargye/magic_enum
+[submodule "libsurf/3rdparty/visit"]
+	path = libsurf/3rdparty/visit
+	url = https://github.com/jevinskie/visit

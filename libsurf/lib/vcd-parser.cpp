@@ -15,6 +15,8 @@
 
 #include <lexy_ext/report_error.hpp> // lexy_ext::report_error
 
+#include <visit.hpp>
+
 #define SCA static constexpr auto
 
 using namespace VCDTypes;
@@ -349,6 +351,20 @@ struct vcd_document {
 }; // namespace
 
 VCDTypes::Declarations decls_from_decl_list(const std::vector<VCDTypes::Declaration> &decl_list) {
+    Document doc;
+    for (const auto &decl : decl_list) {
+        (void)decl;
+        rollbear::visit(overload(
+                            []() {
+                                throw std::domain_error("decls_from_decl_list void args");
+                            },
+                            [](const auto &unk) {
+                                throw std::domain_error(
+                                    fmt::format("decls_from_decl_list unknown decl type: {}\n",
+                                                type_name<decltype(unk)>()));
+                            }),
+                        decl);
+    }
     return {};
 }
 

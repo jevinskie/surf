@@ -88,4 +88,10 @@ template <typename T> constexpr auto type_name() {
     return name;
 }
 
+template <typename... T> class overload : T... {
+public:
+    overload(T... t) : T(t)... {}
+    using T::operator()...;
+};
+
 }; // namespace surf

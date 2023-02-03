@@ -43,6 +43,7 @@ set(SURF_PRIVATE_LIBS
     fpng
     foonathan::lexy
     thread-pool
+    visit
 )
 
 # SURF_HDR added for Xcode project generation
