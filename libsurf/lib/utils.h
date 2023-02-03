@@ -88,6 +88,7 @@ template <typename T> constexpr auto type_name() {
     return name;
 }
 
+// for visit(overload(...case lambdas...), variant_var)
 template <typename... T> class overload : T... {
 public:
     overload(T... t) : T(t)... {}

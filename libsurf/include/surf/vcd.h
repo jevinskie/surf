@@ -92,9 +92,9 @@ struct Timescale {
 using Declaration = std::variant<Comment, Date, Version, Timescale, Scope, Var, UpScope>;
 
 struct Declarations {
-    std::optional<std::vector<Comment>> comments;
-    std::optional<Date> date;
-    std::optional<Version> version;
+    std::optional<std::vector<std::string>> comments;
+    std::optional<std::string> date;
+    std::optional<std::string> version;
     std::optional<Timescale> timescale;
 };
 

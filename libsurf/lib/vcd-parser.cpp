@@ -350,22 +350,48 @@ struct vcd_document {
 
 }; // namespace
 
-VCDTypes::Declarations decls_from_decl_list(const std::vector<VCDTypes::Declaration> &decl_list) {
-    Document doc;
-    for (const auto &decl : decl_list) {
-        (void)decl;
-        rollbear::visit(overload(
-                            []() {
-                                throw std::domain_error("decls_from_decl_list void args");
-                            },
-                            [](const auto &unk) {
-                                throw std::domain_error(
-                                    fmt::format("decls_from_decl_list unknown decl type: {}\n",
-                                                type_name<decltype(unk)>()));
-                            }),
-                        decl);
+VCDTypes::Declarations decls_from_decl_list(std::vector<VCDTypes::Declaration> &&decl_list) {
+    auto my_decl_list = std::move(decl_list);
+    Declarations decls;
+    int scope_depth = 0;
+    for (auto &decl : my_decl_list) {
+        rollbear::visit(
+            overload(
+                [&](Comment &comment) {
+                    if (!decls.comments) {
+                        decls.comments = {{}};
+                    }
+                    decls.comments->emplace_back(std::move(comment.comment));
+                },
+                [&](Date &date) {
+                    decls.date = {std::move(date.date)};
+                },
+                [&](Timescale timescale) {
+                    decls.timescale = {timescale};
+                },
+                [&](Scope &scope) {
+                    fmt::print("Scope open: {} {}\n", scope.id, magic_enum::enum_name(scope.type));
+                    ++scope_depth;
+                },
+                [&](Var &var) {
+                    fmt::print("Var at depth {}: ty: {} sz: {} id: {} ref: {}\n", scope_depth,
+                               magic_enum::enum_name(var.type), var.size, var.id, var.ref);
+                },
+                [&](UpScope &upscope) {
+                    if (scope_depth < 1) {
+                        throw std::range_error(fmt::format(
+                            "Underflow in scope depth ({}) after an $upscope", scope_depth));
+                    }
+                    fmt::print("Scope closed depth: {}", scope_depth);
+                    --scope_depth;
+                },
+                [](const auto &unk) {
+                    throw std::domain_error(fmt::format(
+                        "decls_from_decl_list unknown decl type: {}", type_name<decltype(unk)>()));
+                }),
+            decl);
     }
-    return {};
+    return decls;
 }
 
 static lexy::visualization_options realize_opts(std::optional<lexy::visualization_options> opts) {
@@ -444,8 +470,9 @@ void parse_vcd_document_test(std::string_view vcd_str, const fs::path &path) {
     VCDParserDeclRet decls_ret;
 
     try {
-        decls_ret        = parse_vcd_declarations(vcd_str, path);
-        res.declarations = decls_from_decl_list(decls_ret.decls);
+        decls_ret = parse_vcd_declarations(vcd_str, path);
+        fmt::print("2-step raw decls: {}\n", fmt::join(decls_ret.decls, ", "));
+        res.declarations = decls_from_decl_list(std::move(decls_ret.decls));
     } catch (const VCDDeclParseError &decl_parse_error) {
         fmt::print(stderr, "Error parsing VCD declarations:\n{:s}\n", decl_parse_error.what());
     }
@@ -455,7 +482,6 @@ void parse_vcd_document_test(std::string_view vcd_str, const fs::path &path) {
         fmt::print(stderr, "Error parsing VCD simulation commands:\n{:s}\n",
                    cmds_parse_error.what());
     }
-    fmt::print("2-step raw decls: {}\n", fmt::join(decls_ret.decls, ", "));
     fmt::print("2-step decls: {}\n", res.declarations);
     fmt::print("2-step cmds: {}\n", fmt::join(res.sim_cmds, ", "));
 

@@ -28,6 +28,6 @@ VCDTypes::Document parse_vcd_document(std::string_view vcd_str, fs::path path = 
 
 void parse_vcd_document_test(std::string_view vcd_str, const std::filesystem::path &path);
 
-VCDTypes::Declarations decls_from_decl_list(const std::vector<VCDTypes::Declaration> &decls);
+VCDTypes::Declarations decls_from_decl_list(std::vector<VCDTypes::Declaration> &decls);
 
 }; // namespace surf
