@@ -1,6 +1,5 @@
 #include "vcd-parser.h"
 #include "common-internal.h"
-#include "vcd-lexer.h"
 #include <utils.h>
 
 #include <charconv>
@@ -15,10 +14,6 @@
 #include <lexy/parse_tree.hpp>           // lexy::parse_tree_for
 
 #include <lexy_ext/report_error.hpp> // lexy_ext::report_error
-
-#include <concurrencpp/concurrencpp.h>
-
-// need combination_duplicate for decl parsing
 
 #define SCA static constexpr auto
 
@@ -406,7 +401,6 @@ Document parse_vcd_document(std::string_view vcd_str, const fs::path &path,
             .sim_cmds     = parse_vcd_sim_cmds(decls_ret.remaining, path, opts)};
 }
 
-#if 1
 void parse_vcd_document_test(std::string_view vcd_str, const fs::path &path) {
     auto input = lexy::string_input<lexy::ascii_encoding>(vcd_str);
     // auto validate_res =
@@ -460,17 +454,5 @@ void parse_vcd_document_test(std::string_view vcd_str, const fs::path &path) {
     fmt::print("1-step decls: {}\n", res.declarations);
     fmt::print("1-step cmds: {}\n", fmt::join(res.sim_cmds, ", "));
 }
-#endif
-
-#if 0
-void parse_vcd_document_test(std::string_view vcd_str, const fs::path &path) {
-    (void)path;
-    VCDLexer lexer;
-    const auto base = vcd_str.data();
-    for (const auto p : lexer.parse(vcd_str.data())) {
-        fmt::print("cursor: {}\n", p - base);
-    }
-}
-#endif
 
 }; // namespace surf

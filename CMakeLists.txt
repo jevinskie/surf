@@ -19,14 +19,18 @@ set(BUILD_SHARED_LIBS OFF)
 # To enable building with upstream LLVM/Clang that doesn't support -index-store-path option
 # set(CMAKE_XCODE_ATTRIBUTE_COMPILER_INDEX_STORE_ENABLE NO)
 
+if (UNIX)
+   if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
+      add_compile_options(-stdlib=libc++)
+      add_link_options(-stdlib=libc++ -fuse-ld=lld)
+   endif()
+endif()
+
 add_compile_options(-ggdb3)
 # add_compile_options(-g0)
 
 add_compile_options(-O0 -fno-omit-frame-pointer)
 # add_compile_options(-fno-inline)
-if (LINUX)
-add_link_options(-fuse-ld=lld)
-endif()
 
 # add_compile_options(-Oz -fvisibility=hidden -fvisibility-inlines-hidden -ffunction-sections -fdata-sections)
 # add_link_options(-Wl,-dead_strip)

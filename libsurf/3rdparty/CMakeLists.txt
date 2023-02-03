@@ -1,5 +1,4 @@
 add_subdirectory(argparse)
-add_subdirectory(concurrencpp)
 
 option(FMT_DOC OFF)
 option(FMT_TEST OFF)

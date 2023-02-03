@@ -2,7 +2,6 @@
 
 #include "common-internal.h"
 #include "utils.h"
-#include "vcd-lexer.h"
 #include "vcd-parser.h"
 
 VCDFile::VCDFile(const fs::path &path)
