@@ -95,6 +95,7 @@ struct Declarations {
     std::optional<std::vector<std::string>> comments;
     std::optional<std::string> date;
     std::optional<std::string> version;
+    Scope root_scope;
     std::optional<Timescale> timescale;
 };
 

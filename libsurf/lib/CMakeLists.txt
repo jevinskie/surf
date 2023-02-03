@@ -35,6 +35,7 @@ foreach(SRC ${SURF_SRC})
 endforeach()
 
 set(SURF_PUBLIC_LIBS
+    fmt
     magic_enum
 )
 
@@ -67,4 +68,12 @@ install(TARGETS surf
     ARCHIVE DESTINATION lib
     LIBRARY DESTINATION lib
     PUBLIC_HEADER DESTINATION include/surf
+)
+
+add_library(surf_dump_types dump_types.cpp)
+target_link_libraries(surf_dump_types surf)
+target_compile_options(surf_dump_types PRIVATE -Wall -Wextra -Wpedantic)
+target_include_directories(surf_dump_types
+    PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/../include
+    PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}
 )

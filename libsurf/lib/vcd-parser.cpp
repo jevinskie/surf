@@ -353,7 +353,8 @@ struct vcd_document {
 VCDTypes::Declarations decls_from_decl_list(std::vector<VCDTypes::Declaration> &&decl_list) {
     auto my_decl_list = std::move(decl_list);
     Declarations decls;
-    int scope_depth = 0;
+    int scope_depth      = 0;
+    Scope *current_scope = &decls.root_scope;
     for (auto &decl : my_decl_list) {
         rollbear::visit(
             overload(
@@ -371,6 +372,7 @@ VCDTypes::Declarations decls_from_decl_list(std::vector<VCDTypes::Declaration> &
                 },
                 [&](Scope &scope) {
                     fmt::print("Scope open: {} {}\n", scope.id, magic_enum::enum_name(scope.type));
+
                     ++scope_depth;
                 },
                 [&](Var &var) {
