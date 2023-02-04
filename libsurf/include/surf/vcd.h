@@ -72,7 +72,13 @@ enum class ScopeType : uint8_t {
     fork,
     function,
     module,
-    task
+    task,
+    root
+};
+
+struct ScopeDecl {
+    std::string id;
+    ScopeType type;
 };
 
 struct Scope {
@@ -82,6 +88,10 @@ struct Scope {
     ScopeType type;
 };
 
+struct ScopePtr {
+    Scope *ptr;
+};
+
 struct UpScope {};
 
 struct Timescale {
@@ -89,7 +99,7 @@ struct Timescale {
     TimeUnit time_unit;
 };
 
-using Declaration = std::variant<Comment, Date, Version, Timescale, Scope, Var, UpScope>;
+using Declaration = std::variant<Comment, Date, Version, Timescale, ScopeDecl, Var, UpScope>;
 
 struct Declarations {
     std::optional<std::vector<std::string>> comments;
@@ -309,14 +319,39 @@ template <> struct fmt::formatter<surf::VCDTypes::Timescale> {
     }
 };
 
+template <> struct fmt::formatter<surf::VCDTypes::ScopeDecl> {
+    template <typename ParseContext> constexpr auto parse(ParseContext &ctx) {
+        return ctx.begin();
+    }
+    template <typename FormatContext>
+    auto format(surf::VCDTypes::ScopeDecl const &scope_decl, FormatContext &ctx) {
+        return fmt::format_to(ctx.out(), "<ScopeDecl {:s} {:s}>",
+                              magic_enum::enum_name(scope_decl.type), scope_decl.id);
+    }
+};
+
 template <> struct fmt::formatter<surf::VCDTypes::Scope> {
     template <typename ParseContext> constexpr auto parse(ParseContext &ctx) {
         return ctx.begin();
     }
     template <typename FormatContext>
-    auto format(surf::VCDTypes::Scope const &scope, FormatContext &ctx) {
-        return fmt::format_to(ctx.out(), "<Scope {:s} {:s}>", magic_enum::enum_name(scope.type),
-                              scope.id);
+    auto format(surf::VCDTypes::Scope const &scope, FormatContext &ctx) const {
+        return fmt::format_to(ctx.out(), "<Scope {:s} {:s} vars: {} subscopes: {}>",
+                              magic_enum::enum_name(scope.type), scope.id,
+                              fmt::join(scope.vars, ", "), fmt::join(scope.subscopes, ", "));
+    }
+};
+
+template <> struct fmt::formatter<surf::VCDTypes::ScopePtr> {
+    template <typename ParseContext> constexpr auto parse(ParseContext &ctx) {
+        return ctx.begin();
+    }
+    template <typename FormatContext>
+    auto format(surf::VCDTypes::ScopePtr const &scope_ptr, FormatContext &ctx) const {
+        return fmt::format_to(ctx.out(), "<*Scope>");
+        // return fmt::format_to(ctx.out(), "<*Scope {:s} {:s} vars: {} subscopes: {}>",
+        //                       magic_enum::enum_name(scope->type), scope->id,
+        //                       fmt::join(scope->vars, ", "), fmt::join(scope->subscopes, ", "));
     }
 };
 
@@ -325,7 +360,7 @@ template <> struct fmt::formatter<surf::VCDTypes::Var> {
         return ctx.begin();
     }
     template <typename FormatContext>
-    auto format(surf::VCDTypes::Var const &var, FormatContext &ctx) {
+    auto format(surf::VCDTypes::Var const &var, FormatContext &ctx) const {
         return fmt::format_to(ctx.out(), "<Var {:s} {:d} {:s} {:s}>",
                               magic_enum::enum_name(var.type), var.size, var.id, var.ref);
     }

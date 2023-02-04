@@ -95,4 +95,17 @@ public:
     using T::operator()...;
 };
 
+// https://www.modernescpp.com/index.php/c-20-pythons-map-function
+template <typename Func, typename Seq> auto map(Func func, Seq seq) {
+    typedef typename Seq::value_type value_type;
+    using return_type = decltype(func(std::declval<value_type>()));
+
+    std::vector<return_type> result{};
+    for (auto &i : seq) {
+        result.emplace_back(func(i));
+    }
+
+    return result;
+}
+
 }; // namespace surf
