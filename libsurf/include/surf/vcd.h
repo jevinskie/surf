@@ -231,7 +231,7 @@ template <> struct fmt::formatter<surf::VCDTypes::Comment> {
         return ctx.begin();
     }
     template <typename FormatContext>
-    auto format(surf::VCDTypes::Comment const &comment, FormatContext &ctx) {
+    auto format(surf::VCDTypes::Comment const &comment, FormatContext &ctx) const {
         return fmt::format_to(ctx.out(), "<Comment '{:s}'>", comment.comment);
     }
 };
@@ -241,7 +241,7 @@ template <> struct fmt::formatter<surf::VCDTypes::Tick> {
         return ctx.begin();
     }
     template <typename FormatContext>
-    auto format(surf::VCDTypes::Tick const &tick, FormatContext &ctx) {
+    auto format(surf::VCDTypes::Tick const &tick, FormatContext &ctx) const {
         return fmt::format_to(ctx.out(), "<Tick #{:d}>", tick.tick);
     }
 };
@@ -251,7 +251,7 @@ template <> struct fmt::formatter<surf::VCDTypes::BinaryNum> {
         return ctx.begin();
     }
     template <typename FormatContext>
-    auto format(surf::VCDTypes::BinaryNum const &bnum, FormatContext &ctx) {
+    auto format(surf::VCDTypes::BinaryNum const &bnum, FormatContext &ctx) const {
         return fmt::format_to(ctx.out(), "<BinaryNum {:#0b}>", bnum.num);
     }
 };
@@ -261,7 +261,7 @@ template <> struct fmt::formatter<surf::VCDTypes::RealNum> {
         return ctx.begin();
     }
     template <typename FormatContext>
-    auto format(surf::VCDTypes::RealNum const &rnum, FormatContext &ctx) {
+    auto format(surf::VCDTypes::RealNum const &rnum, FormatContext &ctx) const {
         return fmt::format_to(ctx.out(), "<RealNum {}>", rnum.num);
     }
 };
@@ -271,7 +271,7 @@ template <> struct fmt::formatter<surf::VCDTypes::ScalarValue> {
         return ctx.begin();
     }
     template <typename FormatContext>
-    auto format(surf::VCDTypes::ScalarValue const &sv, FormatContext &ctx) {
+    auto format(surf::VCDTypes::ScalarValue const &sv, FormatContext &ctx) const {
         return fmt::format_to(ctx.out(), "<ScalarValue V: {} X: {} Z: {}>", sv.b() ? '1' : '0',
                               surf::boolmoji(sv.x()), surf::boolmoji(sv.z()));
     }
@@ -282,7 +282,7 @@ template <> struct fmt::formatter<surf::VCDTypes::Change> {
         return ctx.begin();
     }
     template <typename FormatContext>
-    auto format(surf::VCDTypes::Change const &change, FormatContext &ctx) {
+    auto format(surf::VCDTypes::Change const &change, FormatContext &ctx) const {
         return fmt::format_to(ctx.out(), "<Change ID: '{:s}' V: {}>", change.id, change.value);
     }
 };
@@ -292,7 +292,7 @@ template <> struct fmt::formatter<surf::VCDTypes::Date> {
         return ctx.begin();
     }
     template <typename FormatContext>
-    auto format(surf::VCDTypes::Date const &date, FormatContext &ctx) {
+    auto format(surf::VCDTypes::Date const &date, FormatContext &ctx) const {
         return fmt::format_to(ctx.out(), "<Date '{:s}'>", date.date);
     }
 };
@@ -302,7 +302,7 @@ template <> struct fmt::formatter<surf::VCDTypes::Version> {
         return ctx.begin();
     }
     template <typename FormatContext>
-    auto format(surf::VCDTypes::Version const &version, FormatContext &ctx) {
+    auto format(surf::VCDTypes::Version const &version, FormatContext &ctx) const {
         return fmt::format_to(ctx.out(), "<Version '{:s}'>", version.version);
     }
 };
@@ -312,7 +312,7 @@ template <> struct fmt::formatter<surf::VCDTypes::Timescale> {
         return ctx.begin();
     }
     template <typename FormatContext>
-    auto format(surf::VCDTypes::Timescale const &timescale, FormatContext &ctx) {
+    auto format(surf::VCDTypes::Timescale const &timescale, FormatContext &ctx) const {
         return fmt::format_to(ctx.out(), "<Timescale {:d} {:s}>",
                               magic_enum::enum_integer(timescale.time_number),
                               magic_enum::enum_name(timescale.time_unit));
@@ -324,7 +324,7 @@ template <> struct fmt::formatter<surf::VCDTypes::ScopeDecl> {
         return ctx.begin();
     }
     template <typename FormatContext>
-    auto format(surf::VCDTypes::ScopeDecl const &scope_decl, FormatContext &ctx) {
+    auto format(surf::VCDTypes::ScopeDecl const &scope_decl, FormatContext &ctx) const {
         return fmt::format_to(ctx.out(), "<ScopeDecl {:s} {:s}>",
                               magic_enum::enum_name(scope_decl.type), scope_decl.id);
     }
@@ -373,7 +373,7 @@ template <> struct fmt::formatter<surf::VCDTypes::UpScope> {
         return ctx.begin();
     }
     template <typename FormatContext>
-    auto format(surf::VCDTypes::UpScope const &uscope, FormatContext &ctx) {
+    auto format(surf::VCDTypes::UpScope const &uscope, FormatContext &ctx) const {
         return fmt::format_to(ctx.out(), "<UpScope>");
     }
 };
@@ -383,7 +383,7 @@ template <> struct fmt::formatter<surf::VCDTypes::Declarations> {
         return ctx.begin();
     }
     template <typename FormatContext>
-    auto format(surf::VCDTypes::Declarations const &decls, FormatContext &ctx) {
+    auto format(surf::VCDTypes::Declarations const &decls, FormatContext &ctx) const {
         return fmt::format_to(ctx.out(), "<Declarations '{:s}'>", "fmt::TODO");
     }
 };

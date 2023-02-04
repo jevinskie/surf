@@ -362,7 +362,7 @@ VCDTypes::Declarations decls_from_decl_list(std::vector<VCDTypes::Declaration> &
                     if (!decls.comments) {
                         decls.comments.emplace(decltype(decls.comments)::value_type{});
                     }
-                    decls.comments->emplace_back(std::move(comment.comment));
+                    decls.comments->emplace_back(comment.comment);
                 },
                 [&](Date &date) {
                     decls.date = {date.date};
@@ -371,36 +371,21 @@ VCDTypes::Declarations decls_from_decl_list(std::vector<VCDTypes::Declaration> &
                     decls.timescale = {timescale};
                 },
                 [&](ScopeDecl &scope) {
-                    fmt::print("Scope open: {} {}\n", scope.id, magic_enum::enum_name(scope.type));
                     scopes.back()->subscopes.emplace_back(
                         Scope{.id = scope.id, .type = scope.type});
                     scopes.emplace_back(&scopes.back()->subscopes.back());
                 },
                 [&](Var &var) {
-                    fmt::print("Var: {}\n", var);
                     scopes.back()->vars.emplace_back(var);
-                    fmt::print("scopes.top()->vars: {}\n", fmt::join(scopes.back()->vars, ", "));
                 },
                 [&](UpScope) {
                     if (scopes.size() <= 1) {
                         throw std::range_error(fmt::format(
                             "Underflow in scope depth ({}) after an $upscope", scopes.size()));
                     }
-                    fmt::print("Scope closed depth: {}\n", scopes.size());
-                    fmt::print("UpScope scopes.back()->vars: {}\n",
-                               fmt::join(scopes.back()->vars, ", "));
-                    // fmt::print("UpScope scopes.back()->subscopes: {}\n",
-                    // fmt::join(scopes.back()->subscopes, ", "));
-                    // auto vec_scopes = std::vector<Scope *>(scopes.begin(), scopes.end());
-                    // fmt::print("vec_scopes: {}\n", fmt::join(map(
-                    //                                              [](const auto &scope_ptr) {
-                    //                                                  return *scope_ptr;
-                    //                                              },
-                    //                                              scopes),
-                    //                                          ", "));
                     scopes.pop_back();
                 },
-                [](const auto unk) {
+                [](const auto &unk) {
                     throw std::domain_error(fmt::format(
                         "decls_from_decl_list unknown decl type: {}", type_name<decltype(unk)>()));
                 }),
