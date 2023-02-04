@@ -440,7 +440,7 @@ std::vector<SimCmd> parse_vcd_sim_cmds(std::string_view sim_cmds_str, fs::path p
     if (!cmds_parse_res.is_success() || !cmds_parse_res.has_value()) {
         throw std::logic_error("VCD commands (changes) parsing failed.\n" + cmds_err);
     }
-    return std::move(cmds_parse_res.value());
+    return cmds_parse_res.value();
 }
 
 Document parse_vcd_document(std::string_view vcd_str, const fs::path &path,

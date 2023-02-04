@@ -373,7 +373,7 @@ template <> struct fmt::formatter<surf::VCDTypes::UpScope> {
         return ctx.begin();
     }
     template <typename FormatContext>
-    auto format(surf::VCDTypes::UpScope const &uscope, FormatContext &ctx) const {
+    auto format(surf::VCDTypes::UpScope const &, FormatContext &ctx) const {
         return fmt::format_to(ctx.out(), "<UpScope>");
     }
 };
