@@ -335,7 +335,7 @@ template <> struct fmt::formatter<surf::VCDTypes::Scope> {
         return ctx.begin();
     }
     template <typename FormatContext>
-    auto format(surf::VCDTypes::Scope const &scope, FormatContext &ctx) {
+    auto format(surf::VCDTypes::Scope const &scope, FormatContext &ctx) const {
         return fmt::format_to(ctx.out(), "<Scope {:s} {:s} vars: {} subscopes: {}>",
                               magic_enum::enum_name(scope.type), scope.id,
                               fmt::join(scope.vars, ", "), fmt::join(scope.subscopes, ", "));

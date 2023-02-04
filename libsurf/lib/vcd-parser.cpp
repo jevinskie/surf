@@ -351,37 +351,34 @@ struct vcd_document {
 
 }; // namespace
 
-VCDTypes::Declarations decls_from_decl_list(std::vector<VCDTypes::Declaration> decl_list) {
-    // auto my_decl_list = std::move(decl_list);
+VCDTypes::Declarations decls_from_decl_list(std::vector<VCDTypes::Declaration> &&decl_list) {
+    auto my_decl_list = std::move(decl_list);
     Declarations decls{.root_scope = {.id = "root", .type = ScopeType::root}};
     std::vector<Scope *> scopes{&decls.root_scope};
-    for (auto &decl : decl_list) {
-        std::visit(
+    for (auto &decl : my_decl_list) {
+        rollbear::visit(
             overload(
-                [&](Comment comment) {
+                [&](Comment &comment) {
                     if (!decls.comments) {
                         decls.comments.emplace(decltype(decls.comments)::value_type{});
                     }
-                    decls.comments->emplace_back(comment.comment);
+                    decls.comments->emplace_back(std::move(comment.comment));
                 },
-                [&](Date date) {
+                [&](Date &date) {
                     decls.date = {date.date};
                 },
                 [&](Timescale timescale) {
                     decls.timescale = {timescale};
                 },
-                [&](ScopeDecl scope) {
+                [&](ScopeDecl &scope) {
                     fmt::print("Scope open: {} {}\n", scope.id, magic_enum::enum_name(scope.type));
-                    // scopes.back()->subscopes.emplace_back(
-                    //     Scope{.id = scope.id, .type = scope.type});
-                    scopes.back()->subscopes.push_back(
-                        Scope{std::string{scope.id}, std::vector<Var>{}, std::vector<Scope>{},
-                              ScopeType{scope.type}});
-                    scopes.push_back(&scopes.back()->subscopes.back());
+                    scopes.back()->subscopes.emplace_back(
+                        Scope{.id = scope.id, .type = scope.type});
+                    scopes.emplace_back(&scopes.back()->subscopes.back());
                 },
-                [&](Var var) {
+                [&](Var &var) {
                     fmt::print("Var: {}\n", var);
-                    scopes.back()->vars.push_back(var);
+                    scopes.back()->vars.emplace_back(var);
                     fmt::print("scopes.top()->vars: {}\n", fmt::join(scopes.back()->vars, ", "));
                 },
                 [&](UpScope) {
@@ -415,7 +412,7 @@ VCDTypes::Declarations decls_from_decl_list(std::vector<VCDTypes::Declaration> d
                         "instead. Missing $upscope.",
                         scopes.size()));
     }
-    // fmt::print("root_scope: {}\n", decls.root_scope);
+    fmt::print("root_scope: {}\n", decls.root_scope);
     return decls;
 }
 
