@@ -335,13 +335,14 @@ template <> struct fmt::formatter<surf::VCDTypes::Scope> {
         return ctx.begin();
     }
     template <typename FormatContext>
-    auto format(surf::VCDTypes::Scope const &scope, FormatContext &ctx) const {
+    auto format(surf::VCDTypes::Scope const &scope, FormatContext &ctx) {
         return fmt::format_to(ctx.out(), "<Scope {:s} {:s} vars: {} subscopes: {}>",
                               magic_enum::enum_name(scope.type), scope.id,
                               fmt::join(scope.vars, ", "), fmt::join(scope.subscopes, ", "));
     }
 };
 
+#if 0
 template <> struct fmt::formatter<surf::VCDTypes::ScopePtr> {
     template <typename ParseContext> constexpr auto parse(ParseContext &ctx) {
         return ctx.begin();
@@ -354,6 +355,7 @@ template <> struct fmt::formatter<surf::VCDTypes::ScopePtr> {
         //                       fmt::join(scope->vars, ", "), fmt::join(scope->subscopes, ", "));
     }
 };
+#endif
 
 template <> struct fmt::formatter<surf::VCDTypes::Var> {
     template <typename ParseContext> constexpr auto parse(ParseContext &ctx) {

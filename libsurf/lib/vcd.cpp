@@ -5,7 +5,8 @@
 #include "vcd-parser.h"
 
 VCDFile::VCDFile(const fs::path &path)
-    : m_parsed_changes(false), m_mapped_file(path, (const void *)0x80'0000'0000) {
+    // : m_parsed_changes(false), m_mapped_file(path, (const void *)0x80'0000'0000) {
+    : m_parsed_changes(false), m_mapped_file(path) {
     fmt::print("vcd sz: {:d} data: {:p}\n", size(), fmt::ptr(data()));
     // auto decls_ret          = parse_vcd_declarations(string_view(), m_mapped_file.path());
     // m_document.declarations = decls_from_decl_list(decls_ret.decls);

@@ -35,8 +35,8 @@ add_compile_options(-O0 -fno-omit-frame-pointer)
 # add_compile_options(-Oz -fvisibility=hidden -fvisibility-inlines-hidden -ffunction-sections -fdata-sections)
 # add_link_options(-Wl,-dead_strip)
 
-# add_compile_options(-O0 -ggdb3 -fsanitize=address)
-# add_link_options(-O0 -ggdb3 -fsanitize=address)
+add_compile_options(-O0 -ggdb3 -fsanitize=address)
+add_link_options(-O0 -ggdb3 -fsanitize=address)
 
 # add_compile_options(-fsanitize=memory)
 # add_link_options(-fsanitize=memory)

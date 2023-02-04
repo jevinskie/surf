@@ -351,20 +351,20 @@ struct vcd_document {
 
 }; // namespace
 
-VCDTypes::Declarations decls_from_decl_list(std::vector<VCDTypes::Declaration> &&decl_list) {
-    auto my_decl_list = std::move(decl_list);
+VCDTypes::Declarations decls_from_decl_list(std::vector<VCDTypes::Declaration> decl_list) {
+    // auto my_decl_list = std::move(decl_list);
     Declarations decls{.root_scope = {.id = "root", .type = ScopeType::root}};
-    std::deque<Scope *> scopes{&decls.root_scope};
-    for (auto &decl : my_decl_list) {
-        rollbear::visit(
+    std::vector<Scope *> scopes{&decls.root_scope};
+    for (auto &decl : decl_list) {
+        std::visit(
             overload(
-                [&](Comment &comment) {
+                [&](Comment comment) {
                     if (!decls.comments) {
-                        decls.comments = {{}};
+                        decls.comments.emplace(decltype(decls.comments)::value_type{});
                     }
-                    decls.comments->emplace_back(std::move(comment.comment));
+                    decls.comments->emplace_back(comment.comment);
                 },
-                [&](Date &date) {
+                [&](Date date) {
                     decls.date = {date.date};
                 },
                 [&](Timescale timescale) {
@@ -372,13 +372,16 @@ VCDTypes::Declarations decls_from_decl_list(std::vector<VCDTypes::Declaration> &
                 },
                 [&](ScopeDecl scope) {
                     fmt::print("Scope open: {} {}\n", scope.id, magic_enum::enum_name(scope.type));
-                    scopes.back()->subscopes.emplace_back(
-                        Scope{.id = scope.id, .type = scope.type});
-                    scopes.emplace_back(&scopes.back()->subscopes[scopes.back()->subscopes.size()]);
+                    // scopes.back()->subscopes.emplace_back(
+                    //     Scope{.id = scope.id, .type = scope.type});
+                    scopes.back()->subscopes.push_back(
+                        Scope{std::string{scope.id}, std::vector<Var>{}, std::vector<Scope>{},
+                              ScopeType{scope.type}});
+                    scopes.push_back(&scopes.back()->subscopes.back());
                 },
                 [&](Var var) {
                     fmt::print("Var: {}\n", var);
-                    scopes.back()->vars.emplace_back(var);
+                    scopes.back()->vars.push_back(var);
                     fmt::print("scopes.top()->vars: {}\n", fmt::join(scopes.back()->vars, ", "));
                 },
                 [&](UpScope) {
@@ -391,16 +394,16 @@ VCDTypes::Declarations decls_from_decl_list(std::vector<VCDTypes::Declaration> &
                                fmt::join(scopes.back()->vars, ", "));
                     // fmt::print("UpScope scopes.back()->subscopes: {}\n",
                     // fmt::join(scopes.back()->subscopes, ", "));
-                    auto vec_scopes = std::vector<Scope *>(scopes.begin(), scopes.end());
-                    fmt::print("vec_scopes: {}\n", fmt::join(map(
-                                                                 [](const auto &scope_ptr) {
-                                                                     return *scope_ptr;
-                                                                 },
-                                                                 scopes),
-                                                             ", "));
+                    // auto vec_scopes = std::vector<Scope *>(scopes.begin(), scopes.end());
+                    // fmt::print("vec_scopes: {}\n", fmt::join(map(
+                    //                                              [](const auto &scope_ptr) {
+                    //                                                  return *scope_ptr;
+                    //                                              },
+                    //                                              scopes),
+                    //                                          ", "));
                     scopes.pop_back();
                 },
-                [](const auto &unk) {
+                [](const auto unk) {
                     throw std::domain_error(fmt::format(
                         "decls_from_decl_list unknown decl type: {}", type_name<decltype(unk)>()));
                 }),
@@ -412,7 +415,7 @@ VCDTypes::Declarations decls_from_decl_list(std::vector<VCDTypes::Declaration> &
                         "instead. Missing $upscope.",
                         scopes.size()));
     }
-    fmt::print("root_scope: {}\n", decls.root_scope);
+    // fmt::print("root_scope: {}\n", decls.root_scope);
     return decls;
 }
 
@@ -498,7 +501,7 @@ void parse_vcd_document_test(std::string_view vcd_str, const fs::path &path) {
     } catch (const VCDDeclParseError &decl_parse_error) {
         fmt::print(stderr, "Error parsing VCD declarations:\n{:s}\n", decl_parse_error.what());
     }
-    fmt::print("2-step decls scopes: {}\n", res.declarations.root_scope);
+    // fmt::print("2-step decls scopes: {}\n", res.declarations.root_scope);
 
     try {
         res.sim_cmds = parse_vcd_sim_cmds(decls_ret.remaining, path);
