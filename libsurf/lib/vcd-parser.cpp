@@ -41,26 +41,17 @@ SCA to_sv(str_lex lexeme) {
 std::string to_string(str_lex lexeme) {
     return std::string(lexeme.data(), lexeme.size());
 }
-SCA lex2str_cb = lexy::callback<std::string>([](str_lex lexeme) {
-    return to_string(lexeme);
-});
 
 SCA ws           = dsl::whitespace(dsl::ascii::space);
 SCA all_chars    = dsl::ascii::character;
 SCA non_ws_chars = dsl::ascii::character - dsl::ascii::space;
 SCA val_chars    = LEXY_ASCII_ONE_OF("01xXzZ");
 SCA end_term     = dsl::terminator(dsl::token(ws + LEXY_LIT("$end")));
-SCA ws_term      = dsl::terminator(dsl::token(ws));
 SCA all_cap      = dsl::capture(all_chars);
 
 SCA cap_tok(auto rule) {
     return dsl::capture(dsl::token(rule));
 }
-
-struct decimal_number {
-    SCA rule  = dsl::sign + dsl::integer<int>;
-    SCA value = lexy::as_integer<int>;
-};
 
 struct comment {
     SCA rule  = LEXY_LIT("$comment") + dsl::no_whitespace(end_term.list(all_cap));
@@ -498,7 +489,7 @@ void parse_vcd_document_test(std::string_view vcd_str, const fs::path &path) {
         lexy::parse<grammar::vcd_document>(input, lexy_ext::report_error.path(path.c_str()));
     fmt::print("1-step doc success: {}\n", doc_res.is_success());
     if (doc_res.is_success()) {
-        auto doc_val = std::move(doc_res.value());
+        auto doc_val = doc_res.value();
         res = Document{.declarations = decls_from_decl_list(std::move(doc_val.declarations)),
                        .sim_cmds     = std::move(doc_val.sim_cmds)};
     }

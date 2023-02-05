@@ -109,3 +109,17 @@ template <typename Func, typename Seq> auto map(Func func, Seq seq) {
 }
 
 }; // namespace surf
+
+template <typename T> struct fmt::formatter<std::optional<T>> {
+    constexpr auto parse(format_parse_context &ctx) {
+        return ctx.begin();
+    }
+    template <typename FormatContext>
+    auto format(std::optional<T> const &opt, FormatContext &ctx) const -> decltype(ctx.out()) {
+        if (!opt) {
+            return fmt::format_to(ctx.out(), "opt::empty");
+        } else {
+            return fmt::format_to(ctx.out(), "{}", *opt);
+        }
+    }
+};

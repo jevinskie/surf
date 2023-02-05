@@ -11,6 +11,8 @@
 #include <variant>
 #include <vector>
 
+#include <fmt/format.h>
+
 #ifdef __linux__
 #define SURF_LINUX
 #endif
@@ -33,7 +35,9 @@
 #define SURF_UNREACHABLE() __builtin_unreachable()
 
 namespace surf {
+
 static inline std::string boolmoji(bool b) {
     return b ? "✅" : "❌";
 }
+
 }; // namespace surf

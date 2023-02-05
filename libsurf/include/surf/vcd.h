@@ -5,7 +5,6 @@
 #include "time.h"
 #include "trace.h"
 
-#include <fmt/format.h>
 #include <magic_enum.hpp>
 
 namespace surf {
@@ -227,92 +226,99 @@ private:
 }; // namespace surf
 
 template <> struct fmt::formatter<surf::VCDTypes::Comment> {
-    template <typename ParseContext> constexpr auto parse(ParseContext &ctx) {
+    constexpr auto parse(format_parse_context &ctx) {
         return ctx.begin();
     }
     template <typename FormatContext>
-    auto format(surf::VCDTypes::Comment const &comment, FormatContext &ctx) const {
+    auto format(surf::VCDTypes::Comment const &comment, FormatContext &ctx) const
+        -> decltype(ctx.out()) {
         return fmt::format_to(ctx.out(), "<Comment '{:s}'>", comment.comment);
     }
 };
 
 template <> struct fmt::formatter<surf::VCDTypes::Tick> {
-    template <typename ParseContext> constexpr auto parse(ParseContext &ctx) {
+    constexpr auto parse(format_parse_context &ctx) {
         return ctx.begin();
     }
     template <typename FormatContext>
-    auto format(surf::VCDTypes::Tick const &tick, FormatContext &ctx) const {
+    auto format(surf::VCDTypes::Tick const &tick, FormatContext &ctx) const -> decltype(ctx.out()) {
         return fmt::format_to(ctx.out(), "<Tick #{:d}>", tick.tick);
     }
 };
 
 template <> struct fmt::formatter<surf::VCDTypes::BinaryNum> {
-    template <typename ParseContext> constexpr auto parse(ParseContext &ctx) {
+    constexpr auto parse(format_parse_context &ctx) {
         return ctx.begin();
     }
     template <typename FormatContext>
-    auto format(surf::VCDTypes::BinaryNum const &bnum, FormatContext &ctx) const {
+    auto format(surf::VCDTypes::BinaryNum const &bnum, FormatContext &ctx) const
+        -> decltype(ctx.out()) {
         return fmt::format_to(ctx.out(), "<BinaryNum {:#0b}>", bnum.num);
     }
 };
 
 template <> struct fmt::formatter<surf::VCDTypes::RealNum> {
-    template <typename ParseContext> constexpr auto parse(ParseContext &ctx) {
+    constexpr auto parse(format_parse_context &ctx) {
         return ctx.begin();
     }
     template <typename FormatContext>
-    auto format(surf::VCDTypes::RealNum const &rnum, FormatContext &ctx) const {
+    auto format(surf::VCDTypes::RealNum const &rnum, FormatContext &ctx) const
+        -> decltype(ctx.out()) {
         return fmt::format_to(ctx.out(), "<RealNum {}>", rnum.num);
     }
 };
 
 template <> struct fmt::formatter<surf::VCDTypes::ScalarValue> {
-    template <typename ParseContext> constexpr auto parse(ParseContext &ctx) {
+    constexpr auto parse(format_parse_context &ctx) {
         return ctx.begin();
     }
     template <typename FormatContext>
-    auto format(surf::VCDTypes::ScalarValue const &sv, FormatContext &ctx) const {
+    auto format(surf::VCDTypes::ScalarValue const &sv, FormatContext &ctx) const
+        -> decltype(ctx.out()) {
         return fmt::format_to(ctx.out(), "<ScalarValue V: {} X: {} Z: {}>", sv.b() ? '1' : '0',
                               surf::boolmoji(sv.x()), surf::boolmoji(sv.z()));
     }
 };
 
 template <> struct fmt::formatter<surf::VCDTypes::Change> {
-    template <typename ParseContext> constexpr auto parse(ParseContext &ctx) {
+    constexpr auto parse(format_parse_context &ctx) {
         return ctx.begin();
     }
     template <typename FormatContext>
-    auto format(surf::VCDTypes::Change const &change, FormatContext &ctx) const {
+    auto format(surf::VCDTypes::Change const &change, FormatContext &ctx) const
+        -> decltype(ctx.out()) {
         return fmt::format_to(ctx.out(), "<Change ID: '{:s}' V: {}>", change.id, change.value);
     }
 };
 
 template <> struct fmt::formatter<surf::VCDTypes::Date> {
-    template <typename ParseContext> constexpr auto parse(ParseContext &ctx) {
+    constexpr auto parse(format_parse_context &ctx) {
         return ctx.begin();
     }
     template <typename FormatContext>
-    auto format(surf::VCDTypes::Date const &date, FormatContext &ctx) const {
+    auto format(surf::VCDTypes::Date const &date, FormatContext &ctx) const -> decltype(ctx.out()) {
         return fmt::format_to(ctx.out(), "<Date '{:s}'>", date.date);
     }
 };
 
 template <> struct fmt::formatter<surf::VCDTypes::Version> {
-    template <typename ParseContext> constexpr auto parse(ParseContext &ctx) {
+    constexpr auto parse(format_parse_context &ctx) {
         return ctx.begin();
     }
     template <typename FormatContext>
-    auto format(surf::VCDTypes::Version const &version, FormatContext &ctx) const {
+    auto format(surf::VCDTypes::Version const &version, FormatContext &ctx) const
+        -> decltype(ctx.out()) {
         return fmt::format_to(ctx.out(), "<Version '{:s}'>", version.version);
     }
 };
 
 template <> struct fmt::formatter<surf::VCDTypes::Timescale> {
-    template <typename ParseContext> constexpr auto parse(ParseContext &ctx) {
+    constexpr auto parse(format_parse_context &ctx) {
         return ctx.begin();
     }
     template <typename FormatContext>
-    auto format(surf::VCDTypes::Timescale const &timescale, FormatContext &ctx) const {
+    auto format(surf::VCDTypes::Timescale const &timescale, FormatContext &ctx) const
+        -> decltype(ctx.out()) {
         return fmt::format_to(ctx.out(), "<Timescale {:d} {:s}>",
                               magic_enum::enum_integer(timescale.time_number),
                               magic_enum::enum_name(timescale.time_unit));
@@ -320,70 +326,59 @@ template <> struct fmt::formatter<surf::VCDTypes::Timescale> {
 };
 
 template <> struct fmt::formatter<surf::VCDTypes::ScopeDecl> {
-    template <typename ParseContext> constexpr auto parse(ParseContext &ctx) {
+    constexpr auto parse(format_parse_context &ctx) {
         return ctx.begin();
     }
     template <typename FormatContext>
-    auto format(surf::VCDTypes::ScopeDecl const &scope_decl, FormatContext &ctx) const {
+    auto format(surf::VCDTypes::ScopeDecl const &scope_decl, FormatContext &ctx) const
+        -> decltype(ctx.out()) {
         return fmt::format_to(ctx.out(), "<ScopeDecl {:s} {:s}>",
                               magic_enum::enum_name(scope_decl.type), scope_decl.id);
     }
 };
 
 template <> struct fmt::formatter<surf::VCDTypes::Scope> {
-    template <typename ParseContext> constexpr auto parse(ParseContext &ctx) {
+    constexpr auto parse(format_parse_context &ctx) {
         return ctx.begin();
     }
     template <typename FormatContext>
-    auto format(surf::VCDTypes::Scope const &scope, FormatContext &ctx) const {
-        return fmt::format_to(ctx.out(), "<Scope {:s} {:s} vars: {} subscopes: {}>",
+    auto format(surf::VCDTypes::Scope const &scope, FormatContext &ctx) const
+        -> decltype(ctx.out()) {
+        return fmt::format_to(ctx.out(), "<Scope {:s} {:s} vars: [{}] subscopes: [{}]>",
                               magic_enum::enum_name(scope.type), scope.id,
                               fmt::join(scope.vars, ", "), fmt::join(scope.subscopes, ", "));
     }
 };
 
-#if 0
-template <> struct fmt::formatter<surf::VCDTypes::ScopePtr> {
-    template <typename ParseContext> constexpr auto parse(ParseContext &ctx) {
-        return ctx.begin();
-    }
-    template <typename FormatContext>
-    auto format(surf::VCDTypes::ScopePtr const &scope_ptr, FormatContext &ctx) const {
-        return fmt::format_to(ctx.out(), "<*Scope>");
-        // return fmt::format_to(ctx.out(), "<*Scope {:s} {:s} vars: {} subscopes: {}>",
-        //                       magic_enum::enum_name(scope->type), scope->id,
-        //                       fmt::join(scope->vars, ", "), fmt::join(scope->subscopes, ", "));
-    }
-};
-#endif
-
 template <> struct fmt::formatter<surf::VCDTypes::Var> {
-    template <typename ParseContext> constexpr auto parse(ParseContext &ctx) {
+    constexpr auto parse(format_parse_context &ctx) {
         return ctx.begin();
     }
     template <typename FormatContext>
-    auto format(surf::VCDTypes::Var const &var, FormatContext &ctx) const {
+    auto format(surf::VCDTypes::Var const &var, FormatContext &ctx) const -> decltype(ctx.out()) {
         return fmt::format_to(ctx.out(), "<Var {:s} {:d} {:s} {:s}>",
                               magic_enum::enum_name(var.type), var.size, var.id, var.ref);
     }
 };
 
 template <> struct fmt::formatter<surf::VCDTypes::UpScope> {
-    template <typename ParseContext> constexpr auto parse(ParseContext &ctx) {
+    constexpr auto parse(format_parse_context &ctx) {
         return ctx.begin();
     }
     template <typename FormatContext>
-    auto format(surf::VCDTypes::UpScope const &, FormatContext &ctx) const {
+    auto format(surf::VCDTypes::UpScope const &, FormatContext &ctx) const -> decltype(ctx.out()) {
         return fmt::format_to(ctx.out(), "<UpScope>");
     }
 };
 
 template <> struct fmt::formatter<surf::VCDTypes::Declarations> {
-    template <typename ParseContext> constexpr auto parse(ParseContext &ctx) {
+    constexpr auto parse(format_parse_context &ctx) {
         return ctx.begin();
     }
     template <typename FormatContext>
-    auto format(surf::VCDTypes::Declarations const &decls, FormatContext &ctx) const {
-        return fmt::format_to(ctx.out(), "<Declarations '{:s}'>", "fmt::TODO");
+    auto format(surf::VCDTypes::Declarations const &decls, FormatContext &ctx) const
+        -> decltype(ctx.out()) {
+        return fmt::format_to(ctx.out(), "<Declarations comments: {}>",
+                              fmt::join(*decls.comments, ", "));
     }
 };
