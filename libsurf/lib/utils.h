@@ -110,16 +110,52 @@ template <typename Func, typename Seq> auto map(Func func, Seq seq) {
 
 }; // namespace surf
 
+// Credit: Arthaud Awen / davawen /
+// https://github.com/fmtlib/fmt/issues/1367#issuecomment-1229916316
 template <typename T> struct fmt::formatter<std::optional<T>> {
-    constexpr auto parse(format_parse_context &ctx) {
-        return ctx.begin();
+    std::string_view underlying_fmt;
+    std::string_view or_else;
+
+    constexpr auto parse(format_parse_context &ctx) -> decltype(ctx.begin()) {
+        // {:<if present{}><if not present>}
+        auto it = ctx.begin(), end = ctx.end();
+        auto get_marker = [&it, end]() constexpr {
+            if (it == end || *it != '<')
+                return std::string_view(nullptr, 0); // no match
+            auto start = ++it;
+
+            while (it != end && (*it++ != '>'))
+                ;
+            if (it == end)
+                throw fmt::format_error("invalid format, unfinished range");
+
+            return std::string_view(start, (it - 1) - start);
+        };
+
+        underlying_fmt = "{}";
+        or_else        = "";
+
+        auto first = get_marker();
+        if (first.data())
+            underlying_fmt = first;
+
+        auto second = get_marker();
+        if (second.data())
+            or_else = second;
+
+        // Check if reached the end of the range:
+        if (it != end && *it != '}')
+            throw fmt::format_error("invalid format, no end bracket");
+        return it;
     }
+
     template <typename FormatContext>
-    auto format(std::optional<T> const &opt, FormatContext &ctx) const -> decltype(ctx.out()) {
-        if (!opt) {
-            return fmt::format_to(ctx.out(), "opt::empty");
+    auto format(const std::optional<T> &p, FormatContext &ctx) const -> decltype(ctx.out()) {
+        if (p.has_value()) {
+            return vformat_to(ctx.out(), underlying_fmt,
+                              format_arg_store<FormatContext, T>{p.value()});
         } else {
-            return fmt::format_to(ctx.out(), "{}", *opt);
+            return format_to(ctx.out(), "{}", or_else);
         }
     }
 };

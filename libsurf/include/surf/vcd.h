@@ -15,6 +15,10 @@ struct Comment {
     std::string comment;
 };
 
+struct CommentsFmt {
+    std::optional<std::vector<std::string>> const &comments;
+};
+
 struct Date {
     std::string date;
 };
@@ -85,10 +89,6 @@ struct Scope {
     std::vector<Var> vars;
     std::vector<Scope> subscopes;
     ScopeType type;
-};
-
-struct ScopePtr {
-    Scope *ptr;
 };
 
 struct UpScope {};
@@ -371,6 +371,21 @@ template <> struct fmt::formatter<surf::VCDTypes::UpScope> {
     }
 };
 
+template <> struct fmt::formatter<surf::VCDTypes::CommentsFmt> {
+    constexpr auto parse(format_parse_context &ctx) {
+        return ctx.begin();
+    }
+    template <typename FormatContext>
+    auto format(surf::VCDTypes::CommentsFmt const &comments, FormatContext &ctx) const
+        -> decltype(ctx.out()) {
+        if (!comments.comments) {
+            return fmt::format_to(ctx.out(), "<Comments: ∅>");
+        } else {
+            return fmt::format_to(ctx.out(), "<Comments: >", fmt::join(*comments.comments, ", "));
+        }
+    }
+};
+
 template <> struct fmt::formatter<surf::VCDTypes::Declarations> {
     constexpr auto parse(format_parse_context &ctx) {
         return ctx.begin();
@@ -378,7 +393,7 @@ template <> struct fmt::formatter<surf::VCDTypes::Declarations> {
     template <typename FormatContext>
     auto format(surf::VCDTypes::Declarations const &decls, FormatContext &ctx) const
         -> decltype(ctx.out()) {
-        return fmt::format_to(ctx.out(), "<Declarations comments: {}>",
-                              fmt::join(*decls.comments, ", "));
+        return fmt::format_to(ctx.out(), "<Declarations: {}, {:<Version: {}><Version: ∅>}>",
+                              surf::VCDTypes::CommentsFmt{decls.comments}, decls.version);
     }
 };
