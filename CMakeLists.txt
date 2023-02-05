@@ -26,15 +26,6 @@ if (UNIX)
    endif()
 endif()
 
-if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
-   add_compile_options(-Wno-missing-field-initializers)
-endif()
-
-if (("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU") OR ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang") OR ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "AppleClang"))
-   add_compile_options(-Wno-unused-parameter)
-endif()
-add_compile_options(-Wno-unused-parameter)
-
 add_compile_options(-ggdb3)
 # add_compile_options(-g0)
 

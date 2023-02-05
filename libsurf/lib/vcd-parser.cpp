@@ -458,14 +458,10 @@ void parse_vcd_document_test(std::string_view vcd_str, const fs::path &path) {
     //     fmt::print("parse_as_tree error: {}\n", tree_res.errors());
     // }
 
-    fmt::print("sizeof(Value): {}\n", sizeof(Value));
-    fmt::print("sizeof(SimCmd): {}\n", sizeof(SimCmd));
-    fmt::print("sizeof(ScalarValue): {}\n", sizeof(ScalarValue));
-
-    std::string trace;
-    lexy::trace_to<grammar::vcd_document>(std::back_insert_iterator(trace), input,
-                                          {lexy::visualize_fancy});
-    fmt::print("trace:\n\n{:s}\n", trace);
+    // std::string trace;
+    // lexy::trace_to<grammar::vcd_document>(std::back_insert_iterator(trace), input,
+    //                                       {lexy::visualize_fancy});
+    // fmt::print("trace:\n\n{:s}\n", trace);
 
     Document res;
     VCDParserDeclRet decls_ret;
@@ -477,27 +473,30 @@ void parse_vcd_document_test(std::string_view vcd_str, const fs::path &path) {
     } catch (const VCDDeclParseError &decl_parse_error) {
         fmt::print(stderr, "Error parsing VCD declarations:\n{:s}\n", decl_parse_error.what());
     }
-    // fmt::print("2-step decls scopes: {}\n", res.declarations.root_scope);
-
     try {
         res.sim_cmds = parse_vcd_sim_cmds(decls_ret.remaining, path);
     } catch (const VCDSimCmdsParseError &cmds_parse_error) {
         fmt::print(stderr, "Error parsing VCD simulation commands:\n{:s}\n",
                    cmds_parse_error.what());
     }
-    fmt::print("2-step decls: {}\n", res.declarations);
-    fmt::print("2-step cmds: {}\n", fmt::join(res.sim_cmds, ", "));
+    fmt::print("2-step doc: {}\n", res);
 
-    auto doc_res =
-        lexy::parse<grammar::vcd_document>(input, lexy_ext::report_error.path(path.c_str()));
-    fmt::print("1-step doc success: {}\n", doc_res.is_success());
-    if (doc_res.is_success()) {
-        auto doc_val = doc_res.value();
-        res = Document{.declarations = decls_from_decl_list(std::move(doc_val.declarations)),
-                       .sim_cmds     = std::move(doc_val.sim_cmds)};
+    try {
+        auto doc_res =
+            lexy::parse<grammar::vcd_document>(input, lexy_ext::report_error.path(path.c_str()));
+        fmt::print("1-step doc success: {}\n", doc_res.is_success());
+        if (doc_res.is_success()) {
+            auto doc_val = doc_res.value();
+            res = Document{.declarations = decls_from_decl_list(std::move(doc_val.declarations)),
+                           .sim_cmds     = std::move(doc_val.sim_cmds)};
+        }
+        fmt::print("1-step doc: {}\n", res);
+    } catch (const VCDDeclParseError &decl_parse_error) {
+        fmt::print(stderr, "Error parsing VCD declarations:\n{:s}\n", decl_parse_error.what());
+    } catch (const VCDSimCmdsParseError &cmds_parse_error) {
+        fmt::print(stderr, "Error parsing VCD simulation commands:\n{:s}\n",
+                   cmds_parse_error.what());
     }
-    fmt::print("1-step decls: {}\n", res.declarations);
-    fmt::print("1-step cmds: {}\n", fmt::join(res.sim_cmds, ", "));
 }
 
 }; // namespace surf

@@ -435,3 +435,28 @@ template <> struct fmt::formatter<surf::VCDTypes::Declarations> {
                               decls.date, decls.timescale, decls.root_scope);
     }
 };
+
+template <> struct fmt::formatter<surf::VCDTypes::DocumentRawDecls> {
+    constexpr auto parse(format_parse_context &ctx) {
+        return ctx.begin();
+    }
+    template <typename FormatContext>
+    auto format(surf::VCDTypes::DocumentRawDecls const &doc_raw, FormatContext &ctx) const
+        -> decltype(ctx.out()) {
+        return fmt::format_to(ctx.out(), "<DocRaw <Decls [{}]> <SimCmds [{}]>>",
+                              fmt::join(doc_raw.declarations, ", "),
+                              fmt::join(doc_raw.sim_cmds, ", "));
+    }
+};
+
+template <> struct fmt::formatter<surf::VCDTypes::Document> {
+    constexpr auto parse(format_parse_context &ctx) {
+        return ctx.begin();
+    }
+    template <typename FormatContext>
+    auto format(surf::VCDTypes::Document const &doc, FormatContext &ctx) const
+        -> decltype(ctx.out()) {
+        return fmt::format_to(ctx.out(), "<Doc {} <SimCmds [{}]>>", doc.declarations,
+                              fmt::join(doc.sim_cmds, ", "));
+    }
+};

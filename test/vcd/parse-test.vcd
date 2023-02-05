@@ -8,6 +8,9 @@ $scope module TOP $end
     $scope module cpu $end
         $var wire 32 !! pc_addr [31:0] $end
     $upscope $end
+    $scope module cpu2 $end
+        $var wire 32 !2 pc2_addr [31:0] $end
+    $upscope $end
 $upscope $end
 $enddefinitions $end
 #10
