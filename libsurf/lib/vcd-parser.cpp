@@ -358,6 +358,9 @@ VCDTypes::Declarations decls_from_decl_list(std::vector<VCDTypes::Declaration> &
                 [&](Date &date) {
                     decls.date = {date.date};
                 },
+                [&](Version &version) {
+                    decls.version = {version.version};
+                },
                 [&](Timescale timescale) {
                     decls.timescale = {timescale};
                 },

@@ -15,10 +15,6 @@ struct Comment {
     std::string comment;
 };
 
-struct CommentsFmt {
-    std::optional<std::vector<std::string>> const &comments;
-};
-
 struct Date {
     std::string date;
 };
@@ -106,6 +102,18 @@ struct Declarations {
     std::optional<std::string> version;
     Scope root_scope;
     std::optional<Timescale> timescale;
+};
+
+struct DeclsCommentsFmt {
+    std::optional<std::vector<std::string>> const &comments;
+};
+
+struct DeclsDateFmt {
+    std::optional<std::string> const &date;
+};
+
+struct DeclsVersionFmt {
+    std::optional<std::string> const &version;
 };
 
 struct Tick {
@@ -308,7 +316,18 @@ template <> struct fmt::formatter<surf::VCDTypes::Version> {
     template <typename FormatContext>
     auto format(surf::VCDTypes::Version const &version, FormatContext &ctx) const
         -> decltype(ctx.out()) {
-        return fmt::format_to(ctx.out(), "<Version '{:s}'>", version.version);
+        return fmt::format_to(ctx.out(), "<Version {:s}>", version.version);
+    }
+};
+
+template <> struct fmt::formatter<surf::VCDTypes::DeclsVersionFmt> {
+    constexpr auto parse(format_parse_context &ctx) {
+        return ctx.begin();
+    }
+    template <typename FormatContext>
+    auto format(surf::VCDTypes::DeclsVersionFmt const &version, FormatContext &ctx) const
+        -> decltype(ctx.out()) {
+        return fmt::format_to(ctx.out(), "<Version: {}>", version.version);
     }
 };
 
@@ -322,6 +341,22 @@ template <> struct fmt::formatter<surf::VCDTypes::Timescale> {
         return fmt::format_to(ctx.out(), "<Timescale {:d} {:s}>",
                               magic_enum::enum_integer(timescale.time_number),
                               magic_enum::enum_name(timescale.time_unit));
+    }
+};
+
+template <> struct fmt::formatter<std::optional<surf::VCDTypes::Timescale>> {
+    constexpr auto parse(format_parse_context &ctx) {
+        return ctx.begin();
+    }
+    template <typename FormatContext>
+    auto format(std::optional<surf::VCDTypes::Timescale> const &timescale, FormatContext &ctx) const
+        -> decltype(ctx.out()) {
+        if (!timescale)
+            return fmt::format_to(ctx.out(), "<Timescale " SURF_EMPTY_SYM ">");
+        else
+            return fmt::format_to(ctx.out(), "<Timescale {:d} {:s}>",
+                                  magic_enum::enum_integer(timescale->time_number),
+                                  magic_enum::enum_name(timescale->time_unit));
     }
 };
 
@@ -371,18 +406,20 @@ template <> struct fmt::formatter<surf::VCDTypes::UpScope> {
     }
 };
 
-template <> struct fmt::formatter<surf::VCDTypes::CommentsFmt> {
+template <> struct fmt::formatter<surf::VCDTypes::DeclsCommentsFmt> {
     constexpr auto parse(format_parse_context &ctx) {
         return ctx.begin();
     }
     template <typename FormatContext>
-    auto format(surf::VCDTypes::CommentsFmt const &comments, FormatContext &ctx) const
+    auto format(surf::VCDTypes::DeclsCommentsFmt const &comments, FormatContext &ctx) const
         -> decltype(ctx.out()) {
-        if (!comments.comments) {
-            return fmt::format_to(ctx.out(), "<Comments: ∅>");
-        } else {
-            return fmt::format_to(ctx.out(), "<Comments: >", fmt::join(*comments.comments, ", "));
-        }
+        if (!comments.comments)
+            return fmt::format_to(ctx.out(), "<Comments: " SURF_EMPTY_SYM ">");
+        else if (comments.comments->empty())
+            return fmt::format_to(ctx.out(), "<Comments: []");
+        else
+            return fmt::format_to(ctx.out(), "<Comments: [\"{}\"]>",
+                                  fmt::join(*comments.comments, "\", \""));
     }
 };
 
@@ -393,7 +430,8 @@ template <> struct fmt::formatter<surf::VCDTypes::Declarations> {
     template <typename FormatContext>
     auto format(surf::VCDTypes::Declarations const &decls, FormatContext &ctx) const
         -> decltype(ctx.out()) {
-        return fmt::format_to(ctx.out(), "<Declarations: {}, {:<Version: {}><Version: ∅>}>",
-                              surf::VCDTypes::CommentsFmt{decls.comments}, decls.version);
+        return fmt::format_to(ctx.out(), "<Declarations: {}, <Version: {}> <Date: {}> {} {}>",
+                              surf::VCDTypes::DeclsCommentsFmt{decls.comments}, decls.version,
+                              decls.date, decls.timescale, decls.root_scope);
     }
 };

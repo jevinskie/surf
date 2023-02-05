@@ -58,6 +58,15 @@ PRIVATE
     ${SURF_PRIVATE_LIBS}
 )
 target_compile_options(surf PRIVATE -Wall -Wextra -Wpedantic)
+if ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
+    target_compile_options(surf PRIVATE -Wno-missing-field-initializers)
+endif()
+
+if (("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU") OR ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang") OR ("${CMAKE_CXX_COMPILER_ID}" STREQUAL "AppleClang"))
+    target_compile_options(surf PRIVATE
+        # -Wno-unused-parameter
+    )
+endif()
 
 target_include_directories(surf
     PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/../include

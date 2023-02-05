@@ -110,7 +110,7 @@ template <typename Func, typename Seq> auto map(Func func, Seq seq) {
 
 }; // namespace surf
 
-// Credit: Arthaud Awen / davawen /
+// Credit: Arthaud Awen / davawen
 // https://github.com/fmtlib/fmt/issues/1367#issuecomment-1229916316
 template <typename T> struct fmt::formatter<std::optional<T>> {
     std::string_view underlying_fmt;
@@ -133,7 +133,7 @@ template <typename T> struct fmt::formatter<std::optional<T>> {
         };
 
         underlying_fmt = "{}";
-        or_else        = "";
+        or_else        = SURF_EMPTY_SYM;
 
         auto first = get_marker();
         if (first.data())
@@ -151,9 +151,8 @@ template <typename T> struct fmt::formatter<std::optional<T>> {
 
     template <typename FormatContext>
     auto format(const std::optional<T> &p, FormatContext &ctx) const -> decltype(ctx.out()) {
-        if (p.has_value()) {
-            return vformat_to(ctx.out(), underlying_fmt,
-                              format_arg_store<FormatContext, T>{p.value()});
+        if (p) {
+            return vformat_to(ctx.out(), underlying_fmt, format_arg_store<FormatContext, T>{*p});
         } else {
             return format_to(ctx.out(), "{}", or_else);
         }

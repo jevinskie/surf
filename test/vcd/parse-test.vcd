@@ -1,7 +1,9 @@
-$date date string $end
+$comment decl comment $end
 $timescale 10 ns $end
+$version Hand Mk I $end
 $scope module TOP $end
     $var wire  1 O! sim_trace $end
+    $comment decl comment dos $end
     $var wire  1 O" sim_stop $end
     $scope module cpu $end
         $var wire 32 !! pc_addr [31:0] $end

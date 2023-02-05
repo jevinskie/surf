@@ -33,6 +33,7 @@
 #define SURF_ALIGNED(n) __attribute__((aligned(n)))
 #define SURF_ASSUME_ALIGNED(ptr, n) __builtin_assume_aligned((ptr), n)
 #define SURF_UNREACHABLE() __builtin_unreachable()
+#define SURF_EMPTY_SYM "∅"
 
 namespace surf {
 
