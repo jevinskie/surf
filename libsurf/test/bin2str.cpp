@@ -53,13 +53,16 @@ template <typename T> std::string ba2s(const T &packed_bits) {
 std::string ba2s_neon(const std::span<const uint8_t> &bits) {
     std::string result;
     result.reserve(bits.size() * 8);
-    auto data             = bits.data();
-    ssize_t size          = (ssize_t)bits.size();
-    ssize_t i             = 0;
-    uint8x16_t zero_chars = {};
+    auto data                 = bits.data();
+    ssize_t size              = (ssize_t)bits.size();
+    ssize_t i                 = 0;
+    const uint8x16_t zeros_16 = vdupq_n_u8(0);
+    const uint8x16_t ones_16  = vdupq_n_u8(1);
     for (; i <= size - 16; i += 16) {
-        uint8x16_t bits_vector = vld1q_u8(data + i);
-        fmt::print("bv: {}\n", bits_vector);
+        uint8x16_t bv = vld1q_u8(data + i);
+        fmt::print("bv: {}\n", bv);
+        const uint8x16_t v0 = vsriq_n_u8(bv, zeros_16, 7);
+        fmt::print("v0: {}\n", v0);
     }
     for (; i < size; ++i) {}
     return result;
