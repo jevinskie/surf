@@ -216,7 +216,7 @@ public:
     const VCDTypes::Document &document();
     const VCDTypes::Declarations &declarations() const;
     const std::vector<VCDTypes::SimCmd> &sim_cmds();
-    void parse_test() const;
+    void parse_test();
 
 private:
     void parse_declarations();

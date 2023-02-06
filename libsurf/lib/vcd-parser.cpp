@@ -71,7 +71,10 @@ struct id {
 struct scalar_value {
     SCA rule  = cap_tok(val_chars);
     SCA value = lexy::callback<ScalarValue>([](auto lexeme) {
-        assert(lexeme.size() == 1);
+        if (lexeme.size() != 1) {
+            throw std::domain_error{
+                fmt::format("scalar_value bad lexeme size {}, expected 1", lexeme.size())};
+        }
         return ScalarValue(lexeme.data()[0]);
     });
 };
@@ -391,7 +394,6 @@ VCDTypes::Declarations decls_from_decl_list(std::vector<VCDTypes::Declaration> &
                         "instead. Missing $upscope.",
                         scopes.size()));
     }
-    fmt::print("root_scope: {}\n", decls.root_scope);
     return decls;
 }
 

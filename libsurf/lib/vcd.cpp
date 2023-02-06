@@ -25,8 +25,9 @@ const VCDTypes::Declarations &VCDFile::declarations() const {
     return m_document.declarations;
 }
 
-void VCDFile::parse_test() const {
-    parse_vcd_document_test(string_view(), path());
+void VCDFile::parse_test() {
+    (void)document();
+    // parse_vcd_document_test(string_view(), path());
 }
 
 const std::vector<VCDTypes::SimCmd> &VCDFile::sim_cmds() {
