@@ -12,6 +12,7 @@
 #include <vector>
 
 #include <fmt/format.h>
+#include <hedley.h>
 
 #ifdef __linux__
 #define SURF_LINUX

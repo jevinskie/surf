@@ -11,11 +11,19 @@ if ("${CMAKE_SYSTEM_PROCESSOR}" STREQUAL "x86_64")
     target_compile_options(fpng PRIVATE -msse4.1 -mpclmul)
 endif()
 
-set_target_properties(fpng PROPERTIES PUBLIC_HEADER fpng/src/fpng.h)
+set_target_properties(fpng PROPERTIES PUBLIC_HEADER fpng-scoped-include/fpng.h)
 target_include_directories(fpng PUBLIC fpng-scoped-include)
+
+
+add_library(hedley INTERFACE)
+target_include_directories(hedley INTERFACE hedley-scoped-include)
 
 add_subdirectory(lexy)
 add_subdirectory(magic_enum)
+
+add_library(mz_tagged_ptr INTERFACE)
+target_include_directories(mz_tagged_ptr INTERFACE tagged_ptr/include)
+add_library(mz::tagged_ptr ALIAS mz_tagged_ptr)
 
 add_library(thread-pool INTERFACE)
 target_include_directories(thread-pool INTERFACE thread-pool)

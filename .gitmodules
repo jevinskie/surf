@@ -25,3 +25,9 @@
 [submodule "libsurf/3rdparty/visit"]
 	path = libsurf/3rdparty/visit
 	url = https://github.com/jevinskie/visit
+[submodule "libsurf/3rdparty/hedley"]
+	path = libsurf/3rdparty/hedley
+	url = https://github.com/nemequ/hedley
+[submodule "libsurf/3rdparty/tagged_ptr"]
+	path = libsurf/3rdparty/tagged_ptr
+	url = https://github.com/marzer/tagged_ptr

@@ -37,7 +37,9 @@ endforeach()
 
 set(SURF_PUBLIC_LIBS
     fmt
+    hedley
     magic_enum
+    mz::tagged_ptr
 )
 
 set(SURF_PRIVATE_LIBS
