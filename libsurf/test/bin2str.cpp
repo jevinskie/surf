@@ -11,6 +11,15 @@
 
 #include <fmt/format.h>
 
+#define MCA_BEGIN(name)                                                                            \
+    do {                                                                                           \
+        __asm volatile("# LLVM-MCA-BEGIN " #name ::: "memory");                                    \
+    } while (0)
+#define MCA_END(name)                                                                              \
+    do {                                                                                           \
+        __asm volatile("# LLVM-MCA-END " #name ::: "memory");                                      \
+    } while (0)
+
 template <> struct fmt::formatter<uint8x16_t> {
     constexpr auto parse(format_parse_context &ctx) {
         return ctx.begin();
@@ -69,26 +78,35 @@ std::string ba2s_neon(const std::span<const uint8_t> &bits) {
     return result;
 }
 #else
+#define BA2S_NEON_UNROLL_COUNT 8
 std::string ba2s_neon(const std::span<const uint8_t> &bits) {
-    std::string result;
-    result.reserve(bits.size() * 8);
-    auto data    = bits.data();
-    ssize_t size = (ssize_t)bits.size();
-    ssize_t i    = 0;
-    for (; i <= size - 1; i += 1) {
-        const auto b         = *(uint8_t *)(data + i);
-        const uint64_t MAGIC = 0x8040201008040201ull; // for opposite order, byte-reverse this
-        const uint64_t MASK  = 0x8080808080808080ull;
-        const uint64_t t     = ((MAGIC * b) & MASK) >> 7;
-        fmt::print("t: {:#018x} {:#066b}\n", t, t);
-        const uint64_t ta = t + 0x3030303030303030ull;
-        fmt::print("ta: {:#018x} {:#066b}\n", ta, ta);
-        const auto ts = std::string_view{(const char *)&ta, sizeof(ta)};
-        fmt::print("ts: {:s}\n", ts);
-        result += ts;
+    const auto data = bits.data();
+    ssize_t size    = (ssize_t)bits.size();
+    std::string bitstring;
+    bitstring.reserve(size * 8);
+    const uint64x2_t magic       = {0x8040201008040201ull, 0x8040201008040201ull};
+    const uint64x2_t mask        = {0x8080808080808080ull, 0x8080808080808080ull};
+    const uint64x2_t ascii_zeros = {0x3030303030303030ull, 0x3030303030303030ull};
+    ssize_t i                    = 0;
+    // #pragma clang loop unroll_count(BA2S_NEON_UNROLL_COUNT)
+    for (; i <= size - sizeof(uint16_t); i += sizeof(uint16_t)) {
+        // MCA_BEGIN("ba2s_neon_inner_loop");
+        const uint64x2_t words               = {*(uint8_t *)(data + i), *(uint8_t *)(data + i + 1)};
+        const uint64x2_t ones_or_zeros       = ((magic * words) & mask) >> 7;
+        const uint64x2_t ones_or_zeros_ascii = ones_or_zeros + ascii_zeros;
+        const auto ts =
+            std::string_view{(const char *)&ones_or_zeros_ascii, sizeof(ones_or_zeros_ascii)};
+        bitstring += ts;
+        // MCA_END("ba2s_neon_inner_loop");
     }
-    for (; i < size; ++i) {}
-    return result;
+    for (; i < size; ++i) {
+        uint8_t byte = data[i];
+        for (int8_t j = 7; j >= 0; --j) {
+            const auto bit = (byte >> j) & 0x01;
+            bitstring.push_back(bit ? '1' : '0');
+        }
+    }
+    return bitstring;
 }
 
 #endif
