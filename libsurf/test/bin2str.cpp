@@ -75,16 +75,17 @@ std::string ba2s_neon(const std::span<const uint8_t> &bits) {
     auto data    = bits.data();
     ssize_t size = (ssize_t)bits.size();
     ssize_t i    = 0;
-    for (; i <= size - 8; i += 8) {
-        const auto b         = *(uint64_t *)(data + i);
+    for (; i <= size - 1; i += 1) {
+        const auto b         = *(uint8_t *)(data + i);
         const uint64_t MAGIC = 0x8040201008040201ull; // for opposite order, byte-reverse this
         const uint64_t MASK  = 0x8080808080808080ull;
         const uint64_t t     = ((MAGIC * b) & MASK) >> 7;
         fmt::print("t: {:#018x} {:#066b}\n", t, t);
-        const uint64_t ta = t * 0x3030303030303030ull;
+        const uint64_t ta = t + 0x3030303030303030ull;
         fmt::print("ta: {:#018x} {:#066b}\n", ta, ta);
         const auto ts = std::string_view{(const char *)&ta, sizeof(ta)};
         fmt::print("ts: {:s}\n", ts);
+        result += ts;
     }
     for (; i < size; ++i) {}
     return result;
