@@ -6,7 +6,6 @@ using namespace surf;
 
 #undef NDEBUG
 #include <cassert>
-#include <cstdlib>
 #include <cstring>
 #include <exception>
 #include <fcntl.h>

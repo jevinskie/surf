@@ -11,6 +11,7 @@ set(SURF_SRC
 
 set(SURF_HDR_STANDALONE
     surf.h
+    tagged_ptr.h
 )
 
 set(SURF_HDR_PRIVATE

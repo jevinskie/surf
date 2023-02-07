@@ -1,6 +1,10 @@
 #pragma once
 
+#include <array>
+#include <bit>
+#include <cstddef>
 #include <cstdint>
+#include <cstdlib>
 #include <filesystem>
 #include <map>
 #include <memory>
@@ -43,6 +47,50 @@
 #endif
 
 namespace surf {
+
+constexpr auto pow2(uint8_t n) {
+    return 1 << n;
+}
+
+constexpr auto pow2_mask(uint8_t n) {
+    return pow2(n) - 1;
+}
+
+template <typename T> constexpr bool is_pow2(T num) {
+    return std::popcount(num) == 1;
+}
+
+// behavior:
+// roundup_pow2_mul(16, 16) = 16
+// roundup_pow2_mul(17, 16) = 32
+template <typename U>
+    requires requires() { requires std::unsigned_integral<U>; }
+constexpr U roundup_pow2_mul(U num, size_t pow2_mul) {
+    const U mask = static_cast<U>(pow2_mul) - 1;
+    return (num + mask) & ~mask;
+}
+
+// behavior:
+// rounddown_pow2_mul(16, 16) = 16
+// rounddown_pow2_mul(17, 16) = 16
+template <typename U>
+    requires requires() { requires std::unsigned_integral<U>; }
+constexpr U rounddown_pow2_mul(U num, size_t pow2_mul) {
+    const U mask = static_cast<U>(pow2_mul) - 1;
+    return num & ~mask;
+}
+
+template <typename T> consteval size_t sizeofbits() {
+    return sizeof(T) * CHAR_BIT;
+}
+
+consteval size_t sizeofbits(const auto &o) {
+    return sizeof(o) * CHAR_BIT;
+}
+
+template <typename T> size_t bytesizeof(const typename std::vector<T> &vec) {
+    return sizeof(T) * vec.size();
+}
 
 static inline std::string boolmoji(bool b) {
     return b ? SURF_TRUE_SYM : SURF_FALSE_SYM;
