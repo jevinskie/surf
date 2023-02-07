@@ -3,6 +3,7 @@ set(SURF_SRC
     render.cpp
     time.cpp
     trace.cpp
+    varbit.cpp
     vcd.cpp
     vcd-parser.cpp
     utils.cpp
