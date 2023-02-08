@@ -124,7 +124,7 @@ public:
         return roundup_pow2_mul(bitsz, 8) / 8;
     }
 
-    VarBit(const uint8_t *buf, varbit::usz_t bitsz, bool is_signed) {}
+    VarBit(const uint8_t *buf, varbit::usz_t bitsz, bool is_signed = false) {}
     ~VarBit() {
         if (SURF_UNLIKELY(m_inlined.tag().is_ptr())) {
             delete m_heap;

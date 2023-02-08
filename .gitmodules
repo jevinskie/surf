@@ -31,3 +31,6 @@
 [submodule "libsurf/3rdparty/tagged_ptr"]
 	path = libsurf/3rdparty/tagged_ptr
 	url = https://github.com/marzer/tagged_ptr
+[submodule "libsurf/3rdparty/Catch2"]
+	path = libsurf/3rdparty/Catch2
+	url = https://github.com/catchorg/Catch2

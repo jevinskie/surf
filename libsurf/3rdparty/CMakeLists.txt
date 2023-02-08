@@ -1,5 +1,7 @@
 add_subdirectory(argparse)
 
+add_subdirectory(Catch2)
+
 option(FMT_DOC OFF)
 option(FMT_TEST OFF)
 option(FMT_INSTALL OFF)
