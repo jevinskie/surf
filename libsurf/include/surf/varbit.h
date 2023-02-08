@@ -5,10 +5,26 @@
 namespace surf {
 
 namespace varbit {
-
 using sz_t  = int16_t;
 using usz_t = std::make_unsigned_t<sz_t>;
+}; // namespace varbit
 
+class bitview {
+public:
+    bitview(const uint8_t *buf, varbit::usz_t bitsz, bool is_signed = false)
+        : m_buf{buf}, m_size_and_sign(bitsz * (-1 * is_signed)) {}
+    template <typename T>
+    bitview(const T &buf, varbit::usz_t bitsz, bool is_signed = false)
+        : m_buf{(const uint8_t *)&buf}, m_size_and_sign(bitsz * (-1 * is_signed)) {
+        assert(bitsz <= sizeof(T) * CHAR_BIT);
+    }
+
+private:
+    const uint8_t *m_buf;
+    varbit::sz_t m_size_and_sign;
+};
+
+namespace varbit {
 // bit 0: is_ptr
 // bit 1-6: size (0 - 56 bytes)
 // bit 7: is_signed
@@ -124,7 +140,7 @@ public:
         return roundup_pow2_mul(bitsz, 8) / 8;
     }
 
-    VarBit(const uint8_t *buf, varbit::usz_t bitsz, bool is_signed = false) {}
+    VarBit(bitview bv) {}
     ~VarBit() {
         if (SURF_UNLIKELY(m_inlined.tag().is_ptr())) {
             delete m_heap;

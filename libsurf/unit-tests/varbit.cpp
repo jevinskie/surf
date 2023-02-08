@@ -8,6 +8,6 @@ using namespace surf;
 
 TEST_CASE("build", TS) {
     uint64_t buf = 0b1010;
-    VarBit vb{(uint8_t *)&buf, 4};
+    VarBit vb{bitview{buf, 4}};
     fmt::print("VarBit: {}\n", vb);
 }
