@@ -38,6 +38,16 @@
 #define SURF_ALIGNED(n) __attribute__((aligned(n)))
 #define SURF_ASSUME_ALIGNED(ptr, n) __builtin_assume_aligned((ptr), (n))
 #define SURF_UNREACHABLE() __builtin_unreachable()
+
+#if defined(__GNUC__) || defined(__clang__)
+#define SURF_PACKED __attribute__((packed))
+#elif defined(_MSC_VER)
+#define SURF_PACKED __declspec(align(1))
+#else
+#warning "Compiler does not support packed attribute."
+#define SURF_PACKED
+#endif
+
 #define SURF_EMPTY_SYM "∅"
 #define SURF_TRUE_SYM "✅"
 #define SURF_FALSE_SYM "❌"

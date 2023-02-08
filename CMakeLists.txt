@@ -30,7 +30,7 @@ add_compile_options(-ggdb3)
 # add_compile_options(-g0)
 
 add_compile_options(-O0 -fno-omit-frame-pointer)
-add_compile_options(-fno-inline)
+# add_compile_options(-fno-inline)
 
 # add_compile_options(-O3 -fvisibility=hidden -fvisibility-inlines-hidden -ffunction-sections -fdata-sections)
 # add_link_options(-Wl,-dead_strip)

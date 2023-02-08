@@ -7,7 +7,9 @@ using namespace surf;
 #define TS "[VarBit]"
 
 TEST_CASE("build", TS) {
-    uint64_t buf = 0b1010;
-    VarBit vb{bitview{buf, 4}};
+    uint64_t buf  = 0b1010;
+    const auto bv = bitview{buf, 4};
+    VarBit vb{bv};
     fmt::print("VarBit: {}\n", vb);
+    REQUIRE(fmt::format("{}", vb) == "<VarBit[4] 1010>");
 }
