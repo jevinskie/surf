@@ -5,8 +5,6 @@
 #include "time.h"
 #include "trace.h"
 
-#include <magic_enum.hpp>
-
 namespace surf {
 
 namespace VCDTypes {

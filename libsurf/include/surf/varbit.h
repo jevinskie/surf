@@ -4,6 +4,8 @@
 
 #include <arm_neon.h>
 
+// TODO: optimize/remove/#ifguard masking off of bits
+
 namespace surf {
 
 namespace varbit {
@@ -12,10 +14,12 @@ using sz_t = uint16_t;
 
 class SURF_PACKED bitview {
 public:
-    bitview(const uint8_t *buf, varbit::sz_t bitsz) : m_buf{buf}, m_size{bitsz} {}
+    bitview(const uint8_t *buf, varbit::sz_t bitsz) : m_buf{buf}, m_size{bitsz} {
+        assert(bitsz > 0);
+    }
     template <typename T>
     bitview(const T &buf, varbit::sz_t bitsz) : m_buf{(const uint8_t *)&buf}, m_size{bitsz} {
-        assert(bitsz <= sizeof(T) * CHAR_BIT);
+        assert(bitsz > 0 && bitsz <= sizeof(T) * CHAR_BIT);
     }
 
     const uint8_t *data() const {
@@ -31,6 +35,61 @@ public:
 private:
     const uint8_t *m_buf;
     varbit::sz_t m_size;
+};
+
+class bitarray4 {
+public:
+    bitarray4(uint8_t bits, uint8_t bitsz) : m_buf{bits}, m_size{bitsz} {
+        assert(m_size > 0 && m_size <= 4);
+    }
+    bitarray4(bitview bv) : m_buf{*bv.data()}, m_size{(uint8_t)bv.bitsize()} {
+        assert(m_size > 0 && m_size <= 4);
+    }
+
+    bitview bitview() const {
+        return surf::bitview{data(), bitsize()};
+    }
+    const uint8_t *data() const {
+        return &m_buf;
+    }
+    varbit::sz_t bitsize() const {
+        return m_size;
+    }
+    varbit::sz_t bytesize() const {
+        return sizeof(m_buf);
+    }
+
+private:
+    uint8_t m_buf;
+    uint8_t m_size;
+};
+
+class bitarray10 {
+public:
+    bitarray10(uint16_t bits, uint8_t bitsz) : m_buf{bits}, m_size{bitsz} {
+        assert(m_size > 0 && m_size <= 10);
+    }
+    bitarray10(bitview bv) : m_size{(uint8_t)bv.bitsize()} {
+        assert(m_size > 0 && m_size <= 10);
+        memcpy(&m_buf, bv.data(), bv.bytesize());
+    }
+
+    bitview bitview() const {
+        return surf::bitview{data(), bitsize()};
+    }
+    const uint8_t *data() const {
+        return (uint8_t *)&m_buf;
+    }
+    varbit::sz_t bitsize() const {
+        return m_size;
+    }
+    varbit::sz_t bytesize() const {
+        return sizeof(m_buf);
+    }
+
+private:
+    uint16_t m_buf;
+    uint8_t m_size;
 };
 
 std::string bitview2string(bitview bv) {
@@ -94,13 +153,69 @@ enum class ptr_ty : uint8_t {
     b16_heap,
 };
 
-struct tag_byte_inline4 {
-    uint8_t m_btye;
-};
+class tag_byte_inline4 {
+public:
+    SURF_SCA tag_ty_bitpos        = 0;
+    SURF_SCA tag_ty_sz            = 2;
+    SURF_SCA nbits_minus_1_bitpos = 2;
+    SURF_SCA nbits_minus_1_sz     = 2;
+    SURF_SCA bits_bitpos          = 4;
+    SURF_SCA bits_sz              = 2;
+    static_assert(tag_ty_sz + nbits_minus_1_sz + bits_sz <= sizeof(uint8_t) * CHAR_BIT);
 
-struct alignas(2) tag_word_inline10 {
+    tag_byte_inline4(bitview bv) {
+        assert(bv.bitsize() > 0 && bv.bitsize() <= 4);
+        m_byte = (magic_enum::enum_integer(tag_ty::inline4) & pow2_mask(tag_ty_sz))
+                 << tag_ty_bitpos;
+        m_byte |= ((bv.bitsize() - 1) & pow2_mask(nbits_minus_1_sz)) << nbits_minus_1_bitpos;
+        m_byte |= (*bv.data() & pow2_mask(bits_sz)) << bits_bitpos;
+    }
+
+    uint8_t bitsize() const {
+        return 1 + ((m_byte >> nbits_minus_1_bitpos) & pow2_mask(nbits_minus_1_sz));
+    }
+    bitarray4 bitarray4() {
+        uint8_t bits = (m_byte >> bits_bitpos) & pow2_mask(bits_sz);
+        return surf::bitarray4(bits, bitsize());
+    }
+
+private:
+    uint8_t m_byte;
+};
+static_assert(sizeof(tag_byte_inline4) == sizeof(uint8_t));
+
+class tag_word_inline10 {
+public:
+    SURF_SCA tag_ty_bitpos = 0;
+    SURF_SCA tag_ty_sz     = 2;
+    SURF_SCA nbits_bitpos  = 2;
+    SURF_SCA nbits_sz      = 4;
+    SURF_SCA bits_bitpos   = 6;
+    SURF_SCA bits_sz       = 10;
+    static_assert(tag_ty_sz + nbits_sz + bits_sz <= sizeof(uint16_t) * CHAR_BIT);
+
+    tag_word_inline10(bitview bv) {
+        assert(bv.bitsize() > 0 && bv.bitsize() <= 10);
+        m_word = (magic_enum::enum_integer(tag_ty::inline10) & pow2_mask(tag_ty_sz))
+                 << tag_ty_bitpos;
+        m_word |= (bv.bitsize() & pow2_mask(nbits_sz)) << nbits_bitpos;
+        uint16_t bits;
+        memcpy(&bits, bv.data(), bv.bytesize());
+        m_word |= (bits & pow2_mask(bits_sz)) << bits_bitpos;
+    }
+
+    uint8_t bitsize() const {
+        return ((m_word >> nbits_bitpos) & pow2_mask(nbits_sz));
+    }
+    bitarray10 bitarray10() {
+        uint16_t bits = (m_word >> bits_bitpos) & pow2_mask(bits_sz);
+        return surf::bitarray10(bits, bitsize());
+    }
+
+private:
     uint16_t m_word;
 };
+static_assert(sizeof(tag_word_inline10) == sizeof(uint16_t));
 
 struct tagged_ptr_inline56 {
     uint8_t m_tag_byte;
@@ -146,14 +261,14 @@ struct SURF_PACKED heap_array_b16_ptr {
 // bit 2: bitval
 class tag_byte {
 public:
-    static constexpr auto is_inlined_bitpos = 0;
-    static constexpr auto is_inlined_sz     = 1;
-    static constexpr auto is_bit_bitpos     = 1;
-    static constexpr auto is_bit_sz         = 1;
-    static constexpr auto size_bitpos       = 2;
-    static constexpr auto size_sz           = 6;
-    static constexpr auto bitval_bitpos     = 2;
-    static constexpr auto bitval_sz         = 1;
+    SURF_SCA is_inlined_bitpos = 0;
+    SURF_SCA is_inlined_sz     = 1;
+    SURF_SCA is_bit_bitpos     = 1;
+    SURF_SCA is_bit_sz         = 1;
+    SURF_SCA size_bitpos       = 2;
+    SURF_SCA size_sz           = 6;
+    SURF_SCA bitval_bitpos     = 2;
+    SURF_SCA bitval_sz         = 1;
     static_assert(is_inlined_bitpos + is_bit_sz + size_sz <= sizeof(uint8_t) * CHAR_BIT);
 
     uint8_t bitsize() const {
@@ -165,13 +280,13 @@ public:
     bool is_bit() const {
         return (m_byte >> is_bit_bitpos) & pow2_mask(is_bit_sz);
     }
-    static constexpr auto for_inlined(sz_t bitsz) {
+    SURF_SCA for_inlined(sz_t bitsz) {
         return tag_byte{bitsz};
     }
-    static constexpr auto for_ptr() {
+    SURF_SCA for_ptr() {
         return tag_byte{};
     }
-    static constexpr auto for_bit(bool bit) {
+    SURF_SCA for_bit(bool bit) {
         return tag_byte{bit};
     }
 

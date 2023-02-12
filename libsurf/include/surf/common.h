@@ -17,6 +17,7 @@
 
 #include <fmt/format.h>
 #include <hedley.h>
+#include <magic_enum.hpp>
 
 #ifdef __linux__
 #define SURF_LINUX
@@ -47,6 +48,8 @@
 #warning "Compiler does not support packed attribute."
 #define SURF_PACKED
 #endif
+
+#define SURF_SCA static constexpr auto
 
 #define SURF_EMPTY_SYM "∅"
 #define SURF_TRUE_SYM "✅"

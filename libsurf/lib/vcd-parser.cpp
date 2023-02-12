@@ -18,8 +18,6 @@
 
 #include <visit.hpp>
 
-#define SCA static constexpr auto
-
 using namespace VCDTypes;
 
 namespace surf {
