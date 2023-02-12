@@ -72,6 +72,72 @@ std::string bitview2string(bitview bv) {
 }
 
 namespace varbit {
+
+// bit 0: is_not_ptr
+enum class tag_ty : uint8_t {
+    ptr          = 0b00,
+    ptr_inline56 = 0b10,
+    inline4      = 0b01,
+    inline10     = 0b11
+};
+
+// bit 0: is_not_ptr
+enum class raw_buf_ptr_tag_ty : uint8_t {
+    ptr     = 0b0,
+    inlined = 0b1
+};
+
+enum class ptr_ty : uint8_t {
+    b10_inline72,
+    b10_heap,
+    b16_inline_120,
+    b16_heap,
+};
+
+struct tag_byte_inline4 {
+    uint8_t m_btye;
+};
+
+struct alignas(2) tag_word_inline10 {
+    uint16_t m_word;
+};
+
+struct tagged_ptr_inline56 {
+    uint8_t m_tag_byte;
+    uint8_t m_buf[7];
+};
+
+union tagged_ptr {
+    const uintptr_t m_ptrint;
+    tagged_ptr_inline56 m_inline56;
+};
+
+struct SURF_PACKED heap_array_b10_inline72 {
+    uint8_t m_buf_tag;
+    uint8_t m_buf[9];
+};
+
+struct SURF_PACKED heap_array_b10_ptr {
+    std::unique_ptr<uint8_t[]> m_buf;
+    sz_t m_size;
+};
+
+union heap_array_b10 {
+    uint8_t m_tag_byte;
+    heap_array_b10_inline72 m_inline72;
+    heap_array_b10_ptr m_buf_ptr;
+};
+
+struct heap_array_b16_inline120 {
+    uint8_t m_buf_tag;
+    uint8_t m_buf[7];
+};
+
+struct SURF_PACKED heap_array_b16_ptr {
+    std::unique_ptr<uint8_t[]> m_buf;
+    sz_t m_size;
+};
+
 // bit 0: is_ptr
 // bit 1: is_bit
 // if (!is_ptr && !is_bit)
