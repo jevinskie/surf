@@ -157,7 +157,7 @@ enum class ptr_ty : uint8_t {
     b16_heap,
 };
 
-class tag_byte_inline4 {
+class SURF_PACKED tag_byte_inline4 {
 public:
     SURF_SCA tag_ty_bitpos        = 0;
     SURF_SCA tag_ty_sz            = 2;
@@ -192,7 +192,7 @@ private:
 };
 static_assert(sizeof(tag_byte_inline4) == sizeof(uint8_t));
 
-class tag_word_inline10 {
+class SURF_PACKED tag_word_inline10 {
 public:
     SURF_SCA tag_ty_bitpos = 0;
     SURF_SCA tag_ty_sz     = 2;
@@ -229,7 +229,7 @@ private:
 };
 static_assert(sizeof(tag_word_inline10) == sizeof(uint16_t));
 
-class tagged_ptr_inline56 {
+class SURF_PACKED tagged_ptr_inline56 {
 public:
     SURF_SCA tag_ty_bitpos = 0;
     SURF_SCA tag_ty_sz     = 2;
@@ -263,17 +263,49 @@ private:
     uint8_t m_tag_byte;
     uint8_t m_buf[7];
 };
-static_assert(sizeof(tag_word_inline10) == sizeof(uint16_t));
+static_assert(sizeof(tagged_ptr_inline56) == sizeof(void *));
 
 union tagged_ptr {
     const uintptr_t m_ptrint;
     tagged_ptr_inline56 m_inline56;
 };
 
-struct SURF_PACKED heap_array_b10_inline72 {
+class SURF_PACKED heap_array_b10_inline72 {
+public:
+    SURF_SCA raw_buf_ptr_tag_ty_bitpos = 0;
+    SURF_SCA raw_buf_ptr_tag_ty_sz     = 1;
+    SURF_SCA nbits_bitpos              = 1;
+    SURF_SCA nbits_sz                  = 7;
+    static_assert(raw_buf_ptr_tag_ty_bitpos + nbits_sz <= sizeof(uint8_t) * CHAR_BIT);
+
+    heap_array_b10_inline72(bitview bv) {
+        assert(bv.bitsize() > 0 && bv.bitsize() <= 72);
+        m_buf_tag = (magic_enum::enum_integer(raw_buf_ptr_tag_ty::inlined) &
+                     pow2_mask(raw_buf_ptr_tag_ty_sz))
+                    << raw_buf_ptr_tag_ty_bitpos;
+        m_buf_tag |= (bv.bitsize() & pow2_mask(nbits_sz)) << nbits_bitpos;
+        memcpy(m_buf, bv.data(), bv.bytesize());
+    }
+
+    const uint8_t *data() const {
+        return m_buf;
+    }
+    uint8_t bitsize() const {
+        return ((m_buf_tag >> nbits_bitpos) & pow2_mask(nbits_sz));
+    }
+    uint8_t bytesize() const {
+        return bytesize4bitsize(bitsize());
+    }
+
+    bitview bitview() const {
+        return surf::bitview{data(), bitsize()};
+    }
+
+private:
     uint8_t m_buf_tag;
     uint8_t m_buf[9];
 };
+static_assert(sizeof(heap_array_b10_inline72) == 10);
 
 struct SURF_PACKED heap_array_b10_ptr {
     std::unique_ptr<uint8_t[]> m_buf;
