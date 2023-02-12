@@ -132,6 +132,10 @@ std::string bitview2string(bitview bv) {
 
 namespace varbit {
 
+static constexpr sz_t bytesize4bitsize(sz_t bitsz) {
+    return roundup_pow2_mul(bitsz, 8) / 8;
+}
+
 // bit 0: is_not_ptr
 enum class tag_ty : uint8_t {
     ptr          = 0b00,
@@ -174,6 +178,10 @@ public:
     uint8_t bitsize() const {
         return 1 + ((m_byte >> nbits_minus_1_bitpos) & pow2_mask(nbits_minus_1_sz));
     }
+    uint8_t bytesize() const {
+        return bytesize4bitsize(bitsize());
+    }
+
     bitarray4 bitarray4() {
         uint8_t bits = (m_byte >> bits_bitpos) & pow2_mask(bits_sz);
         return surf::bitarray4(bits, bitsize());
@@ -207,6 +215,10 @@ public:
     uint8_t bitsize() const {
         return ((m_word >> nbits_bitpos) & pow2_mask(nbits_sz));
     }
+    uint8_t bytesize() const {
+        return bytesize4bitsize(bitsize());
+    }
+
     bitarray10 bitarray10() {
         uint16_t bits = (m_word >> bits_bitpos) & pow2_mask(bits_sz);
         return surf::bitarray10(bits, bitsize());
@@ -217,10 +229,41 @@ private:
 };
 static_assert(sizeof(tag_word_inline10) == sizeof(uint16_t));
 
-struct tagged_ptr_inline56 {
+class tagged_ptr_inline56 {
+public:
+    SURF_SCA tag_ty_bitpos = 0;
+    SURF_SCA tag_ty_sz     = 2;
+    SURF_SCA nbits_bitpos  = 2;
+    SURF_SCA nbits_sz      = 6;
+    static_assert(tag_ty_sz + nbits_sz <= sizeof(uint8_t) * CHAR_BIT);
+
+    tagged_ptr_inline56(bitview bv) {
+        assert(bv.bitsize() > 0 && bv.bitsize() <= 56);
+        m_tag_byte = (magic_enum::enum_integer(tag_ty::ptr_inline56) & pow2_mask(tag_ty_sz))
+                     << tag_ty_bitpos;
+        m_tag_byte |= (bv.bitsize() & pow2_mask(nbits_sz)) << nbits_bitpos;
+        memcpy(m_buf, bv.data(), bv.bytesize());
+    }
+
+    const uint8_t *data() const {
+        return m_buf;
+    }
+    uint8_t bitsize() const {
+        return ((m_tag_byte >> nbits_bitpos) & pow2_mask(nbits_sz));
+    }
+    uint8_t bytesize() const {
+        return bytesize4bitsize(bitsize());
+    }
+
+    bitview bitview() const {
+        return surf::bitview{data(), bitsize()};
+    }
+
+private:
     uint8_t m_tag_byte;
     uint8_t m_buf[7];
 };
+static_assert(sizeof(tag_word_inline10) == sizeof(uint16_t));
 
 union tagged_ptr {
     const uintptr_t m_ptrint;
