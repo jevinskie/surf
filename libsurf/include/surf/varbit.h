@@ -318,10 +318,42 @@ union heap_array_b10 {
     heap_array_b10_ptr m_buf_ptr;
 };
 
-struct heap_array_b16_inline120 {
+class SURF_PACKED heap_array_b16_inline120 {
+public:
+    SURF_SCA raw_buf_ptr_tag_ty_bitpos = 0;
+    SURF_SCA raw_buf_ptr_tag_ty_sz     = 1;
+    SURF_SCA nbits_bitpos              = 1;
+    SURF_SCA nbits_sz                  = 7;
+    static_assert(raw_buf_ptr_tag_ty_bitpos + nbits_sz <= sizeof(uint8_t) * CHAR_BIT);
+
+    heap_array_b16_inline120(bitview bv) {
+        assert(bv.bitsize() > 0 && bv.bitsize() <= 120);
+        m_buf_tag = (magic_enum::enum_integer(raw_buf_ptr_tag_ty::inlined) &
+                     pow2_mask(raw_buf_ptr_tag_ty_sz))
+                    << raw_buf_ptr_tag_ty_bitpos;
+        m_buf_tag |= (bv.bitsize() & pow2_mask(nbits_sz)) << nbits_bitpos;
+        memcpy(m_buf, bv.data(), bv.bytesize());
+    }
+
+    const uint8_t *data() const {
+        return m_buf;
+    }
+    uint8_t bitsize() const {
+        return ((m_buf_tag >> nbits_bitpos) & pow2_mask(nbits_sz));
+    }
+    uint8_t bytesize() const {
+        return bytesize4bitsize(bitsize());
+    }
+
+    bitview bitview() const {
+        return surf::bitview{data(), bitsize()};
+    }
+
+private:
     uint8_t m_buf_tag;
-    uint8_t m_buf[7];
+    uint8_t m_buf[15];
 };
+static_assert(sizeof(heap_array_b16_inline120) == 16);
 
 struct SURF_PACKED heap_array_b16_ptr {
     std::unique_ptr<uint8_t[]> m_buf;
