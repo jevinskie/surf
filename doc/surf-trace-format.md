@@ -25,3 +25,26 @@ struct tick_log {
     Value changes[num_changes];
 };
 ```
+
+Indexed:
+```c
+struct tick_log {
+    uint64_t tick;
+    uint16_t num_changes;
+    uint16_t signal_ids[num_changes];
+    uint32_t value_bit_offsets[num_changes];
+    uint8_t value_bit_buf[];
+};
+```
+
+```c++
+void dump_tick(struct tick_log *t) {
+    auto nc = t->num_changes;
+    for (auto i = 0; i < num_changes; ++i) {
+        auto id = t->signal_ids[i];
+        auto voff = t->value_bit_offsets[i];
+        Value val = decode_val(t->value_bit_buf, voff);
+        fmt::print("v: {}\n", val);
+    }
+}
+```
