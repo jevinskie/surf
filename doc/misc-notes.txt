@@ -1,0 +1,115 @@
+
+https://en.m.wikipedia.org/wiki/Downsampling_(signal_processing)
+
+Similar to instruction trace encoding problem
+
+Objectives:
+Dump fast to a core doing Zstd compression to a file for minimal simulation speed
+Do indexing/downsamling after the fact with a library/tool. The GUI will automatically index at load if file wasn’t post processed.
+
+
+
+Ring buffer mmap? ( ͡° ͜ʖ ͡°) 
+
+Search speed up
+Downsampling produces set of seen values up to N values with overflow tag
+
+
+Cool little inset of an example piece of activity for that segment of the waveform when its otherwise solid green bar
+
+
+Components
+Render accurately region R to texture size TS
+
+Render single signal from [a,b] to a color
+Get signal changes in [a, b]
+
+Map pixel corners to start/end time
+Map an time to nearest change
+
+
+
+Insight: can paint no change, rise-or-fall, toggle.
+Rock paper scissors until you no longer need to check that pixel
+
+# Changes in Pixel Bounds
+0
+	Changes in Pixel Bounds	
+		
+		
+
+For each pixel:
+Int n = EMPTY
+Bool done = false
+
+For change and not done in pixel.region.changes:
+If n == EMPTY
+n = CHANGED
+break
+If n == CHANGED:
+n = TOGGLE
+done = true
+break
+
+Dark green indicates toggle beyond resolution
+
+If a signal blips, green should be drawn not red
+
+
+
+
+
+Compressed integer stores
+Running from either end gets you what? Dual indexing?
+
+
+Cache full-view, zoomed out version since it takes the longest to render and is the default goto
+
+
+.swvf bundle
+
+
+Dump-first approach
+
+Idea is to have low overhead trace that streams to a dump file. The dump file will be mmaped by surf and randomly accessed.
+
+Transformation of the low overhead format to another format for fast rendering should be avoided. Surf should decode the data on the fly at runtime.
+
+Bah I forgot about dump first. Ok
+
+Minimal:
+Time stamp
+[
+16 bit signal id
+Value (or delta) packed
+]
+
+Minimal 2:
+Time stamp
+[
+16 bit signal id
+]
+[
+Values (or deltas) packed
+]
+
+Indexed:
+Time stamp
+[
+16 bit signal id
+]
+[
+Value offsets
+]
+[
+Values (variable length packed)
+]
+
+How to use zstd with all of this.
+
+Using zstd removes naive/stupid easy random access.
+
+Key is to be able to seek close enough to a sync block (if using deltas, it includes/followed by all values dumped), decompress and process on the fly before either discarding the data again or putting it in a LRU cache
+
+There’s only so many horizontal pixels to render after all… right? Can you seek and zstd decompress 4k pixels at a time?
+

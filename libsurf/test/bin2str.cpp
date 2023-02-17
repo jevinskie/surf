@@ -91,7 +91,7 @@ std::string ba2s_neon(const std::span<const uint8_t> &bits) {
     // #pragma clang loop unroll_count(BA2S_NEON_UNROLL_COUNT)
     for (; i <= size - sizeof(uint16_t); i += sizeof(uint16_t)) {
         // MCA_BEGIN("ba2s_neon_inner_loop");
-        const uint64x2_t words               = {*(uint8_t *)(data + i), *(uint8_t *)(data + i + 1)};
+        const uint64x2_t words               = *(uint64x2_t *)(data + i);
         const uint64x2_t ones_or_zeros       = ((magic * words) & mask) >> 7;
         const uint64x2_t ones_or_zeros_ascii = ones_or_zeros + ascii_zeros;
         const auto ts =
