@@ -4,7 +4,7 @@ https://en.m.wikipedia.org/wiki/Downsampling_(signal_processing)
 Similar to instruction trace encoding problem
 
 Objectives:
-Dump fast to a core doing Zstd compression to a file for minimal simulation speed
+Dump fast to a single core doing Zstd compression to a file for minimal simulation speed degredation. Try to keep the dedicated core at full utilization (adapt to IO conditions).
 Do indexing/downsamling after the fact with a library/tool. The GUI will automatically index at load if file wasn’t post processed.
 
 
@@ -112,4 +112,6 @@ Using zstd removes naive/stupid easy random access.
 Key is to be able to seek close enough to a sync block (if using deltas, it includes/followed by all values dumped), decompress and process on the fly before either discarding the data again or putting it in a LRU cache
 
 There’s only so many horizontal pixels to render after all… right? Can you seek and zstd decompress 4k pixels at a time?
+
+Use sux succinct data structure library somehow? Probably rank/select stuff.
 
