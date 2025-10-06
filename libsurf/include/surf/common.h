@@ -19,7 +19,7 @@
 #include <fmt/ranges.h>
 #include <fmt/std.h>
 #include <hedley.h>
-#include <magic_enum.hpp>
+#include <magic_enum/magic_enum.hpp>
 
 #ifdef __linux__
 #define SURF_LINUX
