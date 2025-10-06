@@ -62,6 +62,7 @@ template <typename Func, typename Seq> auto map(Func func, Seq seq) {
 
 }; // namespace surf
 
+#if 0
 // Credit: Arthaud Awen / davawen
 // https://github.com/fmtlib/fmt/issues/1367#issuecomment-1229916316
 template <typename T> struct fmt::formatter<std::optional<T>> {
@@ -110,3 +111,4 @@ template <typename T> struct fmt::formatter<std::optional<T>> {
         }
     }
 };
+#endif

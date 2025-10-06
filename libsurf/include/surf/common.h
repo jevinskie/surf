@@ -16,6 +16,8 @@
 #include <vector>
 
 #include <fmt/format.h>
+#include <fmt/ranges.h>
+#include <fmt/std.h>
 #include <hedley.h>
 #include <magic_enum.hpp>
 

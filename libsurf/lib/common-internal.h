@@ -17,6 +17,7 @@ using namespace surf;
 #include <unistd.h>
 
 #include <fmt/format.h>
+#include <fmt/ranges.h>
 #include <fmt/std.h>
 
 namespace fs = std::filesystem;
