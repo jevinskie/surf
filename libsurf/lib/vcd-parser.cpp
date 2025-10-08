@@ -18,6 +18,8 @@
 
 #include <visit.hpp>
 
+#include <libassert/assert.hpp>
+
 using namespace VCDTypes;
 
 namespace surf {

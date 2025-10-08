@@ -46,6 +46,7 @@ set(SURF_PRIVATE_LIBS
     fmt
     fpng
     foonathan::lexy
+    libassert::assert
     thread-pool
     visit
 )

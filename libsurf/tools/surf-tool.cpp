@@ -8,6 +8,7 @@ using namespace surf;
 #include <fmt/format.h>
 #include <fmt/std.h>
 // #include <fmt/ranges.h>
+#include <libassert/assert.hpp>
 
 int main(int argc, const char **argv) {
     argparse::ArgumentParser parser("surf-tool");
@@ -79,7 +80,7 @@ int main(int argc, const char **argv) {
         }
     }
 
-    assert(trace);
+    ASSERT(trace);
 
     if (parser.present("--start")) {
         if (use_ticks) {
