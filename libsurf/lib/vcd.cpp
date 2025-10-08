@@ -1,8 +1,10 @@
+#include <memory>
 #include <surf/vcd.h>
 
 #include <mutex>
 
 #include "common-internal.h"
+#include "surf/trace.h"
 #include "utils.h"
 #include "vcd-parser.h"
 
@@ -51,7 +53,8 @@ std::string_view VCDFile::string_view() const {
 }
 
 std::shared_ptr<Trace> VCDFile::surf_trace() const {
-    return m_trace;
+    return std::make_shared<Trace>(m_mapped_file.path());
+    // return m_trace;
 }
 
 int VCDFile::timebase_power() const {
