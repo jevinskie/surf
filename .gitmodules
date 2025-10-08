@@ -34,3 +34,6 @@
 [submodule "libsurf/3rdparty/Catch2"]
 	path = libsurf/3rdparty/Catch2
 	url = https://github.com/catchorg/Catch2
+[submodule "libsurf/3rdparty/libassert"]
+	path = libsurf/3rdparty/libassert
+	url = https://github.com/jeremy-rifkin/libassert

@@ -222,7 +222,7 @@ private:
 
     VCDTypes::Document m_document;
     std::string_view m_sim_cmds_str;
-    bool m_parsed_changes;
+    std::once_flag m_parse_once_flag;
     MappedReadOnlyFile m_mapped_file;
     Time m_start;
     Time m_end;
