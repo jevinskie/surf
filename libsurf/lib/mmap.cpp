@@ -11,7 +11,7 @@ MappedReadOnlyFile::MappedReadOnlyFile(const fs::path &path, const void *preferr
     const auto fd_res = open(path.c_str(), O_RDONLY);
     posix_check(fd_res, "MappedReadOnlyFile open");
 
-    struct stat st {};
+    struct stat st{};
     const auto fstat_res = fstat(fd_res, &st);
     posix_check(fstat_res, "MappedReadOnlyFile fstat");
 

@@ -21,3 +21,14 @@ private:
 };
 
 } // namespace surf
+
+template <> struct fmt::formatter<surf::Time> {
+    constexpr auto parse(format_parse_context &ctx) {
+        return ctx.begin();
+    }
+    template <typename FormatContext>
+    auto format(surf::Time const &time, FormatContext &ctx) const -> decltype(ctx.out()) {
+        return fmt::format_to(ctx.out(), "<Time tbp: {} ticks: {}>", time.timebase_power(),
+                              time.ticks());
+    }
+};

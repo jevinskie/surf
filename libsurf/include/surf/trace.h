@@ -21,3 +21,14 @@ private:
 };
 
 } // namespace surf
+
+template <> struct fmt::formatter<surf::Trace> {
+    constexpr auto parse(format_parse_context &ctx) {
+        return ctx.begin();
+    }
+    template <typename FormatContext>
+    auto format(surf::Trace const &trace, FormatContext &ctx) const -> decltype(ctx.out()) {
+        return fmt::format_to(ctx.out(), "<Trace tbp: {} start: {} end: {}>",
+                              trace.timebase_power(), trace.start(), trace.end());
+    }
+};

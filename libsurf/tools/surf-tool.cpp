@@ -28,11 +28,11 @@ int main(int argc, const char **argv) {
         .implicit_value(true)
         .help("use ticks for times");
     parser.add_argument("-W", "--width")
-        .default_value((uint32_t)4096)
+        .default_value((uint32_t)1024)
         .scan<'i', uint32_t>()
         .help("render width (pixels)");
     parser.add_argument("-H", "--height")
-        .default_value((uint32_t)4096)
+        .default_value((uint32_t)128)
         .scan<'i', uint32_t>()
         .help("render height (pixels)");
     parser.add_argument("-l", "--loop")
@@ -56,6 +56,7 @@ int main(int argc, const char **argv) {
         // vcd_trace.parse_test();
         // return 0;
         trace = vcd_trace.surf_trace();
+        fmt::print("trace: {}\n", *trace);
     } else {
         if (const auto surf_path = parser.present("--surf-trace")) {
             trace = std::make_shared<Trace>(*surf_path);
