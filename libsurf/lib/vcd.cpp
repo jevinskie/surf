@@ -1,5 +1,8 @@
 #include <surf/vcd.h>
 
+#include <mutex>
+#include <thread>
+
 #include "common-internal.h"
 #include "utils.h"
 #include "vcd-parser.h"

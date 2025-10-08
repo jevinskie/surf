@@ -13,6 +13,10 @@ int main(int argc, const char **argv) {
     argparse::ArgumentParser parser("surf-tool");
     parser.add_argument("-v", "--vcd-trace").help("input VCD file path");
     parser.add_argument("-t", "--surf-trace").help("input Surf file path");
+    parser.add_argument("-d", "--dump")
+        .default_value(false)
+        .implicit_value(true)
+        .help("Dump input");
     parser.add_argument("-r", "--render")
         .implicit_value("surf-render.png")
         .help("output PNG render path");
